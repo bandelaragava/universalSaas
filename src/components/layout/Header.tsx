@@ -5,11 +5,8 @@ import {
   Bell,
   Sun,
   Moon,
-  Plus,
   Menu,
   ChevronRight,
-  Building2,
-  GitBranch,
 } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
 import { useTheme } from '@/context/ThemeProvider'
@@ -24,17 +21,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+
 import { cn } from '@/lib/utils'
-import { DashboardQuickActionMenu } from '@/components/dashboard/DashboardQuickActionMenu'
 import { useToast } from '@/context/ToastContext'
-import { usePermissions } from '@/auth/usePermissions'
+
 
 const pathLabels: Record<string, string> = {
   '/': 'Dashboard',
@@ -53,31 +43,14 @@ const pathLabels: Record<string, string> = {
 }
 
 export function Header() {
-  const { tenant, sidebarCollapsed, setMobileSidebarOpen, setTenant } = useApp()
+  const { tenant, sidebarCollapsed, setMobileSidebarOpen } = useApp()
   const { theme, toggleTheme } = useTheme()
   const { info, success } = useToast()
   const { logout } = useAuth()
-  const { hasAnyPermission } = usePermissions()
+
   const navigate = useNavigate()
   const location = useLocation()
-  const showQuickActions = location.pathname === '/' || location.pathname === '/reports'
-  const canUseQuickActions = hasAnyPermission([
-    'USER_CREATE',
-    'USER_CREATE',
-    'LEADS_CREATE_LEAD',
-    'LEADS_CREATE_LEAD',
-    'TASKS_CREATE_TASK',
-    'TASKS_EDIT_TASK',
-    'PAYROLL_PROCESS_PAYROLL',
-    'PAYROLL_PROCESS_PAYROLL',
-    'SUPPORT_TICKETS_RAISE_SUPPORT_TICKET',
-    'SUPPORT_TICKETS_RAISE_SUPPORT_TICKET',
-    'REPORTS_VIEW_REPORTS',
-    'REPORTS_VIEW_REPORTS',
-    'ANNOUNCEMENT_CREATE',
-    'NOTIFICATION_CREATE',
-    'LEADS_CREATE_FOLLOWUP',
-  ])
+
   const pageTitle = pathLabels[location.pathname] ?? 'Module'
 
   const initials = tenant.userName
@@ -115,67 +88,9 @@ export function Header() {
         <Input placeholder="Search modules, users, leads..." className="pl-9 bg-muted/50" />
       </div>
 
-      <div className="hidden items-center gap-2 xl:flex">
-        <Select
-          value={tenant.companyId}
-          onValueChange={(v) => {
-            const names: Record<string, string> = {
-              comp_001: 'Universal Enterprises',
-              comp_002: 'Acme Holdings',
-            }
-            setTenant({ companyId: v, companyName: names[v] ?? tenant.companyName })
-            success('Company switched', names[v])
-          }}
-        >
-          <SelectTrigger className="h-9 w-[180px]">
-            <Building2 className="mr-1 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="comp_001">Universal Enterprises</SelectItem>
-            <SelectItem value="comp_002">Acme Holdings</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select
-          value={tenant.branchId}
-          onValueChange={(v) => {
-            const names: Record<string, string> = {
-              branch_hq: 'Head Office — Mumbai',
-              branch_del: 'Delhi Branch',
-            }
-            setTenant({ branchId: v, branchName: names[v] ?? tenant.branchName })
-            success('Branch switched', names[v])
-          }}
-        >
-          <SelectTrigger className="h-9 w-[160px]">
-            <GitBranch className="mr-1 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="branch_hq">Head Office</SelectItem>
-            <SelectItem value="branch_del">Delhi Branch</SelectItem>
-          </SelectContent>
-        </Select>
-        <span className="rounded-md bg-muted px-2 py-1 text-xs font-medium">{tenant.role}</span>
-      </div>
 
-      {canUseQuickActions && showQuickActions ? (
-        <div className="hidden sm:block">
-          <DashboardQuickActionMenu />
-        </div>
-      ) : canUseQuickActions ? (
-        <Button
-          size="sm"
-          className="hidden gap-1 sm:flex shadow-md"
-          onClick={() => {
-            info('Quick Action', 'Navigate to Dashboard for quick actions.')
-            navigate('/')
-          }}
-        >
-          <Plus className="h-4 w-4" />
-          Quick Action
-        </Button>
-      ) : null}
+
+
 
       <Button variant="ghost" size="icon" className="relative" onClick={toggleTheme}>
         {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}

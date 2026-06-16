@@ -27,19 +27,7 @@ export function WelcomeSection() {
               <h2 className="mt-1 text-2xl font-bold lg:text-3xl">
                 Welcome back, {tenant.userName.split(' ')[0]} 👋
               </h2>
-              <p className="mt-2 max-w-xl text-sm text-white/80">
-                Your universal enterprise dashboard is ready. Monitor operations across HRMS, CRM,
-                and all enabled modules from one place.
-              </p>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="mt-4 gap-2 bg-white/20 text-white hover:bg-white/30 border-0"
-                onClick={handleRefresh}
-              >
-                <RefreshCw className="h-4 w-4" />
-                Refresh data
-              </Button>
+
             </div>
             <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full lg:w-auto">
               <div className="flex items-center gap-2 rounded-lg bg-white/10 p-2 sm:px-4 sm:py-3 backdrop-blur-sm min-w-0">

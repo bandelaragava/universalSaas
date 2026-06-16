@@ -6,7 +6,6 @@ import { Header } from './Header'
 import { useApp } from '@/context/AppContext'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { QuickActionDialogs } from '@/components/dashboard/QuickActionDialogs'
 import { useAuth } from '@/auth/AuthContext'
 import { usePermissions } from '@/auth/usePermissions'
 import { menuConfig } from '@/config/navigation'
@@ -128,8 +127,6 @@ export function AppLayout() {
           <Outlet />
         </main>
       </div>
-
-      <QuickActionDialogs />
     </div>
   )
 }

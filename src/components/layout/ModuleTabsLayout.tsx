@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation, Outlet } from 'react-router-dom';
+import { Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePermissions } from '@/auth/usePermissions';
 
@@ -37,10 +38,7 @@ const TABS: Record<string, TabItem[]> = {
   ],
   'crm': [
     { label: 'All Leads', path: '/leads', permissions: ['LEADS_VIEW_LEADS'] },
-    { label: 'Add Lead', path: '/leads/add-lead', permissions: ['LEADS_CREATE_LEAD'] },
     { label: 'Follow Ups', path: '/leads/follow-ups', permissions: ['LEADS_VIEW_FOLLOWUPS'] },
-    { label: 'Form Builder', path: '/leads/form-builder', permissions: ['LEADS_MANAGE_LEAD_FORMS'] },
-    { label: 'Statuses', path: '/leads/options', permissions: ['LEADS_MANAGE_LEAD_FORMS'] },
   ],
   'vendor': [
     { label: 'Vendor Dashboard', path: '/vendor/analytics', permissions: ['VENDOR_VIEW'] },
@@ -132,7 +130,16 @@ export function CrmLayout() {
   return (
     <div className="crm-workspace">
       <div className="bg-[#f4f7ff] dark:bg-indigo-950/20 px-4 lg:px-6 pt-4 lg:pt-6 -mx-4 lg:-mx-6 -mt-4 lg:-mt-6 pb-8 border-b border-border mb-6">
-        <ModuleTabsHeader moduleName="crm" />
+        <div className="flex items-center justify-between">
+          <div className="flex-1 overflow-hidden">
+            <ModuleTabsHeader moduleName="crm" />
+          </div>
+          <div className="border-b border-border/60 flex items-center justify-end h-full w-10">
+            <NavLink to="/settings/crm" className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-muted mb-1 flex-shrink-0" title="CRM Settings">
+              <Settings className="w-4 h-4" />
+            </NavLink>
+          </div>
+        </div>
         <div id="crm-header-portal" className="mt-8"></div>
       </div>
       <Outlet />

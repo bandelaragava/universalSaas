@@ -56,12 +56,12 @@ export const formatDateTime = (date) =>
 
 export const statusClass = (status) => {
   const classes = {
-    New: 'bg-cyan-50 text-cyan-700 border-cyan-200',
-    Contacted: 'bg-slate-50 text-slate-700 border-slate-200',
-    Interested: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    'Follow-Up Pending': 'bg-amber-50 text-amber-700 border-amber-200',
-    'Admission Confirmed': 'bg-indigo-50 text-indigo-700 border-indigo-200',
-    Rejected: 'bg-rose-50 text-rose-700 border-rose-200',
+    New: 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20',
+    Contacted: 'bg-slate-500/10 text-slate-500 border-slate-500/20',
+    Interested: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+    'Follow-Up Pending': 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+    'Admission Confirmed': 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
+    Rejected: 'bg-rose-500/10 text-rose-500 border-rose-500/20',
   };
-  return classes[status] || 'bg-slate-50 text-slate-700 border-slate-200';
+  return classes[status] || 'bg-slate-500/10 text-slate-500 border-slate-500/20';
 };

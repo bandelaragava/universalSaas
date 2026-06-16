@@ -93,6 +93,7 @@ import DepartmentList from "@/pages/settings/DepartmentList";
 import DepartmentForm from "@/pages/settings/DepartmentForm";
 import SelfReportsPage from "@/pages/reports/SelfReportsPage";
 import SystemSettingsPage from "@/pages/settings/SystemSettingsPage";
+import CrmSettingsPage from "@/pages/settings/CrmSettingsPage";
 import {
   EmployeeTypeList, EmployeeTypeForm,
   DesignationList, DesignationForm,
@@ -166,6 +167,7 @@ export function AppRoutes() {
         {/* Settings Module Routes (Wrapped in SettingsLayout) */}
         <Route element={<SettingsLayout />}>
           <Route path="settings" element={<ProtectedRoute element={<SettingsPage />} permissions={["COMPANY_PROFILE_VIEW", "COMPANY_PROFILE_VIEW", "COMPANY_PROFILE_VIEW"]} />} />
+          <Route path="settings/crm" element={<ProtectedRoute element={<CrmSettingsPage />} permissions={["LEADS_MANAGE_LEAD_FORMS", "COMPANY_PROFILE_VIEW"]} />} />
           <Route path="settings/company" element={<ProtectedRoute element={<CompanyProfilePage />} permissions={["COMPANY_PROFILE_VIEW", "COMPANY_PROFILE_VIEW", "COMPANY_PROFILE_VIEW"]} />} />
           <Route path="settings/billing" element={<ProtectedRoute element={<BillingPage />} permission="COMPANY_PROFILE_VIEW" />} />
           <Route path="settings/entities" element={<ProtectedRoute element={<BusinessEntityList />} permission="COMPANY_PROFILE_VIEW" />} />
@@ -191,6 +193,11 @@ export function AppRoutes() {
           <Route path="settings/onboarding-rules" element={<ProtectedRoute element={<OnboardingRulesPage />} permission="COMPANY_PROFILE_VIEW" />} />
           <Route path="settings/dynamic-role-fields" element={<ProtectedRoute element={<DynamicRoleFieldsPage />} permission="COMPANY_PROFILE_VIEW" />} />
           <Route path="settings/system" element={<ProtectedRoute element={<SystemSettingsPage />} permission="COMPANY_PROFILE_VIEW" />} />
+          <Route path="leads/form-builder" element={<ProtectedRoute element={<FormBuilder />} module="crm" permissions={["LEADS_MANAGE_LEAD_FORMS", "LEADS_MANAGE_LEAD_FORMS", "LEADS_MANAGE_LEAD_FORMS"]} />} />
+          <Route path="leads/options" element={<ProtectedRoute element={<LeadOptions />} module="crm" permissions={["LEADS_MANAGE_LEAD_FORMS", "LEADS_MANAGE_LEAD_FORMS", "LEADS_MANAGE_LEAD_FORMS"]} />} />
+          <Route path="crm/stages" element={<ProtectedRoute element={<LeadStageList />} module="crm" permissions={["LEADS_VIEW_LEADS", "LEADS_MANAGE_LEAD_FORMS"]} />} />
+          <Route path="crm/stages/create" element={<ProtectedRoute element={<LeadStageForm />} module="crm" permission="LEADS_MANAGE_LEAD_FORMS" />} />
+          <Route path="crm/stages/edit/:id" element={<ProtectedRoute element={<LeadStageForm />} module="crm" permission="LEADS_MANAGE_LEAD_FORMS" />} />
         </Route>
 
         {/* HRMS Module Routes (Wrapped in HrmsLayout) */}
@@ -210,12 +217,7 @@ export function AppRoutes() {
           <Route path="leads/followups" element={<ProtectedRoute element={<LeadFollowups />} module="crm" permissions={["LEADS_VIEW_LEADS", "LEADS_VIEW_FOLLOWUPS"]} />} />
           <Route path="leads/follow-ups" element={<ProtectedRoute element={<LeadFollowups />} module="crm" permissions={["LEADS_VIEW_LEADS", "LEADS_VIEW_FOLLOWUPS"]} />} />
           <Route path="leads/dashboard" element={<ProtectedRoute element={<LeadsDashboard />} module="crm" permissions={["LEADS_VIEW_LEADS", "LEADS_VIEW_LEAD_ANALYTICS"]} />} />
-          <Route path="leads/form-builder" element={<ProtectedRoute element={<FormBuilder />} module="crm" permissions={["LEADS_MANAGE_LEAD_FORMS", "LEADS_MANAGE_LEAD_FORMS", "LEADS_MANAGE_LEAD_FORMS"]} />} />
-          <Route path="leads/options" element={<ProtectedRoute element={<LeadOptions />} module="crm" permissions={["LEADS_MANAGE_LEAD_FORMS", "LEADS_MANAGE_LEAD_FORMS", "LEADS_MANAGE_LEAD_FORMS"]} />} />
           <Route path="leads/:id" element={<ProtectedRoute element={<LeadDetails />} module="crm" permission="LEADS_VIEW_LEADS" />} />
-          <Route path="crm/stages" element={<ProtectedRoute element={<LeadStageList />} module="crm" permissions={["LEADS_VIEW_LEADS", "LEADS_MANAGE_LEAD_FORMS"]} />} />
-          <Route path="crm/stages/create" element={<ProtectedRoute element={<LeadStageForm />} module="crm" permission="LEADS_MANAGE_LEAD_FORMS" />} />
-          <Route path="crm/stages/edit/:id" element={<ProtectedRoute element={<LeadStageForm />} module="crm" permission="LEADS_MANAGE_LEAD_FORMS" />} />
         </Route>
 
         {/* Vendor and Procurement routes (Wrapped in VendorLayout) */}
