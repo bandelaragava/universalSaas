@@ -16,36 +16,13 @@ export const DEFAULT_REPORT_DISPLAY_CONFIG: ReportDisplayConfig = {
 
 export const REPORT_DISPLAY_STORAGE_KEY = 'universal-report-display-config'
 
-export const monthlyTrendData: MonthlyTrendPoint[] = [
-  { month: '2026-01', label: 'Jan', users: 2100, newUsers: 180, revenue: 3200000, growth: 12 },
-  { month: '2026-02', label: 'Feb', users: 2280, newUsers: 195, revenue: 3800000, growth: 18 },
-  { month: '2026-03', label: 'Mar', users: 2410, newUsers: 210, revenue: 3500000, growth: 8 },
-  { month: '2026-04', label: 'Apr', users: 2580, newUsers: 225, revenue: 4200000, growth: 20 },
-  { month: '2026-05', label: 'May', users: 2720, newUsers: 240, revenue: 4100000, growth: 15 },
-  { month: '2026-06', label: 'Jun', users: 2847, newUsers: 127, revenue: 4820000, growth: 22 },
-]
+export const monthlyTrendData: MonthlyTrendPoint[] = []
 
-export const usersByRole: BreakdownPoint[] = [
-  { name: 'Admin', value: 42, color: '#6366f1' },
-  { name: 'Manager', value: 186, color: '#8b5cf6' },
-  { name: 'Employee', value: 2340, color: '#10b981' },
-  { name: 'Viewer', value: 279, color: '#f59e0b' },
-]
+export const usersByRole: BreakdownPoint[] = []
 
-export const revenueBySource: BreakdownPoint[] = [
-  { name: 'Subscriptions', value: 2850000, color: '#6366f1' },
-  { name: 'Services', value: 1120000, color: '#10b981' },
-  { name: 'Add-ons', value: 580000, color: '#f59e0b' },
-  { name: 'Other', value: 270000, color: '#94a3b8' },
-]
+export const revenueBySource: BreakdownPoint[] = []
 
-export const generatedReportsSeed: GeneratedReport[] = [
-  { id: 'RPT-001', name: 'Users & Revenue Summary Q2', type: 'Analytics', metrics: ['users', 'revenue'], date: '2026-05-20', status: 'Ready', branchId: 'branch_hq' },
-  { id: 'RPT-002', name: 'Monthly User Growth', type: 'Users', metrics: ['users'], date: '2026-05-19', status: 'Ready', branchId: 'branch_hq' },
-  { id: 'RPT-003', name: 'Revenue by Source — May', type: 'Revenue', metrics: ['revenue'], date: '2026-05-18', status: 'Processing', branchId: 'branch_del' },
-  { id: 'RPT-004', name: 'Combined Users & Revenue', type: 'Analytics', metrics: ['users', 'revenue'], date: '2026-05-17', status: 'Ready', branchId: 'branch_hq' },
-  { id: 'RPT-005', name: 'Branch Comparison Report', type: 'Analytics', metrics: ['users', 'revenue'], date: '2026-05-15', status: 'Ready', branchId: 'all' },
-]
+export const generatedReportsSeed: GeneratedReport[] = []
 
 export function computeReportSummary(
   trend: MonthlyTrendPoint[],
@@ -54,6 +31,18 @@ export function computeReportSummary(
 ): ReportSummary {
   const filtered = trend.filter((p) => p.month >= dateFrom.slice(0, 7) && p.month <= dateTo.slice(0, 7))
   const data = filtered.length > 0 ? filtered : trend
+
+  if (data.length === 0) {
+    return {
+      totalUsers: 0,
+      activeUsers: 0,
+      newUsersInRange: 0,
+      totalRevenue: 0,
+      avgRevenuePerUser: 0,
+      userGrowthPercent: 0,
+      revenueGrowthPercent: 0,
+    }
+  }
 
   const latest = data[data.length - 1]
   const previous = data.length > 1 ? data[data.length - 2] : latest

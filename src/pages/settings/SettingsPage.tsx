@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { Landmark, Fingerprint, FileText, Award, Workflow, Grid, ArrowRight, Blocks, Users } from 'lucide-react';
+import { Landmark, Fingerprint, FileText, Award, Workflow, Grid, ArrowRight, Blocks, Users, Shield } from 'lucide-react';
 
 const settingsCards = [
   {
@@ -74,6 +74,14 @@ const settingsCards = [
     description: 'Manage third-party connections, webhooks, and external APIs.',
     path: '/integrations',
     icon: Blocks,
+    color: 'text-primary border-primary/20 bg-primary/5'
+  },
+  {
+    id: 'user-management',
+    label: 'User Management',
+    description: 'Manage users, roles, and access control permissions.',
+    path: '/users',
+    icon: Shield,
     color: 'text-primary border-primary/20 bg-primary/5'
   },
 ];

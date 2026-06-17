@@ -49,6 +49,10 @@ const TABS: Record<string, TabItem[]> = {
     { label: 'Performance', path: '/vendor/performance', permissions: ['PERFORMANCE_VIEW', 'VENDOR_VIEW'] },
     { label: 'Risk & Compliance', path: '/vendor/risk-compliance', permissions: ['VENDOR_AUDIT_VIEW', 'VENDOR_VIEW'] },
   ],
+  'reports': [
+    { label: 'System Reports', path: '/reports', permissions: ['REPORTS_VIEW_REPORTS'] },
+    { label: 'My Self Reports', path: '/self-reports', permissions: ['REPORTS_SELF_REPORTS', 'REPORTS_VIEW_REPORTS'] },
+  ],
 };
 
 function ModuleTabsHeader({ moduleName }: { moduleName: string }) {
@@ -80,7 +84,7 @@ function ModuleTabsHeader({ moduleName }: { moduleName: string }) {
           <NavLink
             key={item.path}
             to={item.path}
-            end={item.path === '/leads' || item.path === '/users' || item.path === '/settings' || item.path === '/leave'}
+            end={item.path === '/leads' || item.path === '/users' || item.path === '/settings' || item.path === '/leave' || item.path === '/reports'}
             className={({ isActive: navActive }) => cn(
               "px-4 py-2.5 text-xs font-semibold border-b-2 transition-all duration-150 cursor-pointer",
               (isActive || navActive)
@@ -151,6 +155,15 @@ export function VendorLayout() {
   return (
     <div className="space-y-6">
       <ModuleTabsHeader moduleName="vendor" />
+      <Outlet />
+    </div>
+  );
+}
+
+export function ReportsLayout() {
+  return (
+    <div className="space-y-6">
+      <ModuleTabsHeader moduleName="reports" />
       <Outlet />
     </div>
   );

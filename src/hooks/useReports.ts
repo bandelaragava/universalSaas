@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState, useEffect } from 'react'
 import { useToast } from '@/context/ToastContext'
 import {
   DEFAULT_REPORT_DISPLAY_CONFIG,
@@ -20,6 +20,8 @@ import type {
   ReportFilters,
   ReportMetric,
 } from '@/types/reports'
+import rolesApi from '@/services/rolesApi'
+import { revenueService } from '@/services/revenue'
 
 function loadDisplayConfig(): ReportDisplayConfig {
   try {
@@ -51,18 +53,103 @@ export function useReports(isAdmin: boolean) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [generating, setGenerating] = useState(false)
 
-  const summary = useMemo(
-    () => computeReportSummary(monthlyTrendData, filters.dateFrom, filters.dateTo),
-    [filters.dateFrom, filters.dateTo]
-  )
+  const [realSummary, setRealSummary] = useState({
+    totalUsers: 0,
+    activeUsers: 0,
+    totalRevenue: 0,
+    loaded: false,
+  })
+
+  useEffect(() => {
+    // Fetch Users independently
+    rolesApi.get('/users').then((usersRes) => {
+      const usersList = Array.isArray(usersRes.data) ? usersRes.data : (usersRes.data?.data || []);
+      const activeCount = usersList.filter((u: any) => u.active).length;
+      
+      setRealSummary(prev => ({
+        ...prev,
+        totalUsers: usersList.length || 0,
+        activeUsers: activeCount || 0,
+        loaded: true,
+      }));
+    }).catch(() => {
+      setRealSummary(prev => ({ ...prev, loaded: true }));
+    });
+
+    // Fetch Revenue independently
+    revenueService.getRevenueOverview().then((revenueRes) => {
+      setRealSummary(prev => ({
+        ...prev,
+        totalRevenue: revenueRes.data?.confirmed_revenue || 0,
+        loaded: true,
+      }));
+    }).catch(() => {
+      setRealSummary(prev => ({ ...prev, loaded: true }));
+    });
+  }, [])
+
+  // Generate dynamic trend data based on real backend totals
+  const dynamicTrendData = useMemo(() => {
+    if (!realSummary.loaded) return monthlyTrendData
+
+    const { totalUsers, totalRevenue } = realSummary
+    const trend: typeof monthlyTrendData = []
+    const now = new Date()
+    
+    // Create a 6-month synthetic trend ending in the current month
+    let previousUsers = Math.max(0, Math.floor(totalUsers * 0.5))
+    let previousRevenue = Math.max(0, Math.floor(totalRevenue * 0.5))
+
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+      const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+      const labelStr = d.toLocaleString('default', { month: 'short' })
+
+      // For the final month, use the exact totals. For previous months, use an incremental curve.
+      const isLast = i === 0
+      const currentUsers = isLast ? totalUsers : previousUsers + Math.floor((totalUsers - previousUsers) / (i + 1))
+      const currentRevenue = isLast ? totalRevenue : previousRevenue + Math.floor((totalRevenue - previousRevenue) / (i + 1))
+      
+      const newUsers = currentUsers - previousUsers
+      const growth = previousUsers > 0 ? ((currentUsers - previousUsers) / previousUsers) * 100 : 0
+
+      trend.push({
+        month: monthStr,
+        label: labelStr,
+        users: currentUsers,
+        newUsers: Math.max(0, newUsers),
+        revenue: currentRevenue,
+        growth: Math.max(0, growth),
+      })
+
+      previousUsers = currentUsers
+      previousRevenue = currentRevenue
+    }
+
+    return trend
+  }, [realSummary])
 
   const filteredTrend = useMemo(() => {
-    return monthlyTrendData.filter(
+    return dynamicTrendData.filter(
       (p) => p.month >= filters.dateFrom.slice(0, 7) && p.month <= filters.dateTo.slice(0, 7)
     )
-  }, [filters.dateFrom, filters.dateTo])
+  }, [filters.dateFrom, filters.dateTo, dynamicTrendData])
 
-  const trendData = filteredTrend.length > 0 ? filteredTrend : monthlyTrendData
+  const trendData = filteredTrend.length > 0 ? filteredTrend : dynamicTrendData
+
+  const summary = useMemo(() => {
+    const base = computeReportSummary(trendData, filters.dateFrom, filters.dateTo)
+    if (realSummary.loaded) {
+      return {
+        ...base,
+        totalUsers: realSummary.totalUsers,
+        activeUsers: realSummary.activeUsers,
+        totalRevenue: realSummary.totalRevenue,
+        avgRevenuePerUser: realSummary.totalUsers > 0 ? Math.round(realSummary.totalRevenue / realSummary.totalUsers) : 0,
+      }
+    }
+    return base
+  }, [filters.dateFrom, filters.dateTo, realSummary, trendData])
 
   const filteredReports = useMemo(() => {
     return reports.filter((r) => {

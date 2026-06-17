@@ -150,23 +150,7 @@ export const menuConfig: MenuSection[] = [
                 ],
                 requiredModules: ['AFFILIATE'],
             },
-            {
-                id: 'access-control',
-                label: 'Access Control',
-                path: '/users',
-                icon: Shield,
-                permissions: [
-                    'USER_VIEW',
-                    'USER_CREATE',
-                    'USER_UPDATE',
-                    'USER_DELETE',
-                    'ROLE_VIEW',
-                    'ROLE_CREATE',
-                    'ROLE_UPDATE',
-                    'PERMISSION_VIEW',
-                ],
-                requiredModules: ['ADMIN', 'EMPLOYEE'],
-            },
+
             {
                 id: 'settings',
                 label: 'Settings',
@@ -181,16 +165,7 @@ export const menuConfig: MenuSection[] = [
                 requiredModules: ['SETTINGS'],
             },
 
-            {
-                id: 'self-reports',
-                label: 'Self Reports',
-                path: '/self-reports',
-                icon: BarChart3,
-                permissions: [
-                    'REPORTS_VIEW_REPORTS'
-                ],
-                requiredModules: ['REPORTS'],
-            },
+
         ],
     },
     {

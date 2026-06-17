@@ -21,6 +21,7 @@ import {
   HrmsLayout,
   CrmLayout,
   VendorLayout,
+  ReportsLayout,
 } from "@/components/layout/ModuleTabsLayout";
 
 // Vendor / Procurement pages
@@ -245,8 +246,11 @@ export function AppRoutes() {
         <Route path="affiliate" element={<ProtectedRoute element={<AffiliateShell />} module="AFFILIATE" permissions={["AFFILIATE_VIEW_AFFILIATE", "AFFILIATE_MANAGE_AFFILIATE"]} />} />
         <Route path="marketing" element={<ProtectedRoute element={<MarketingPage variant="marketing" />} module="MARKETING" permissions={["MARKETING_VIEW", "MARKETING_CREATE", "MARKETING_UPDATE", "MARKETING_DELETE", "MARKETING_CAMPAIGN_VIEW", "MARKETING_ANALYTICS_VIEW", "MARKETING_AJAY_SUMMARY", "MARKETING_ANALYTICS_SUMMARY"]} />} />
         <Route path="referrals" element={<ProtectedRoute element={<MarketingPage variant="referrals" />} module="MARKETING" permissions={["MARKETING_VIEW", "MARKETING_CREATE", "MARKETING_UPDATE", "MARKETING_DELETE", "MARKETING_CAMPAIGN_VIEW", "MARKETING_ANALYTICS_VIEW", "MARKETING_AJAY_SUMMARY", "MARKETING_ANALYTICS_SUMMARY"]} />} />
-        <Route path="reports" element={<ProtectedRoute element={<ReportsPage />} permission="REPORTS_VIEW_REPORTS" />} />
-        <Route path="self-reports" element={<ProtectedRoute element={<SelfReportsPage forcedScope="self" />} permission="REPORTS_SELF_REPORTS" />} />
+        {/* Reports Module Routes (Wrapped in ReportsLayout) */}
+        <Route element={<ReportsLayout />}>
+          <Route path="reports" element={<ProtectedRoute element={<ReportsPage />} permission="REPORTS_VIEW_REPORTS" />} />
+          <Route path="self-reports" element={<ProtectedRoute element={<SelfReportsPage forcedScope="self" />} permission="REPORTS_SELF_REPORTS" />} />
+        </Route>
         <Route path="tasks" element={<ProtectedRoute element={<TaskShell />} permission="TASKS_VIEW_TASKS" />} />
         <Route path="revenue" element={<ProtectedRoute element={<RevenuePage />} permission="REVENUE_VIEW_REVENUE" />} />
 
