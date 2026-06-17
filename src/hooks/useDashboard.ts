@@ -1,9 +1,15 @@
 import { useState, useEffect } from 'react';
 import type { DashboardStatsResponse, ActivityLog } from '@/types/dashboard-api';
-import { reportsService } from '@/services/reports';
-import { revenueService } from '@/services/revenue';
-import { payrollService } from '@/services/payroll';
-import { Users, Banknote, Briefcase } from 'lucide-react';
+import rolesApi from '@/services/rolesApi';
+import { 
+  CalendarDays, 
+  Clock, 
+  IndianRupee, 
+  TrendingUp, 
+  ClipboardList, 
+  AlertCircle, 
+  Headphones 
+} from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
 
 export function useDashboard() {
@@ -18,52 +24,124 @@ export function useDashboard() {
     const fetchDashboardData = async () => {
       setLoading(true);
       try {
-        const [reportsRes, revenueRes, payrollRes] = await Promise.allSettled([
-          reportsService.getReportsDashboard(),
-          revenueService.getRevenueOverview(),
-          payrollService.getDashboardStats()
+        const [followupsRes, revenueRes, tasksRes, ticketsRes] = await Promise.allSettled([
+          rolesApi.get('/leads/followups/'),
+          rolesApi.get('/revenue/overview'),
+          rolesApi.get('/tasks/'),
+          rolesApi.get('/support/tickets/all/'),
         ]);
 
         if (!isMounted) return;
 
-        const newStats: DashboardStatsResponse = [];
+        const todayDate = new Date();
+        const isToday = (dateStr?: string) => {
+          if (!dateStr) return false;
+          try {
+            const d = new Date(dateStr);
+            return d.getFullYear() === todayDate.getFullYear() &&
+                   d.getMonth() === todayDate.getMonth() &&
+                   d.getDate() === todayDate.getDate();
+          } catch {
+            return false;
+          }
+        };
 
-        if (reportsRes.status === 'fulfilled' && reportsRes.value.data?.totals) {
-          const employees = reportsRes.value.data.totals.employees || 0;
-          newStats.push({
-            id: 'users',
-            title: 'Total Users',
-            value: employees,
+        // 1. Followups
+        const followups = followupsRes.status === 'fulfilled' ? (followupsRes.value.data || []) : [];
+        const todayFollowups = followups.filter((f: any) => !f.completed && isToday(f.scheduled_at)).length;
+        const pendingFollowups = followups.filter((f: any) => !f.completed).length;
+
+        // 2. Revenue
+        const revenueData = revenueRes.status === 'fulfilled' ? revenueRes.value.data : null;
+        const confirmedRevenue = revenueData?.confirmed_revenue || 0;
+        const pipelineRevenue = revenueData?.pipeline_revenue || 0;
+        const confirmedLeads = revenueData?.confirmed_leads || [];
+
+        // Today's revenue calculation: sum of confirmed leads paid today
+        const todayRevenueVal = confirmedLeads
+          .filter((l: any) => {
+            const dateToCheck = l.updated_at || l.created_at || l.payment_date;
+            return l.payment_status === 'Paid' && (isToday(dateToCheck) || !dateToCheck);
+          })
+          .reduce((sum: number, l: any) => sum + (l.amount || 0), 0);
+
+        const todayRevenue = todayRevenueVal;
+        const pendingRevenue = pipelineRevenue;
+
+        // 3. Tasks
+        const tasks = tasksRes.status === 'fulfilled' ? (tasksRes.value.data || []) : [];
+        const todayTasks = tasks.filter((t: any) => t.status !== 'completed' && isToday(t.dueDate)).length;
+        const pendingTasks = tasks.filter((t: any) => t.status !== 'completed').length;
+
+        // 4. Tickets
+        const tickets = ticketsRes.status === 'fulfilled' ? (ticketsRes.value.data || []) : [];
+        const pendingTickets = tickets.filter((t: any) => t.status !== 'resolved' && t.status !== 'closed').length;
+
+        const newStats: DashboardStatsResponse = [
+          {
+            id: 'today-followups',
+            title: 'Today Follow-ups',
+            value: todayFollowups,
             change: 0,
             trend: 'up',
-            icon: Users,
+            icon: CalendarDays,
             gradient: 'from-blue-500 to-cyan-500'
-          });
-        }
-
-        if (revenueRes.status === 'fulfilled' && revenueRes.value.data) {
-          newStats.push({
-            id: 'revenue',
-            title: 'Confirmed Revenue',
-            value: `₹${revenueRes.value.data.confirmed_revenue?.toLocaleString() || 0}`,
+          },
+          {
+            id: 'pending-followups',
+            title: 'Pending Follow-ups',
+            value: pendingFollowups,
             change: 0,
             trend: 'up',
-            icon: Banknote,
-            gradient: 'from-emerald-500 to-teal-500'
-          });
-        }
-
-        if (payrollRes.status === 'fulfilled' && payrollRes.value.data) {
-          newStats.push({
-            id: 'payroll',
-            title: 'Total Payroll',
-            value: `₹${payrollRes.value.data.total_payroll?.toLocaleString() || 0}`,
+            icon: Clock,
+            gradient: 'from-amber-500 to-orange-500'
+          },
+          {
+            id: 'today-revenue',
+            title: 'Today Revenue',
+            value: `₹${todayRevenue.toLocaleString('en-IN')}`,
             change: 0,
-            trend: 'down',
-            icon: Briefcase,
-            gradient: 'from-purple-500 to-indigo-500'
-          });
-        }
+            trend: 'up',
+            icon: IndianRupee,
+            gradient: 'from-emerald-500 to-teal-500'
+          },
+          {
+            id: 'pending-revenue',
+            title: 'Pending Revenue',
+            value: `₹${pendingRevenue.toLocaleString('en-IN')}`,
+            change: 0,
+            trend: 'up',
+            icon: TrendingUp,
+            gradient: 'from-indigo-500 to-violet-500'
+          },
+          {
+            id: 'today-tasks',
+            title: 'Today Tasks',
+            value: todayTasks,
+            change: 0,
+            trend: 'up',
+            icon: ClipboardList,
+            gradient: 'from-rose-500 to-pink-500'
+          },
+          {
+            id: 'pending-tasks',
+            title: 'Pending Tasks',
+            value: pendingTasks,
+            change: 0,
+            trend: 'up',
+            icon: AlertCircle,
+            gradient: 'from-purple-500 to-fuchsia-500'
+          },
+          {
+            id: 'pending-tickets',
+            title: 'Pending Tickets',
+            value: pendingTickets,
+            change: 0,
+            trend: 'up',
+            icon: Headphones,
+            gradient: 'from-sky-500 to-indigo-500'
+          }
+        ];
 
         setStats(newStats);
         setActivities([]);

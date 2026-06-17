@@ -12,8 +12,15 @@ const statRoutes: Record<string, string> = {
   attendance: '/attendance',
   tasks: '/tasks',
   tickets: '/tickets',
-  followups: '/followups',
+  followups: '/leads/followups',
   payroll: '/payroll',
+  'today-followups': '/leads/followups',
+  'pending-followups': '/leads/followups',
+  'today-revenue': '/revenue',
+  'pending-revenue': '/revenue',
+  'today-tasks': '/tasks',
+  'pending-tasks': '/tasks',
+  'pending-tickets': '/tickets',
 }
 
 interface StatCardProps {
