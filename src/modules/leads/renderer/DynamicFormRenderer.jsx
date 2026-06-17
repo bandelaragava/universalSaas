@@ -217,7 +217,7 @@ const groupFields = (fields = []) => {
   }, {});
 };
 
-export default function DynamicFormRenderer() {
+export default function DynamicFormRenderer({ onClose }) {
   const { handleSubmit, register, setValue } = useForm();
   const navigate = useNavigate();
   const toast = useToast();
@@ -287,7 +287,11 @@ export default function DynamicFormRenderer() {
     try {
       await createLead(payload).unwrap();
       toast.success('Success!', 'Lead has been created and assigned.');
-      navigate('/leads');
+      if (onClose) {
+        onClose();
+      } else {
+        navigate('/leads');
+      }
     } catch (err) {
       toast.error('Error', err?.data?.detail || 'Failed to create lead.');
     }
@@ -295,33 +299,37 @@ export default function DynamicFormRenderer() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="mx-auto max-w-5xl space-y-7">
-      <div className="flex items-center space-x-4">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/leads')}
-          className="gap-2 text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Cancel & Go Back
-        </Button>
-      </div>
+      {!onClose && (
+        <div className="flex items-center space-x-4">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/leads')}
+            className="gap-2 text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Cancel & Go Back
+          </Button>
+        </div>
+      )}
 
-      <div className="rounded-3xl border border-border bg-card text-card-foreground p-8 shadow-sm">
-        <div className="flex items-start gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-600 text-white">
-            <UserPlus className="h-5 w-5" />
-          </div>
-          <div>
-            <h3 className="text-2xl font-bold text-foreground">Register New Student Lead</h3>
-            <p className="mt-1 text-muted-foreground">Populate details to assign counselor and course preferences.</p>
-            <select className="mt-4 h-10 rounded-xl border border-border bg-background px-4 font-semibold text-violet-600">
-              <option>{form.name || 'Active Intake Form'}</option>
-            </select>
+      {!onClose && (
+        <div className="rounded-3xl border border-border bg-card text-card-foreground p-8 shadow-sm">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-600 text-white">
+              <UserPlus className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-2xl font-bold text-foreground">Register New Student Lead</h3>
+              <p className="mt-1 text-muted-foreground">Populate details to assign counselor and course preferences.</p>
+              <select className="mt-4 h-10 rounded-xl border border-border bg-background px-4 font-semibold text-violet-600">
+                <option>{form.name || 'Active Intake Form'}</option>
+              </select>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="space-y-6">
         <div className="rounded-3xl border border-border bg-card text-card-foreground p-10 shadow-sm">
@@ -364,7 +372,7 @@ export default function DynamicFormRenderer() {
         <Button
           type="button"
           variant="outline"
-          onClick={() => navigate('/leads')}
+          onClick={() => onClose ? onClose() : navigate('/leads')}
           disabled={isSaving}
           className="rounded-xl bg-background text-foreground border-border"
         >

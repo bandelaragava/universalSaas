@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/auth/AuthContext'
 import { usePermissions } from '@/auth/usePermissions'
 import { menuConfig } from '@/config/navigation'
+import { QuickActionDialogs } from '@/components/dashboard/QuickActionDialogs'
 
 export function AppLayout() {
   const { sidebarCollapsed, mobileSidebarOpen, setMobileSidebarOpen } = useApp()
@@ -127,6 +128,7 @@ export function AppLayout() {
           <Outlet />
         </main>
       </div>
+      <QuickActionDialogs />
     </div>
   )
 }

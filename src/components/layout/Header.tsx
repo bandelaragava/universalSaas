@@ -24,8 +24,7 @@ import {
 
 import { cn } from '@/lib/utils'
 import { useToast } from '@/context/ToastContext'
-
-
+import { DashboardQuickActionMenu } from '@/components/dashboard/DashboardQuickActionMenu'
 const pathLabels: Record<string, string> = {
   '/': 'Dashboard',
   '/users': 'Users',
@@ -88,9 +87,7 @@ export function Header() {
         <Input placeholder="Search modules, users, leads..." className="pl-9 bg-muted/50" />
       </div>
 
-
-
-
+      <DashboardQuickActionMenu />
 
       <Button variant="ghost" size="icon" className="relative" onClick={toggleTheme}>
         {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}

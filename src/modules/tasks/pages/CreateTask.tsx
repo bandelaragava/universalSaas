@@ -14,7 +14,7 @@ import {
   Trash2
 } from 'lucide-react';
 
-export default function CreateTask() {
+export default function CreateTask({ onClose }: { onClose?: () => void } = {}) {
   const {
     tasks,
     selectedTaskId,
@@ -78,7 +78,11 @@ export default function CreateTask() {
 
   const handleCancel = () => {
     setSelectedTaskId(null);
-    setActivePage('tasks-list');
+    if (onClose) {
+      onClose();
+    } else {
+      setActivePage('tasks-list');
+    }
   };
 
   const handleSubmit = (e: React.FormEvent | null, forceDraft = false) => {
@@ -154,29 +158,35 @@ export default function CreateTask() {
     }
 
     setSelectedTaskId(null);
-    setActivePage('tasks-list');
+    if (onClose) {
+      onClose();
+    } else {
+      setActivePage('tasks-list');
+    }
   };
 
   return (
     <div className="space-y-6 animate-fade-in max-w-5xl mx-auto">
       {/* Header */}
-      <div className="flex items-center gap-3 p-5 rounded-2xl bg-card border border-border shadow-soft">
-        <button
-          type="button"
-          onClick={handleCancel}
-          className="p-2 hover:bg-accent border border-border rounded-xl text-muted-foreground hover:text-foreground transition-colors shadow-soft cursor-pointer"
-        >
-          <ArrowLeft size={16} />
-        </button>
-        <div>
-          <h2 className="text-xl font-bold text-foreground">
-            {isEditMode ? 'Modify Task Details' : 'Publish New Database Task'}
-          </h2>
-          <p className="text-xs text-muted-foreground font-medium">
-            {isEditMode ? `Updating database configuration for ID: ${existingTask?.id}` : 'Deploy assignments, priorities and attachments logs'}
-          </p>
+      {!onClose && (
+        <div className="flex items-center gap-3 p-5 rounded-2xl bg-card border border-border shadow-soft">
+          <button
+            type="button"
+            onClick={handleCancel}
+            className="p-2 hover:bg-accent border border-border rounded-xl text-muted-foreground hover:text-foreground transition-colors shadow-soft cursor-pointer"
+          >
+            <ArrowLeft size={16} />
+          </button>
+          <div>
+            <h2 className="text-xl font-bold text-foreground">
+              {isEditMode ? 'Modify Task Details' : 'Publish New Database Task'}
+            </h2>
+            <p className="text-xs text-muted-foreground font-medium">
+              {isEditMode ? `Updating database configuration for ID: ${existingTask?.id}` : 'Deploy assignments, priorities and attachments logs'}
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Form Grid */}
       <form onSubmit={(e) => handleSubmit(e, false)} className="grid grid-cols-1 lg:grid-cols-3 gap-6">

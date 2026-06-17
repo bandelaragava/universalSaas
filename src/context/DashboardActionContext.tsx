@@ -9,8 +9,7 @@ import {
 } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '@/context/ToastContext'
-import type { QuickActionId } from '@/config/quick-actions'
-
+import { quickActionMap, type QuickActionId } from '@/config/quick-actions'
 interface DashboardActionContextValue {
   activeAction: QuickActionId | null
   openAction: (id: QuickActionId) => void
@@ -31,21 +30,12 @@ export function DashboardActionProvider({ children }: { children: ReactNode }) {
 
   const runQuickAction = useCallback(
     (id: QuickActionId) => {
-      switch (id) {
-        case 'add-user':
-          info('Adding User', 'Redirecting to user creation form…')
-          navigate('/users/create')
-          break
-        case 'payroll':
-          info('Opening Payroll', 'Redirecting to payroll module…')
-          navigate('/payroll')
-          break
-        case 'report':
-          info('Opening Reports', 'Redirecting to generate analytics…')
-          navigate('/reports?action=generate')
-          break
-        default:
-          openAction(id)
+      const actionDef = quickActionMap[id]
+      if (actionDef?.navigateTo) {
+        info(actionDef.label, `Redirecting to ${actionDef.label}…`)
+        navigate(actionDef.navigateTo)
+      } else {
+        openAction(id)
       }
     },
     [navigate, openAction, info]
