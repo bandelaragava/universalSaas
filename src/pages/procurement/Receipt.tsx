@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Printer, Share2, X } from 'lucide-react';
+import { Printer, Share2, X, QrCode, CheckCircle2, AlertCircle, FileText } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
 import rolesApi from '@/services/rolesApi';
 
@@ -15,10 +15,29 @@ interface CompanyProfile {
   pincode?: string;
 }
 
+interface InvoiceConfig {
+  invoiceName?: string;
+  invoicePrefix?: string;
+  invoiceNumberFormat?: string;
+  companyLogo?: string;
+  companyDetails?: string;
+  gstTaxDetails?: string;
+  termsConditions?: string;
+}
+
 interface PaymentStep {
   note: string;
   date: string;
   amount: number;
+}
+
+interface InvoiceItem {
+  id?: number | string;
+  itemName: string;
+  quantity: number;
+  unitPrice: number;
+  taxRate?: number;
+  total: number;
 }
 
 interface VendorInvoice {
@@ -32,13 +51,22 @@ interface VendorInvoice {
   amountPending?: string | number;
   paymentHistory?: string;
   notes?: string;
+  customerAddress?: string;
+  gstin?: string;
+  cgst?: number;
+  sgst?: number;
+  igst?: number;
+  discount?: number;
+  subTotal?: number;
+  taxTotal?: number;
+  items?: InvoiceItem[];
 }
-
 
 export function Receipt() {
   const { id } = useParams();
   const [invoice, setInvoice] = useState<VendorInvoice | null>(null);
   const [company, setCompany] = useState<CompanyProfile | null>(null);
+  const [config, setConfig] = useState<InvoiceConfig | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -49,6 +77,13 @@ export function Receipt() {
           setInvoice(res.data?.data || res.data);
         } catch (err) {
           console.error('Failed to fetch invoice details from backend:', err);
+        }
+
+        try {
+          const resConf = await rolesApi.get('/api/invoice-configurations/active');
+          if (resConf.data) setConfig(resConf.data);
+        } catch (err) {
+          console.warn('No active invoice configuration found, falling back to company profile.');
         }
 
         try {
@@ -73,11 +108,9 @@ export function Receipt() {
   if (loading) return <div className="p-8 text-center text-muted-foreground font-sans">Loading receipt...</div>;
   if (!invoice) return <div className="p-8 text-center text-red-400 font-sans">Receipt not found.</div>;
 
-  // ── Helpers ───────────────────────────────────────────────
   const fmtINR = (amt: number) =>
-    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amt || 0);
+    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(amt || 0);
 
-  // Parse payment installment steps
   let steps: PaymentStep[] = [];
   try {
     if (invoice.paymentHistory) {
@@ -92,7 +125,6 @@ export function Receipt() {
   const totalAmt = parseFloat(String(invoice.amountValue)) || 0;
   const balanceDue = parseFloat(String(invoice.amountPending)) || 0;
 
-  // ── Print ─────────────────────────────────────────────────
   const handlePrint = () => window.print();
 
   const handleShare = async () => {
@@ -103,7 +135,7 @@ export function Receipt() {
       filename: `Receipt_${invoiceRef}.pdf`,
       image: { type: 'jpeg' as const, quality: 0.98 },
       html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' as const }
+      jsPDF: { unit: 'in' as const, format: 'a4' as const, orientation: 'portrait' as const }
     };
     try {
       const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
@@ -124,172 +156,263 @@ export function Receipt() {
     }
   };
 
+  const logoToUse = config?.companyLogo || company?.logoUrl;
+  const nameToUse = config?.invoiceName || company?.companyName || 'COMPANY';
+
   return (
-    <div className="min-h-screen bg-background p-4 font-sans print:bg-white print:p-0">
-      <div className="max-w-3xl mx-auto bg-white text-black shadow-2xl rounded-sm overflow-hidden print:shadow-none print:w-full print:max-w-none">
+    <div className="min-h-screen bg-gray-100 p-4 sm:p-8 font-sans print:bg-white print:p-0">
+      <div className="max-w-4xl mx-auto bg-white text-black shadow-2xl rounded-xl border border-gray-200 overflow-hidden flex flex-col min-h-full print:shadow-none print:border-none print:w-full print:max-w-none">
+        <div id="receipt-content" className="p-10 overflow-y-auto flex-1 relative bg-white print:p-6">
 
-        {/* ── Receipt Content ── */}
-        <div id="receipt-content" className="p-8 print:p-6">
-
-          {/* Title */}
-          <div className="text-center mb-4">
-            <h1 className="text-2xl font-bold uppercase tracking-widest border-b-2 border-black pb-2 inline-block text-black">
-              Online Payment Receipt
-            </h1>
-          </div>
-
-          {/* Company */}
-          <div className="text-center mb-6">
-            {company?.logoUrl && <img src={company.logoUrl} alt="Logo" className="h-12 mx-auto mb-2" />}
-            <h2 className="text-lg font-bold uppercase text-indigo-700">{company?.companyName || 'COMPANY'}</h2>
-            {company?.email && <p className="text-xs text-gray-505">{company.email}</p>}
-          </div>
-
-          {/* Meta info grid */}
-          <div className="border border-black text-sm text-black">
-            <div className="grid grid-cols-2 border-b border-black">
-              <div className="p-2 border-r border-black">
-                <span className="text-gray-500 font-medium">Requirement Number:</span>
-                <span className="font-bold text-black ml-2">REQ-{invoice.requirementId || 'N/A'}</span>
-              </div>
-              <div className="p-2">
-                <span className="text-gray-505 font-medium">Invoice Ref:</span>
-                <span className="font-bold text-black ml-2">{invoiceRef}</span>
-              </div>
+          {/* WATERMARK */}
+          {balanceDue <= 0 && (
+            <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden z-0 print:opacity-[0.03]">
+              <span className="text-[150px] sm:text-[200px] font-black text-emerald-500 opacity-5 -rotate-45 select-none">
+                PAID
+              </span>
             </div>
-            <div className="grid grid-cols-2 border-b border-black">
-              <div className="p-2 border-r border-black">
-                <span className="text-gray-505 font-medium">Vendor Name:</span>
-                <span className="font-bold text-black ml-2">{invoice.vendorName}</span>
+          )}
+
+          <div className="relative z-10">
+            {/* Header Section */}
+            <div className="flex justify-between items-start mb-8 pb-6 border-b-2 border-gray-900">
+              <div>
+                {logoToUse && <img src={logoToUse} alt="Logo" className="h-14 mb-4 object-contain" />}
+                <h1 className="text-4xl font-black uppercase text-gray-900 tracking-widest mb-1">INVOICE</h1>
+                <div className="mt-4 grid grid-cols-[120px_1fr] gap-y-2 text-sm text-gray-700">
+                  <span className="font-bold text-gray-500 uppercase">Invoice No</span>
+                  <span className="font-bold text-gray-900">: {invoiceRef}</span>
+                  <span className="font-bold text-gray-500 uppercase">Invoice Date</span>
+                  <span className="font-bold text-gray-900">: {new Date().toLocaleDateString()}</span>
+                  <span className="font-bold text-gray-500 uppercase">Due Date</span>
+                  <span className="font-bold text-gray-900">: {invoice.dueDate || 'N/A'}</span>
+                  <span className="font-bold text-gray-500 uppercase mt-2">Status</span>
+                  <div className="mt-2 flex items-center gap-2">
+                    <span>:</span>
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-black uppercase ${balanceDue <= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                      }`}>
+                      {balanceDue <= 0 ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                      {balanceDue <= 0 ? 'PAID' : 'PENDING'}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="p-2">
-                <span className="text-gray-505 font-medium">Due Date:</span>
-                <span className="font-bold text-black ml-2">{invoice.dueDate}</span>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 border-b border-black">
-              <div className="p-2 border-r border-black">
-                <span className="text-gray-505 font-medium">Receipt No:</span>
-                <span className="font-bold text-black ml-2">{invoice.id}</span>
-              </div>
-              <div className="p-2">
-                <span className="text-gray-505 font-medium">Date Paid:</span>
-                <span className="font-bold text-black ml-2">{new Date().toLocaleDateString()}</span>
+              <div className="text-right flex flex-col items-end">
+                <div className="bg-gray-50 border border-gray-200 p-2 rounded-lg mb-2">
+                  <QrCode className="w-20 h-20 text-gray-800" strokeWidth={1.5} />
+                </div>
+                <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Scan to Verify</span>
               </div>
             </div>
 
-            {/* Table Header */}
-            <div className="grid grid-cols-12 border-b border-black bg-gray-200 font-bold text-black text-center">
-              <div className="col-span-1 p-2 border-r border-black">S.NO</div>
-              <div className="col-span-8 p-2 border-r border-black text-left">ACCOUNT HEAD</div>
-              <div className="col-span-3 p-2">AMOUNT</div>
-            </div>
-
-            {/* ── Installment rows ── */}
-            {steps.length > 0 ? (
-              steps.map((step, idx) => (
-                <div key={idx} className="grid grid-cols-12 border-b border-black text-black" style={{ contentVisibility: 'auto' }}>
-                  <div className="col-span-1 p-2 border-r border-black text-center font-bold">{idx + 1}</div>
-                  <div className="col-span-8 p-2 border-r border-black">
-                    <div className="font-bold text-black">{step.note} — {invoiceRef}</div>
-                    <div className="text-xs text-gray-505 mt-0.5">Date: {step.date}</div>
-                    <div className="text-xs text-gray-505 leading-tight mt-1">
-                      <p>Billing Invoicer: {company?.companyName}</p>
-                      {company?.gstNumber && <p>GSTIN: {company.gstNumber}</p>}
+            {/* Billed From / Billed To */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 mb-10">
+              {/* Billed From */}
+              <div>
+                <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2 border-b border-gray-200 pb-2">Billed From</h3>
+                <h4 className="text-lg font-black text-gray-900 mb-2">{nameToUse}</h4>
+                <div className="text-sm text-gray-600 space-y-1">
+                  {config?.companyDetails ? (
+                    <div className="whitespace-pre-line leading-relaxed">{config.companyDetails}</div>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-[60px_1fr] gap-1">
+                        <span className="font-semibold text-gray-500">Email</span>
+                        <span className="text-gray-900">: {company?.email || 'N/A'}</span>
+                        <span className="font-semibold text-gray-500">Address</span>
+                        <span className="text-gray-900">: {company?.addressLine1}, {company?.city} {company?.state} {company?.pincode}</span>
+                      </div>
+                    </>
+                  )}
+                  {config?.gstTaxDetails ? (
+                    <div className="font-semibold text-gray-900 mt-2 whitespace-pre-line">
+                      {config.gstTaxDetails}
                     </div>
+                  ) : company?.gstNumber && (
+                    <div className="grid grid-cols-[60px_1fr] gap-1 mt-2">
+                      <span className="font-semibold text-gray-500">GSTIN</span>
+                      <span className="text-gray-900">: {company.gstNumber}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Billed To */}
+              <div>
+                <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2 border-b border-gray-200 pb-2">Billed To</h3>
+                <h4 className="text-lg font-black text-gray-900 mb-2">{invoice.vendorName}</h4>
+                <div className="text-sm text-gray-600 grid grid-cols-[80px_1fr] gap-y-1 mt-2">
+                  {invoice.customerAddress && (
+                    <>
+                      <span className="font-semibold text-gray-500">Address</span>
+                      <span className="text-gray-900 whitespace-pre-line">: {invoice.customerAddress}</span>
+                    </>
+                  )}
+                  {invoice.gstin && (
+                    <>
+                      <span className="font-semibold text-gray-500">GSTIN</span>
+                      <span className="text-gray-900 font-bold">: {invoice.gstin}</span>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Line Items Table */}
+            <div className="mb-10">
+              <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2 border-b border-gray-200 pb-2">Items</h3>
+              <table className="w-full text-left text-sm border-collapse">
+                <thead className="bg-gray-900 text-white font-bold text-xs uppercase">
+                  <tr>
+                    <th className="px-4 py-3 rounded-tl-lg">Description</th>
+                    <th className="px-4 py-3 text-center">Qty</th>
+                    <th className="px-4 py-3 text-right">Rate</th>
+                    <th className="px-4 py-3 text-right rounded-tr-lg">Amount</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 border-b-2 border-gray-900">
+                  {invoice.items && invoice.items.length > 0 ? (
+                    invoice.items.map((item, idx) => (
+                      <tr key={idx} className="bg-white hover:bg-gray-50">
+                        <td className="px-4 py-4 font-bold text-gray-900 text-base">{item.itemName}</td>
+                        <td className="px-4 py-4 text-center text-gray-600 font-bold">{item.quantity}</td>
+                        <td className="px-4 py-4 text-right text-gray-600 font-medium">{fmtINR(item.unitPrice)}</td>
+                        <td className="px-4 py-4 text-right font-black text-gray-900 text-base">{fmtINR(item.total)}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr className="bg-white">
+                      <td className="px-4 py-4 font-bold text-gray-900 text-base">{invoice.notes || 'Procurement Services'}</td>
+                      <td className="px-4 py-4 text-center text-gray-600 font-bold">1</td>
+                      <td className="px-4 py-4 text-right text-gray-600 font-medium">{fmtINR(totalAmt)}</td>
+                      <td className="px-4 py-4 text-right font-black text-gray-900 text-base">{fmtINR(totalAmt)}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Summary & Payment Info */}
+            <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-10">
+              <div className="w-full md:w-1/2">
+                <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2 border-b border-gray-200 pb-2">Payment Details</h3>
+                <div className="text-sm grid grid-cols-[120px_1fr] gap-y-2 mt-3">
+                  <span className="font-semibold text-gray-500">Payment Method</span>
+                  <span className="font-bold text-gray-900">: Bank Transfer / UPI</span>
+                  <span className="font-semibold text-gray-500">Transaction ID</span>
+                  <span className="font-bold text-gray-900 font-mono">: {`TXN${Math.floor(Date.now() / 1000)}${invoice.id}`}</span>
+                </div>
+              </div>
+
+              <div className="w-full md:w-80">
+                <div className="space-y-3 text-sm bg-gray-50 p-6 rounded-xl border border-gray-200">
+                  <div className="flex justify-between text-gray-600">
+                    <span className="font-bold uppercase tracking-wider text-xs">Subtotal</span>
+                    <span className="font-black text-gray-900">{fmtINR(invoice.subTotal || totalAmt)}</span>
                   </div>
-                  <div className="col-span-3 p-2 text-right font-bold text-black">
-                    {fmtINR(step.amount)}
+                  {invoice.discount ? (
+                    <div className="flex justify-between text-gray-600">
+                      <span className="font-bold uppercase tracking-wider text-xs">Discount</span>
+                      <span className="font-black text-red-600">-{fmtINR(invoice.discount)}</span>
+                    </div>
+                  ) : null}
+                  {invoice.cgst ? (
+                    <div className="flex justify-between text-gray-600">
+                      <span className="font-bold uppercase tracking-wider text-xs">CGST</span>
+                      <span className="font-black text-gray-900">{fmtINR(invoice.cgst)}</span>
+                    </div>
+                  ) : null}
+                  {invoice.sgst ? (
+                    <div className="flex justify-between text-gray-600">
+                      <span className="font-bold uppercase tracking-wider text-xs">SGST</span>
+                      <span className="font-black text-gray-900">{fmtINR(invoice.sgst)}</span>
+                    </div>
+                  ) : null}
+                  {invoice.igst ? (
+                    <div className="flex justify-between text-gray-600">
+                      <span className="font-bold uppercase tracking-wider text-xs">IGST</span>
+                      <span className="font-black text-gray-900">{fmtINR(invoice.igst)}</span>
+                    </div>
+                  ) : null}
+                  <div className="flex justify-between items-center text-gray-900 pt-3 border-t-2 border-gray-900 mt-3">
+                    <span className="font-black uppercase tracking-wider">Total Amount</span>
+                    <span className="font-black text-xl text-indigo-700">{fmtINR(totalAmt)}</span>
+                  </div>
+
+                  <div className="flex justify-between text-gray-600 pt-3 border-t border-gray-200 mt-3">
+                    <span className="font-bold uppercase tracking-wider text-xs">Amount Paid</span>
+                    <span className="font-black text-emerald-600">{fmtINR(totalPaid)}</span>
+                  </div>
+                  <div className="flex justify-between text-xl font-black text-gray-900 pt-3 border-t border-gray-200 mt-2 bg-gray-200 -mx-6 -mb-6 p-6 rounded-b-xl">
+                    <span className="uppercase tracking-wider text-sm mt-1">Balance Due</span>
+                    <span className={balanceDue > 0 ? 'text-red-600' : 'text-emerald-600'}>
+                      {fmtINR(balanceDue)}
+                    </span>
                   </div>
                 </div>
-              ))
-            ) : (
-              /* Fallback: no installment history — single row */
-              <div className="grid grid-cols-12 border-b border-black min-h-[100px] text-black">
-                <div className="col-span-1 p-2 border-r border-black text-center font-bold">1</div>
-                <div className="col-span-8 p-2 border-r border-black">
-                  <div className="font-bold text-black mb-2">{invoice.notes || 'Procurement Services'}</div>
-                  <div className="text-xs text-gray-700 leading-tight font-medium">
-                    <p>Billing Invoicer: {company?.companyName}</p>
-                    <p>Address: {company?.addressLine1} {company?.city} {company?.state} {company?.pincode}</p>
-                    {company?.gstNumber && <p>GSTIN: {company.gstNumber}</p>}
-                  </div>
-                </div>
-                <div className="col-span-3 p-2 text-right font-bold text-black">
-                  {fmtINR(totalPaid || totalAmt)}
-                </div>
+              </div>
+            </div>
+
+            {/* Installments Table */}
+            {steps.length > 0 && (
+              <div className="mb-10">
+                <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2 border-b border-gray-200 pb-2">Installment Schedule</h3>
+                <table className="w-full text-left text-sm border-collapse border border-gray-200 rounded-lg overflow-hidden">
+                  <thead className="bg-gray-100 text-gray-600 font-bold text-xs uppercase">
+                    <tr>
+                      <th className="px-4 py-3">Note</th>
+                      <th className="px-4 py-3 text-center">Date</th>
+                      <th className="px-4 py-3 text-right">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 bg-white">
+                    {steps.map((step, idx) => (
+                      <tr key={idx}>
+                        <td className="px-4 py-3 text-gray-800 font-medium">{step.note}</td>
+                        <td className="px-4 py-3 text-center text-gray-600">{step.date}</td>
+                        <td className="px-4 py-3 text-right font-bold text-gray-900">{fmtINR(step.amount)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
 
-            {/* Total row */}
-            <div className="grid grid-cols-12 text-black">
-              <div className="col-span-9 p-2 border-r border-black text-right font-black">Total :</div>
-              <div className="col-span-3 p-2 text-right font-black">
-                {fmtINR(totalPaid || totalAmt)}
-              </div>
-            </div>
-          </div>
-
-          {/* Terms */}
-          <div className="border border-black border-t-0 mt-0 p-2 text-xs flex justify-between text-gray-500 font-medium">
-            <span>*Terms &amp; Conditions Apply</span>
-            <span>*Payment subject to realization</span>
-          </div>
-          <div className="border border-black border-t-0 p-2 text-xs text-center font-bold text-black">
-            This is a Computer Generated Receipt. No signature is Required. Generated On {new Date().toLocaleString()}
-          </div>
-
-          {/* Account Summary Ledger */}
-          <div className="mt-6 border border-black text-sm text-black">
-            <div className="bg-gray-200 border-b border-black p-1 font-black uppercase text-xs text-center text-black">
-              Account Summary (Ledger)
-            </div>
-            <div className="grid grid-cols-3">
-              <div className="p-2 border-r border-black flex justify-between font-medium">
-                <span className="text-gray-500">Total Amount:</span>
-                <span className="font-bold text-black">{fmtINR(totalAmt)}</span>
-              </div>
-              <div className="p-2 border-r border-black flex justify-between font-medium">
-                <span className="text-gray-505">Paid So Far:</span>
-                <span className="font-bold text-green-700">{fmtINR(totalPaid)}</span>
-              </div>
-              <div className="p-2 flex justify-between font-medium">
-                <span className="text-gray-505">Balance Due:</span>
-                <span className={`font-bold ${balanceDue > 0 ? 'text-red-650' : 'text-green-700'}`}>
-                  {fmtINR(balanceDue)}
-                </span>
-              </div>
-            </div>
-
-            {/* Installment summary if multiple */}
-            {steps.length > 1 && (
-              <div className="border-t border-black">
-                <div className="bg-gray-100 border-b border-gray-300 p-1.5 text-xs font-bold text-gray-505 uppercase">
-                  Payment Installment Summary ({steps.length} payments)
-                </div>
-                <div className="grid grid-cols-3 text-xs">
-                  {steps.map((step, idx) => (
-                    <div key={idx} className={`p-2 flex justify-between ${idx < steps.length - 1 ? 'border-r border-gray-300' : ''}`}>
-                      <span className="text-gray-505">#{idx + 1} {step.note}:</span>
-                      <span className="font-bold">{fmtINR(step.amount)}</span>
-                    </div>
-                  ))}
+            {/* Notes & Footer */}
+            <div className="border-t-2 border-gray-900 pt-6 flex justify-between items-end">
+              <div className="w-full md:w-2/3">
+                <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Terms & Conditions</h3>
+                <div className="text-xs text-gray-600 font-medium space-y-1">
+                  {config?.termsConditions ? (
+                    <div className="whitespace-pre-line leading-relaxed">{config.termsConditions}</div>
+                  ) : (
+                    <>
+                      <p>Thank you for your business.</p>
+                      <p>Payment is due within the stipulated time frame.</p>
+                    </>
+                  )}
+                  <p className="mt-4 pt-2 border-t border-gray-200 text-[10px] text-gray-400 font-bold">
+                    This is a Computer Generated Document. No signature is Required.<br /> Generated On {new Date().toLocaleString()}
+                  </p>
                 </div>
               </div>
-            )}
+              <div className="text-right">
+                {company?.signatureUrl && <img src={company.signatureUrl} alt="Signature" className="h-16 ml-auto mb-2 object-contain mix-blend-multiply" />}
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="bg-accent p-4 flex justify-center gap-4 print:hidden border-t border-gray-200">
-          <button onClick={handlePrint} className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-full font-semibold transition-colors cursor-pointer text-xs sm:text-sm">
-            <Printer size={18} /> PRINT
+        <div className="bg-gray-50 p-6 flex justify-end gap-4 print:hidden border-t border-gray-200 shadow-sm z-20">
+          <button onClick={() => window.close()} className="px-6 py-2.5 rounded-lg font-bold text-sm text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2">
+            <X size={16} /> Close
           </button>
-          <button onClick={handleShare} className="flex items-center gap-2 bg-muted hover:bg-slate-400 text-foreground px-6 py-2 rounded-full font-semibold transition-colors cursor-pointer text-xs sm:text-sm">
-            <Share2 size={18} /> SHARE
+          <button onClick={handleShare} className="px-6 py-2.5 rounded-lg font-bold text-sm bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition-colors shadow-sm flex items-center gap-2">
+            <Share2 size={16} /> Share
           </button>
-          <button onClick={() => window.close()} className="flex items-center gap-2 bg-muted hover:bg-slate-400 text-foreground px-6 py-2 rounded-full font-semibold transition-colors cursor-pointer text-xs sm:text-sm">
-            <X size={18} /> CLOSE
+          <button onClick={handlePrint} className="px-6 py-2.5 rounded-lg font-bold text-sm bg-indigo-600 hover:bg-indigo-700 text-white transition-colors shadow-sm flex items-center gap-2">
+            <Printer size={16} /> Print / PDF
           </button>
         </div>
       </div>

@@ -161,6 +161,23 @@ export default function UserManager() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!firstName.trim() || !lastName.trim() || !email.trim()) {
+      showToast('error', 'First name, last name, and email are required');
+      return;
+    }
+    if (!/^[a-zA-Z0-9.\-_]+@gmail\.com$/.test(email)) {
+      showToast('error', 'Email must be a valid Gmail address');
+      return;
+    }
+    if (!editingId && !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/.test(password)) {
+      showToast('error', 'Password must include one uppercase, one lowercase, one digit, and one special char');
+      return;
+    }
+    if (!/^\d{10}$/.test(phoneNumber)) {
+      showToast('error', 'Phone number must be exactly 10 digits');
+      return;
+    }
+
     const payload = {
       firstName,
       lastName,
@@ -217,11 +234,15 @@ export default function UserManager() {
 
       fetchUsers();
     } catch (err: unknown) {
-      const axiosError = err as { response?: { data?: { message?: string } | string }; message?: string };
+      const axiosError = err as { response?: { data?: any }; message?: string };
       let errorMsg = 'Save failed.';
       if (axiosError.response) {
-        if (typeof axiosError.response.data === 'object' && axiosError.response.data?.message) {
-          errorMsg = axiosError.response.data.message;
+        if (typeof axiosError.response.data === 'object') {
+          if (axiosError.response.data.errors) {
+            errorMsg = Object.values(axiosError.response.data.errors).join(' | ');
+          } else if (axiosError.response.data.message) {
+            errorMsg = axiosError.response.data.message;
+          }
         } else if (typeof axiosError.response.data === 'string') {
           errorMsg = axiosError.response.data;
         }
@@ -324,11 +345,10 @@ export default function UserManager() {
       {/* Toast Alert */}
       {toast && (
         <div
-          className={`fixed top-4 right-4 z-[9999] px-4 py-3 rounded-xl shadow-lg border text-sm transition-all duration-300 ${
-            toast.type === 'success'
+          className={`fixed top-4 right-4 z-[9999] px-4 py-3 rounded-xl shadow-lg border text-sm transition-all duration-300 ${toast.type === 'success'
               ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-450'
               : 'bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-450'
-          }`}
+            }`}
           role="alert"
         >
           {toast.msg}
@@ -380,9 +400,8 @@ export default function UserManager() {
                   filteredUsers.map((user) => (
                     <tr
                       key={user.id}
-                      className={`border-b border-border text-foreground hover:bg-muted/30 transition-colors ${
-                        !user.active ? 'opacity-50' : ''
-                      }`}
+                      className={`border-b border-border text-foreground hover:bg-muted/30 transition-colors ${!user.active ? 'opacity-50' : ''
+                        }`}
                     >
                       <td className="py-3.5 px-4 font-mono text-[11px] text-muted-foreground">
                         {user.leadId || user.employeeId || `USR-${user.id}`}
@@ -412,11 +431,10 @@ export default function UserManager() {
                       <td className="py-3.5 px-4">
                         {user.profileData?.work_mode ? (
                           <span
-                            className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold border ${
-                              user.profileData.work_mode === 'work_from_home'
+                            className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold border ${user.profileData.work_mode === 'work_from_home'
                                 ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20'
                                 : 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20'
-                            }`}
+                              }`}
                           >
                             {user.profileData.work_mode === 'work_from_home' ? 'WFH' : 'Office'}
                           </span>
@@ -615,7 +633,7 @@ export default function UserManager() {
                       value={supervisorUserId}
                       onChange={(e) => setSupervisorUserId(e.target.value)}
                     >
-                      <option value="">No supervisor (reporting endpoint)</option>
+                      <option value="">No supervisor</option>
                       {supervisors.map((s) => (
                         <option key={s.id} value={s.id}>
                           {s.name}
@@ -820,5 +838,4 @@ export default function UserManager() {
     </div>
   );
 }
-
 

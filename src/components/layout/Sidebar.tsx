@@ -29,7 +29,12 @@ export function Sidebar() {
 
   const canShowItem = (item: MenuItem) => {
     if (item.id === 'dashboard') return true
-    if (userPermissions.includes('*')) return true
+    if (userPermissions.includes('*') || auth.isPlatformAdmin) return true
+
+    if (item.requiredModules && item.requiredModules.length > 0) {
+      const hasRequiredModule = item.requiredModules.some(mod => permission.isModuleEnabled(mod));
+      if (!hasRequiredModule) return false;
+    }
 
     const permissionPassed = item.permission
       ? permission.can(item.permission)
@@ -45,6 +50,10 @@ export function Sidebar() {
 
   const filteredMenu = menuConfig
     .map((section) => {
+      // Completely hide the 'platform' section for regular tenants
+      if (section.id === 'platform' && auth.user?.tenantCode !== 'SYS') {
+        return null;
+      }
       const items = section.items.filter(canShowItem)
       if (items.length === 0) return null
       return { ...section, items }
@@ -54,7 +63,7 @@ export function Sidebar() {
   // Debug visibility
   const settingsItem = menuConfig.flatMap(s => s.items).find(i => i.id === 'settings');
   const integrationsItem = menuConfig.flatMap(s => s.items).find(i => i.id === 'integrations');
-  
+
   if (settingsItem && canShowItem(settingsItem)) {
     const matchedPerms = settingsItem.permissions?.filter(p => permission.can(p)) || [];
     console.log("Settings is visible due to permissions:", matchedPerms);

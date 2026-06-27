@@ -8,6 +8,7 @@ import GoogleSuccessPage from "@/pages/google/GoogleSuccessPage";
 import GoogleErrorPage from "@/pages/google/GoogleErrorPage";
 import ZoomSuccessPage from "@/pages/zoom/ZoomSuccessPage";
 import { MessagesPage } from "@/pages/messages/MessagesPage";
+import NotificationsPage from "@/pages/NotificationsPage";
 import { TicketsPage } from "@/pages/tickets/TicketsPage";
 import { MarketingPage } from "@/pages/marketing/MarketingPage";
 import { AttendancePage } from "@/pages/hrms/AttendancePage";
@@ -21,7 +22,6 @@ import {
   HrmsLayout,
   CrmLayout,
   VendorLayout,
-  ReportsLayout,
 } from "@/components/layout/ModuleTabsLayout";
 
 // Vendor / Procurement pages
@@ -80,6 +80,7 @@ import CreatePermission from "@/pages/CreatePermission";
 import ProtectedRoute from "@/auth/ProtectedRoute";
 
 // Settings module pages
+import UserProfilePage from "@/pages/settings/UserProfilePage";
 import CompanyProfilePage from "@/pages/settings/CompanyProfilePage";
 import IdGenerationSettings from "@/pages/settings/IdGenerationSettings";
 import TemplatesPage from "@/pages/settings/TemplatesPage";
@@ -100,6 +101,8 @@ import {
   DesignationList, DesignationForm,
   WorkModeList, WorkModeForm
 } from "@/pages/settings/LookupPages";
+import InvoiceConfigurationList from "@/pages/settings/InvoiceConfigurationList";
+import InvoiceConfigurationForm from "@/pages/settings/InvoiceConfigurationForm";
 
 
 function VendorProtectedRoute({ element }: { element: React.ReactElement }) {
@@ -140,6 +143,9 @@ export function AppRoutes() {
       <Route path="/landing/:slug" element={<LandingPage />} />
       <Route path="/vendor-portal" element={<VendorProtectedRoute element={<VendorPortal />} />} />
 
+      {/* Standalone Receipt Print View */}
+      <Route path="/vendor/invoices/:id/receipt" element={<ProtectedRoute element={<Receipt />} module="VENDOR" permission="VENDOR_VIEW" />} />
+
       {/* Main App Layout Routes */}
       <Route element={<AppLayout />}>
         <Route index element={<ProtectedRoute element={<DashboardPage />} permissions={["DASHBOARD_VIEW", "ATTENDANCE_VIEW_ATTENDANCE", "LEAVE_VIEW_LEAVE", "TASKS_VIEW_TASKS", "LEADS_VIEW_LEADS", "SUPPORT_TICKETS_VIEW_SUPPORT_TICKETS", "REPORTS_VIEW_REPORTS", "REVENUE_VIEW_REVENUE", "VENDOR_VIEW"]} />} />
@@ -168,6 +174,7 @@ export function AppRoutes() {
         {/* Settings Module Routes (Wrapped in SettingsLayout) */}
         <Route element={<SettingsLayout />}>
           <Route path="settings" element={<ProtectedRoute element={<SettingsPage />} permissions={["COMPANY_PROFILE_VIEW", "COMPANY_PROFILE_VIEW", "COMPANY_PROFILE_VIEW"]} />} />
+          <Route path="settings/profile" element={<ProtectedRoute element={<UserProfilePage />} />} />
           <Route path="settings/crm" element={<ProtectedRoute element={<CrmSettingsPage />} permissions={["LEADS_MANAGE_LEAD_FORMS", "COMPANY_PROFILE_VIEW"]} />} />
           <Route path="settings/company" element={<ProtectedRoute element={<CompanyProfilePage />} permissions={["COMPANY_PROFILE_VIEW", "COMPANY_PROFILE_VIEW", "COMPANY_PROFILE_VIEW"]} />} />
           <Route path="settings/billing" element={<ProtectedRoute element={<BillingPage />} permission="COMPANY_PROFILE_VIEW" />} />
@@ -194,6 +201,9 @@ export function AppRoutes() {
           <Route path="settings/onboarding-rules" element={<ProtectedRoute element={<OnboardingRulesPage />} permission="COMPANY_PROFILE_VIEW" />} />
           <Route path="settings/dynamic-role-fields" element={<ProtectedRoute element={<DynamicRoleFieldsPage />} permission="COMPANY_PROFILE_VIEW" />} />
           <Route path="settings/system" element={<ProtectedRoute element={<SystemSettingsPage />} permission="COMPANY_PROFILE_VIEW" />} />
+          <Route path="settings/invoice-configurations" element={<ProtectedRoute element={<InvoiceConfigurationList />} permission="COMPANY_PROFILE_VIEW" />} />
+          <Route path="settings/invoice-configurations/create" element={<ProtectedRoute element={<InvoiceConfigurationForm />} permission="COMPANY_PROFILE_VIEW" />} />
+          <Route path="settings/invoice-configurations/edit/:id" element={<ProtectedRoute element={<InvoiceConfigurationForm />} permission="COMPANY_PROFILE_VIEW" />} />
           <Route path="leads/form-builder" element={<ProtectedRoute element={<FormBuilder />} module="crm" permissions={["LEADS_MANAGE_LEAD_FORMS", "LEADS_MANAGE_LEAD_FORMS", "LEADS_MANAGE_LEAD_FORMS"]} />} />
           <Route path="leads/options" element={<ProtectedRoute element={<LeadOptions />} module="crm" permissions={["LEADS_MANAGE_LEAD_FORMS", "LEADS_MANAGE_LEAD_FORMS", "LEADS_MANAGE_LEAD_FORMS"]} />} />
           <Route path="crm/stages" element={<ProtectedRoute element={<LeadStageList />} module="crm" permissions={["LEADS_VIEW_LEADS", "LEADS_MANAGE_LEAD_FORMS"]} />} />
@@ -228,7 +238,6 @@ export function AppRoutes() {
           <Route path="vendor/assets" element={<ProtectedRoute element={<Procurement />} module="VENDOR" permission="VENDOR_VIEW" />} />
           <Route path="vendor/contracts" element={<ProtectedRoute element={<Contracts />} module="VENDOR" permission="VENDOR_VIEW" />} />
           <Route path="vendor/invoices" element={<ProtectedRoute element={<Invoices />} module="VENDOR" permission="VENDOR_VIEW" />} />
-          <Route path="vendor/invoices/:id/receipt" element={<ProtectedRoute element={<Receipt />} module="VENDOR" permission="VENDOR_VIEW" />} />
           <Route path="vendor/requirements" element={<ProtectedRoute element={<Requirements />} module="VENDOR" permission="VENDOR_VIEW" />} />
           <Route path="vendor/performance" element={<ProtectedRoute element={<Performance />} module="VENDOR" permission="VENDOR_VIEW" />} />
           <Route path="vendor/risk-compliance" element={<ProtectedRoute element={<RiskCompliance />} module="VENDOR" permissions={["VENDOR_VIEW", "VENDOR_MANAGE"]} />} />
@@ -241,16 +250,14 @@ export function AppRoutes() {
         <Route path="google/success" element={<ProtectedRoute element={<GoogleSuccessPage />} permissions={["SETTINGS_MANAGE_SETTINGS", "COMPANY_PROFILE_VIEW"]} />} />
         <Route path="google/error" element={<ProtectedRoute element={<GoogleErrorPage />} permissions={["SETTINGS_MANAGE_SETTINGS", "COMPANY_PROFILE_VIEW"]} />} />
         <Route path="zoom/success" element={<ProtectedRoute element={<ZoomSuccessPage />} permissions={["SETTINGS_MANAGE_SETTINGS", "COMPANY_PROFILE_VIEW"]} />} />
+        <Route path="notifications" element={<ProtectedRoute element={<NotificationsPage />} />} />
         <Route path="messages" element={<ProtectedRoute element={<MessagesPage />} permission="MESSAGE_VIEW" />} />
         <Route path="tickets" element={<ProtectedRoute element={<TicketsPage />} permissions={["SUPPORT_TICKETS_RAISE_SUPPORT_TICKET", "SUPPORT_TICKETS_VIEW_SUPPORT_TICKETS", "SUPPORT_TICKETS_MANAGE_SUPPORT_TICKETS", "manage_support_ticket_types", "SUPPORT_TICKETS_VIEW_SUPPORT_TICKETS"]} />} />
         <Route path="affiliate" element={<ProtectedRoute element={<AffiliateShell />} module="AFFILIATE" permissions={["AFFILIATE_VIEW_AFFILIATE", "AFFILIATE_MANAGE_AFFILIATE"]} />} />
         <Route path="marketing" element={<ProtectedRoute element={<MarketingPage variant="marketing" />} module="MARKETING" permissions={["MARKETING_VIEW", "MARKETING_CREATE", "MARKETING_UPDATE", "MARKETING_DELETE", "MARKETING_CAMPAIGN_VIEW", "MARKETING_ANALYTICS_VIEW", "MARKETING_AJAY_SUMMARY", "MARKETING_ANALYTICS_SUMMARY"]} />} />
         <Route path="referrals" element={<ProtectedRoute element={<MarketingPage variant="referrals" />} module="MARKETING" permissions={["MARKETING_VIEW", "MARKETING_CREATE", "MARKETING_UPDATE", "MARKETING_DELETE", "MARKETING_CAMPAIGN_VIEW", "MARKETING_ANALYTICS_VIEW", "MARKETING_AJAY_SUMMARY", "MARKETING_ANALYTICS_SUMMARY"]} />} />
-        {/* Reports Module Routes (Wrapped in ReportsLayout) */}
-        <Route element={<ReportsLayout />}>
-          <Route path="reports" element={<ProtectedRoute element={<ReportsPage />} permission="REPORTS_VIEW_REPORTS" />} />
-          <Route path="self-reports" element={<ProtectedRoute element={<SelfReportsPage forcedScope="self" />} permission="REPORTS_SELF_REPORTS" />} />
-        </Route>
+        <Route path="reports" element={<ProtectedRoute element={<ReportsPage />} permission="REPORTS_VIEW_REPORTS" />} />
+        <Route path="self-reports" element={<ProtectedRoute element={<SelfReportsPage forcedScope="self" />} permission="REPORTS_SELF_REPORTS" />} />
         <Route path="tasks" element={<ProtectedRoute element={<TaskShell />} permission="TASKS_VIEW_TASKS" />} />
         <Route path="revenue" element={<ProtectedRoute element={<RevenuePage />} permission="REVENUE_VIEW_REVENUE" />} />
 
@@ -292,6 +299,5 @@ export function AppRoutes() {
     </Routes>
   );
 }
-
 
 

@@ -48,8 +48,9 @@ export function useDashboard() {
 
         // 1. Followups
         const followups = followupsRes.status === 'fulfilled' ? (followupsRes.value.data || []) : [];
-        const todayFollowups = followups.filter((f: any) => !f.completed && isToday(f.scheduled_at || f.scheduledAt)).length;
-        const pendingFollowups = followups.filter((f: any) => !f.completed).length;
+        const isFollowupCompleted = (val: any) => val === true || val === 1 || val === '1' || val === 'true';
+        const todayFollowups = followups.filter((f: any) => !isFollowupCompleted(f.completed) && isToday(f.scheduled_at || f.scheduledAt || f.created_at)).length;
+        const pendingFollowups = followups.filter((f: any) => !isFollowupCompleted(f.completed)).length;
 
         // 2. Revenue
         const revenueData = revenueRes.status === 'fulfilled' ? revenueRes.value.data : null;

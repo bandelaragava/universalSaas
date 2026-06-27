@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { Landmark, Fingerprint, FileText, Award, Workflow, Grid, ArrowRight, Blocks, Users, Shield } from 'lucide-react';
+import { Landmark, Fingerprint, FileText, Award, Workflow, Grid, ArrowRight, Blocks, Users } from 'lucide-react';
 
 const settingsCards = [
   {
@@ -77,11 +77,11 @@ const settingsCards = [
     color: 'text-primary border-primary/20 bg-primary/5'
   },
   {
-    id: 'user-management',
-    label: 'User Management',
-    description: 'Manage users, roles, and access control permissions.',
-    path: '/users',
-    icon: Shield,
+    id: 'invoice-configurations',
+    label: 'Invoice Configurations',
+    description: 'Create and manage custom invoice templates and billing formats.',
+    path: '/settings/invoice-configurations',
+    icon: FileText,
     color: 'text-primary border-primary/20 bg-primary/5'
   },
 ];

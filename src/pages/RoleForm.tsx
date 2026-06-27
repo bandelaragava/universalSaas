@@ -27,6 +27,7 @@ export default function RoleForm() {
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   // Extra fields state
   const [fields, setFields] = useState<RoleField[]>([]);
@@ -49,7 +50,7 @@ export default function RoleForm() {
   useEffect(() => {
     if (!isEdit) return;
     const ctrl = new AbortController();
-    
+
     const loadRoleData = async () => {
       try {
         const rolesRes = await rolesApi.get<Role[]>('/roles', { signal: ctrl.signal });
@@ -58,7 +59,7 @@ export default function RoleForm() {
           setName(role.name);
           setDescription(role.description || '');
         }
-        
+
         const fieldsRes = await rolesApi.get<RoleField[]>(`/roles/${id}/extra-fields`, {
           signal: ctrl.signal,
         });
@@ -76,8 +77,20 @@ export default function RoleForm() {
     return () => ctrl.abort();
   }, [id, isEdit]);
 
+  const validate = () => {
+    const errors: { [key: string]: string } = {};
+    if (!name.trim()) errors.name = "Role name is required";
+    else if (name.length < 2) errors.name = "Role name must be at least 2 characters";
+
+    if (!description.trim()) errors.description = "Description is required";
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validate()) return;
     setError(null);
     setSuccess(null);
     setLoading(true);
@@ -109,8 +122,25 @@ export default function RoleForm() {
       setSuccess(isEdit ? 'Role updated successfully.' : 'Role created successfully.');
       setTimeout(() => navigate('/roles'), 900);
     } catch (err: unknown) {
-      const axiosError = err as { response?: { data?: { message?: string } }; message?: string };
-      setError(axiosError.response?.data?.message || axiosError.message || 'Failed to save role');
+      const axiosError = err as { response?: { data?: any }; message?: string };
+      let errorMsg = 'Failed to save role';
+
+      if (axiosError.response?.data) {
+        if (typeof axiosError.response.data === 'object') {
+          if (axiosError.response.data.errors) {
+            setFormErrors(axiosError.response.data.errors);
+            errorMsg = "Please correct the highlighted errors.";
+          } else if (axiosError.response.data.message) {
+            errorMsg = axiosError.response.data.message;
+          }
+        } else if (typeof axiosError.response.data === 'string') {
+          errorMsg = axiosError.response.data;
+        }
+      } else if (axiosError.message) {
+        errorMsg = axiosError.message;
+      }
+
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -212,10 +242,11 @@ export default function RoleForm() {
                 type="text"
                 required
                 placeholder="e.g. MANAGER"
-                className="w-full bg-background border border-slate-850 text-slate-200 text-sm rounded-lg px-3.5 py-2 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                className={`w-full bg-background border ${formErrors.name ? 'border-rose-500' : 'border-slate-850'} text-slate-200 text-sm rounded-lg px-3.5 py-2 focus:outline-none focus:ring-1 focus:ring-cyan-500`}
                 value={name}
-                onChange={(e) => setName(e.target.value.toUpperCase())}
+                onChange={(e) => { setName(e.target.value.toUpperCase()); setFormErrors(prev => ({ ...prev, name: '' })) }}
               />
+              {formErrors.name && <span className="text-[10px] text-rose-500 block mt-1">{formErrors.name}</span>}
             </div>
           </div>
           <div>
@@ -225,10 +256,11 @@ export default function RoleForm() {
             <textarea
               required
               placeholder="Describe what this role does"
-              className="w-full bg-background border border-slate-855 text-slate-200 text-sm rounded-lg px-3.5 py-2 min-h-[80px] focus:outline-none focus:ring-1 focus:ring-cyan-500"
+              className={`w-full bg-background border ${formErrors.description ? 'border-rose-500' : 'border-slate-855'} text-slate-200 text-sm rounded-lg px-3.5 py-2 min-h-[80px] focus:outline-none focus:ring-1 focus:ring-cyan-500`}
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => { setDescription(e.target.value); setFormErrors(prev => ({ ...prev, description: '' })) }}
             />
+            {formErrors.description && <span className="text-[10px] text-rose-500 block mt-1">{formErrors.description}</span>}
           </div>
         </div>
 
@@ -240,11 +272,10 @@ export default function RoleForm() {
             </h3>
             {fieldMsg && (
               <div
-                className={`p-3 rounded-lg text-sm border ${
-                  fieldMsg.startsWith('Error')
+                className={`p-3 rounded-lg text-sm border ${fieldMsg.startsWith('Error')
                     ? 'bg-rose-500/10 border-rose-500/20 text-rose-455'
                     : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-                }`}
+                  }`}
               >
                 {fieldMsg}
               </div>
@@ -422,5 +453,4 @@ export default function RoleForm() {
     </EntityFormPage>
   );
 }
-
 

@@ -84,6 +84,19 @@ export default function Vendors() {
     country: '', postalCode: '', rating: ''
   });
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+
+  const validateVendor = () => {
+    const errors: { [key: string]: string } = {};
+    if (!/^[a-zA-Z0-9.\-_]+@gmail\.com$/.test(newVendor.email)) {
+      errors.email = "Email must be a valid Gmail address";
+    }
+    if (!/^\d{10}$/.test(newVendor.mobileNumber)) {
+      errors.mobileNumber = "Mobile number must be exactly 10 digits";
+    }
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const fetchCategories = async () => {
     try {
@@ -185,6 +198,7 @@ export default function Vendors() {
 
   const handleAddVendor = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateVendor()) return;
     try {
       const payload = {
         vendorCode: `V-${Math.floor(Math.random() * 9000) + 1000}`,
@@ -272,6 +286,7 @@ export default function Vendors() {
 
   const handleEditVendor = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateVendor()) return;
     try {
       const payload = {
         vendorCode: newVendor.vendorCode,
@@ -547,11 +562,13 @@ export default function Vendors() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-muted-foreground mb-1">Email Address *</label>
-              <input type="email" className="input-field w-full" required placeholder="email@company.com" value={newVendor.email} onChange={(e) => setNewVendor({ ...newVendor, email: e.target.value })} />
+              <input type="email" className={`input-field w-full ${formErrors.email ? 'border-rose-500' : ''}`} required placeholder="email@gmail.com" value={newVendor.email} onChange={(e) => { setNewVendor({ ...newVendor, email: e.target.value }); setFormErrors(prev => ({ ...prev, email: '' })); }} />
+              {formErrors.email && <span className="text-[10px] text-rose-500 block mt-1" aria-live="polite">{formErrors.email}</span>}
             </div>
             <div>
               <label className="block text-xs font-semibold text-muted-foreground mb-1">Mobile Number *</label>
-              <input type="tel" className="input-field w-full" required placeholder="+1 (555) 000-0000" value={newVendor.mobileNumber} onChange={(e) => setNewVendor({ ...newVendor, mobileNumber: e.target.value })} />
+              <input type="tel" className={`input-field w-full ${formErrors.mobileNumber ? 'border-rose-500' : ''}`} required placeholder="1234567890" value={newVendor.mobileNumber} onChange={(e) => { setNewVendor({ ...newVendor, mobileNumber: e.target.value }); setFormErrors(prev => ({ ...prev, mobileNumber: '' })); }} />
+              {formErrors.mobileNumber && <span className="text-[10px] text-rose-500 block mt-1" aria-live="polite">{formErrors.mobileNumber}</span>}
             </div>
           </div>
           <div>
@@ -629,13 +646,15 @@ export default function Vendors() {
             </div>
             <div>
               <label className="block text-xs font-semibold text-muted-foreground mb-1">Email Address *</label>
-              <input type="email" className="input-field w-full" required placeholder="email@company.com" value={newVendor.email} onChange={(e) => setNewVendor({ ...newVendor, email: e.target.value })} />
+              <input type="email" className={`input-field w-full ${formErrors.email ? 'border-rose-500' : ''}`} required placeholder="email@gmail.com" value={newVendor.email} onChange={(e) => { setNewVendor({ ...newVendor, email: e.target.value }); setFormErrors(prev => ({ ...prev, email: '' })); }} />
+              {formErrors.email && <span className="text-[10px] text-rose-500 block mt-1" aria-live="polite">{formErrors.email}</span>}
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-muted-foreground mb-1">Mobile Number *</label>
-              <input type="tel" className="input-field w-full" required placeholder="+1 (555) 000-0000" value={newVendor.mobileNumber} onChange={(e) => setNewVendor({ ...newVendor, mobileNumber: e.target.value })} />
+              <input type="tel" className={`input-field w-full ${formErrors.mobileNumber ? 'border-rose-500' : ''}`} required placeholder="1234567890" value={newVendor.mobileNumber} onChange={(e) => { setNewVendor({ ...newVendor, mobileNumber: e.target.value }); setFormErrors(prev => ({ ...prev, mobileNumber: '' })); }} />
+              {formErrors.mobileNumber && <span className="text-[10px] text-rose-500 block mt-1" aria-live="polite">{formErrors.mobileNumber}</span>}
             </div>
             <div>
               <label className="block text-xs font-semibold text-muted-foreground mb-1">Alternate Number</label>

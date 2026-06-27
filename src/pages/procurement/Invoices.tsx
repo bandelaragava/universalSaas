@@ -6,7 +6,16 @@ import { FileText, CheckCircle2, DollarSign, Upload, FileUp, Eye, Edit2, Trash2,
 import { useAppStore } from '@/store/useAppStore';
 import Modal from '@/components/ui/Modal';
 
-interface Invoice {
+export interface InvoiceItem {
+  id?: number | string;
+  itemName: string;
+  quantity: number;
+  unitPrice: number;
+  taxRate?: number;
+  total: number;
+}
+
+export interface Invoice {
   id: number | string;
   invoiceNumber: string;
   vendorId: number | string;
@@ -23,6 +32,15 @@ interface Invoice {
   amountPaid?: number | string;
   amountPending?: number | string;
   paymentHistory?: string;
+  customerAddress?: string;
+  gstin?: string;
+  cgst?: number;
+  sgst?: number;
+  igst?: number;
+  discount?: number;
+  subTotal?: number;
+  taxTotal?: number;
+  items?: InvoiceItem[];
 }
 
 interface Vendor {
@@ -70,7 +88,7 @@ export default function Invoices() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selected, setSelected] = useState<Invoice | null>(null);
   const [editInvoice, setEditInvoice] = useState<Invoice | null>(null);
-  const [newInvoice, setNewInvoice] = useState({ vendorId: '', amount: '', poRef: '', dueDate: '', notes: '', requirementId: '' });
+  const [newInvoice, setNewInvoice] = useState({ vendorId: '', amount: '', poRef: '', dueDate: '', notes: '', requirementId: '', customerAddress: '', gstin: '', cgst: '', sgst: '', igst: '', discount: '', items: [] as InvoiceItem[] });
   const [paymentModal, setPaymentModal] = useState<{ open: boolean; invoice: Invoice | null; inputValue: string; error: string }>({ open: false, invoice: null, inputValue: '', error: '' });
 
   const fetchInvoices = async () => {
@@ -223,6 +241,13 @@ export default function Invoices() {
         poRef: newInvoice.poRef || '—',
         status: 'Pending',
         notes: newInvoice.notes || '',
+        customerAddress: newInvoice.customerAddress,
+        gstin: newInvoice.gstin,
+        cgst: newInvoice.cgst ? parseFloat(newInvoice.cgst) : 0,
+        sgst: newInvoice.sgst ? parseFloat(newInvoice.sgst) : 0,
+        igst: newInvoice.igst ? parseFloat(newInvoice.igst) : 0,
+        discount: newInvoice.discount ? parseFloat(newInvoice.discount) : 0,
+        items: newInvoice.items
       };
       const res = await rolesApi.post('/api/vendor-invoices', payload);
       if (res.data?.data?.id) createdId = res.data.data.id;
@@ -243,7 +268,7 @@ export default function Invoices() {
     }
 
     fetchInvoices();
-    setNewInvoice({ vendorId: '', amount: '', poRef: '', dueDate: '', notes: '', requirementId: '' });
+    setNewInvoice({ vendorId: '', amount: '', poRef: '', dueDate: '', notes: '', requirementId: '', customerAddress: '', gstin: '', cgst: '', sgst: '', igst: '', discount: '', items: [] });
     setSelectedFile(null);
     setIsUploadOpen(false);
   };

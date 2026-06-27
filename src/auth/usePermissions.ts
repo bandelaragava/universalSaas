@@ -12,14 +12,27 @@ export function usePermissions() {
   const modules = auth?.modules || EMPTY_PERMISSIONS;
   const user = auth?.user || null;
   const normalizedRole = String(user?.role || '').toUpperCase().replace(/[^A-Z0-9]+/g, '_');
-  // Full access is granted only when backend explicitly indicates it via "*" permission
-  const hasFullAccess = rawPermissions.includes('*');
+  // Full access is granted explicitly or if the user is SUPER_ADMIN / Platform Admin
+  const hasFullAccess = rawPermissions.includes('*') || normalizedRole === 'SUPER_ADMIN' || user?.isPlatformAdmin;
   const permissions = rawPermissions; // keep actual permissions; do not replace with wildcard based on role
   const isSuperAdmin = hasFullAccess; // retain naming for downstream logic
 
-  const can = useCallback((perm: string) => checkPermission(permissions, perm), [permissions]);
-  const canAny = useCallback((perms: string[]) => hasAnyPermission(permissions, perms), [permissions]);
-  const isModuleEnabled = useCallback((mod: string) => isSuperAdmin || checkModuleEnabled(modules, mod), [isSuperAdmin, modules]);
+  const isPlatformAdminFlag = Boolean(user?.isPlatformAdmin);
+
+  const can = useCallback((perm: string) => {
+    if (perm.startsWith('TENANT_')) {
+      return isPlatformAdminFlag || checkPermission(permissions, perm);
+    }
+    return isSuperAdmin || checkPermission(permissions, perm);
+  }, [isSuperAdmin, isPlatformAdminFlag, permissions]);
+
+  const canAny = useCallback((perms: string[]) => {
+    if (perms.some(p => p.startsWith('TENANT_'))) {
+      return isPlatformAdminFlag || hasAnyPermission(permissions, perms);
+    }
+    return isSuperAdmin || hasAnyPermission(permissions, perms);
+  }, [isSuperAdmin, isPlatformAdminFlag, permissions]);
+  const isModuleEnabled = useCallback((mod: string) => isPlatformAdminFlag || checkModuleEnabled(modules, mod), [isPlatformAdminFlag, modules]);
 
   const canViewModule = useCallback((moduleName: string) => {
     if (isSuperAdmin) return true;
@@ -45,8 +58,8 @@ export function usePermissions() {
     isModuleEnabled,
     hasPermission: can,
     hasAnyPermission: canAny,
-    hasAllPermissions: useCallback((perms: string[]) => hasAllPermissions(permissions, perms), [permissions]),
-    isPlatformAdmin: isSuperAdmin,
+    hasAllPermissions: useCallback((perms: string[]) => isSuperAdmin || hasAllPermissions(permissions, perms), [isSuperAdmin, permissions]),
+    isPlatformAdmin: isPlatformAdminFlag,
     canViewModule,
     canCreate,
     canUpdate,
@@ -54,5 +67,4 @@ export function usePermissions() {
     canManage,
   };
 }
-
 
