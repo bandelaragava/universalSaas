@@ -205,8 +205,9 @@ import UniversalFieldRenderer from '@/modules/leads/renderer/UniversalFieldRende
 import { Button } from '@/components/ui/button';
 import { useForm } from 'react-hook-form';
 import { useToast } from '@/context/ToastContext';
-import { Loader2, ArrowLeft, UserPlus } from 'lucide-react';
+import { Loader2, ArrowLeft, UserPlus, Users } from 'lucide-react';
 import { toOptions } from '@/modules/leads/utils/leadUi';
+import EntityFormPage from '@/components/shared/EntityFormPage';
 
 const groupFields = (fields = []) => {
   return fields.reduce((acc, field) => {
@@ -298,97 +299,85 @@ export default function DynamicFormRenderer({ onClose }) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="mx-auto max-w-5xl space-y-7">
+    <div className={onClose ? 'w-full' : 'mx-auto max-w-4xl space-y-6 pb-20 relative'}>
       {!onClose && (
-        <div className="flex items-center space-x-4">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/leads')}
-            className="gap-2 text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Cancel & Go Back
-          </Button>
-        </div>
-      )}
-
-      {!onClose && (
-        <div className="rounded-3xl border border-border bg-card text-card-foreground p-8 shadow-sm">
-          <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-600 text-white">
-              <UserPlus className="h-5 w-5" />
-            </div>
-            <div>
-              <h3 className="text-2xl font-bold text-foreground">Register New Student Lead</h3>
-              <p className="mt-1 text-muted-foreground">Populate details to assign counselor and course preferences.</p>
-              <select className="mt-4 h-10 rounded-xl border border-border bg-background px-4 font-semibold text-violet-600">
-                <option>{form.name || 'Active Intake Form'}</option>
-              </select>
+        <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-6 shadow-sm">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-cyan-500/20 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400">
+            <UserPlus className="h-6 w-6" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold tracking-tight text-foreground">
+              Register New Student Lead
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Populate details to assign counselor and course preferences.
+            </p>
+            <div className="mt-2 text-xs font-semibold text-cyan-600 dark:text-cyan-400">
+              Active Form: {form.name || 'Intake Form'}
             </div>
           </div>
         </div>
       )}
 
-      <div className="space-y-6">
-        <div className="rounded-3xl border border-border bg-card text-card-foreground p-10 shadow-sm">
-          <label className="text-sm font-bold text-foreground" htmlFor="counselor_id">Assign Counselor</label>
-          <select
-            id="counselor_id"
-            {...register('counselor_id')}
-            defaultValue=""
-            className="mt-2 flex h-12 w-full rounded-xl border border-border bg-background px-5 py-2 text-lg text-foreground shadow-sm focus:outline-none focus:ring-4 focus:ring-violet-100/30"
-          >
-            <option value="">Unassigned</option>
-            {users.map((user) => (
-              <option key={user.id} value={user.id}>
-                {user.full_name || user.email}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {Object.entries(grouped).map(([sectionTitle, sectionFields]) => (
-          <div key={sectionTitle} className="rounded-3xl border border-border bg-card text-card-foreground p-10 shadow-sm">
-            <h3 className="mb-6 border-b border-border pb-4 text-lg font-bold text-foreground">{sectionTitle}</h3>
-            <div className="grid gap-6 grid-cols-12">
-              {sectionFields
-                .filter((field) => field.label !== 'Assigned Counselor')
-                .map((field) => (
-                  <UniversalFieldRenderer
-                    key={field.name}
-                    field={field}
-                    register={register}
-                    setValue={setValue}
-                  />
-                ))}
+      <EntityFormPage
+        title="Create Lead"
+        onSubmit={handleSubmit(onSubmit)}
+        loading={isSaving}
+        isModal={Boolean(onClose)}
+        onBack={onClose}
+        submitLabel="Create Lead"
+      >
+        <div className="space-y-6">
+          <section className="space-y-4">
+            <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-primary">
+              <Users className="h-4 w-4" /> Assignment Details
+            </h3>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="col-span-1">
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted-foreground" htmlFor="counselor_id">
+                  Assign Counselor
+                </label>
+                <select
+                  id="counselor_id"
+                  {...register('counselor_id')}
+                  defaultValue=""
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2.5 h-auto text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-cyan-500 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="">Unassigned</option>
+                  {users.map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.full_name || user.email}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          </section>
 
-      <div className="sticky bottom-4 z-10 flex justify-end pt-4 space-x-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => onClose ? onClose() : navigate('/leads')}
-          disabled={isSaving}
-          className="rounded-xl bg-background text-foreground border-border"
-        >
-          Cancel
-        </Button>
-        <Button type="submit" disabled={isSaving} className="min-w-[180px] rounded-xl bg-violet-600 text-white hover:bg-violet-700">
-          {isSaving ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              Saving...
-            </>
-          ) : (
-            'Create Lead'
-          )}
-        </Button>
-      </div>
-    </form>
+          {Object.entries(grouped).map(([sectionTitle, sectionFields]) => (
+            <React.Fragment key={sectionTitle}>
+              <hr className="border-border" />
+              <section className="space-y-4">
+                <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-primary">
+                  <Users className="h-4 w-4" /> {sectionTitle}
+                </h3>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  {sectionFields
+                    .filter((field) => field.label !== 'Assigned Counselor')
+                    .map((field) => (
+                      <UniversalFieldRenderer
+                        key={field.name}
+                        field={field}
+                        register={register}
+                        setValue={setValue}
+                      />
+                    ))}
+                </div>
+              </section>
+            </React.Fragment>
+          ))}
+        </div>
+      </EntityFormPage>
+    </div>
   );
 }

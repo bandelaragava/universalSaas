@@ -21,7 +21,7 @@ export default function Dashboard() {
   const { permissions, hasPermission } = usePermissions();
   const hasExplicitTaskPermissions = permissions.some((permission) => ['TASKS_VIEW_TASKS', 'TASKS_VIEW_TASKS', 'TASKS_CREATE_TASK', 'TASKS_EDIT_TASK', 'TASKS_DELETE_TASK', 'TASKS_ASSIGN_TASK'].includes(String(permission || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '')));
 
-  const activeTasks = tasks.filter(t => !t.archived);
+  const activeTasks = Array.isArray(tasks) ? tasks.filter(t => !t.archived) : [];
 
   // Helper to determine if a task is overdue
   const today = new Date().toISOString().split('T')[0];

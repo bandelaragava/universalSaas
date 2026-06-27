@@ -107,7 +107,7 @@ rolesApi.interceptors.request.use(
       isLapRoute = false;
     }
 
-    config.baseURL = isLapRoute ? LAP_API_BASE : ROLES_API_BASE;
+    config.baseURL = isLapRoute ? '/lap-api' : ROLES_API_BASE;
 
     const token = localStorage.getItem('token');
     if (token && config.headers) {

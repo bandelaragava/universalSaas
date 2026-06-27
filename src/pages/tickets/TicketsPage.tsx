@@ -184,18 +184,20 @@ export function TicketsPage() {
       toast.error('Name and code are required');
       return;
     }
-    try {
-      setSavingType(true);
-      await supportTicketsService.createType(typeForm);
-      toast.success('Issue type added successfully');
-      setTypeForm({ name: '', code: '', description: '' });
-      await loadData(true);
-    } catch (err: unknown) {
-      const axiosError = err as { response?: { data?: { detail?: string } } };
-      toast.error(axiosError.response?.data?.detail || 'Could not add issue type');
-    } finally {
-      setSavingType(false);
-    }
+      try {
+        setSavingType(true);
+        await supportTicketsService.createType(typeForm);
+        toast.success('Issue type added successfully');
+        setTypeForm({ name: '', code: '', description: '' });
+        // Refresh the issue types list immediately
+        const typeRes = await supportTicketsService.getTypes();
+        setTypes(typeRes.data || []);
+      } catch (err: unknown) {
+        const axiosError = err as { response?: { data?: { detail?: string } } };
+        toast.error(axiosError.response?.data?.detail || 'Could not add issue type');
+      } finally {
+        setSavingType(false);
+      }
   };
 
   const handleUpdateTicket = async () => {
@@ -374,7 +376,7 @@ export function TicketsPage() {
                       className="w-full bg-background border border-input text-foreground rounded-lg px-3 py-1.5 focus:outline-none text-xs"
                     >
                       <option value="">All Issue Categories</option>
-                      {types.map((type) => (
+                      {(Array.isArray(types) ? types : []).map((type) => (
                         <option key={type.id} value={type.id}>
                           {type.name}
                         </option>
@@ -682,7 +684,7 @@ export function TicketsPage() {
                     </p>
                   ) : (
                     <div className="grid gap-3 max-h-[500px] overflow-y-auto pr-1">
-                      {types.map((type) => (
+                      {(Array.isArray(types) ? types : []).map((type) => (
                         <div
                           key={type.id}
                           className="border p-4 rounded-xl flex items-start justify-between gap-4 bg-muted/20"

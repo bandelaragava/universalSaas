@@ -129,8 +129,8 @@ export const leaveService = {
   deleteLeaveType: (id: number) => rolesApi.delete(`/leave/types/${id}/`),
 
   // Leave Balances
-  getMyBalance: (year: number) =>
-    rolesApi.get<LeaveBalance[]>('/leave/balance/', { params: { year } }).then(response => ({
+  getMyBalance: (year: number, employee?: string | number) =>
+    rolesApi.get<LeaveBalance[]>('/leave/balance/', { params: { year, employee } }).then(response => ({
       ...response,
       data: (response.data || []).map(normalizeLeaveBalance),
     })),
@@ -146,8 +146,8 @@ export const leaveService = {
   cancelLeave: (id: number) => rolesApi.post(`/leave/${id}/cancel/`),
 
   // Leave Approvals
-  getAllRequests: (status?: string, employee?: string) =>
-    rolesApi.get<LeaveRequest[]>('/leave/all/', { params: { status, employee } }).then(response => ({
+  getAllRequests: (status?: string, employee?: string | number, start_date?: string, end_date?: string) =>
+    rolesApi.get<LeaveRequest[]>('/leave/all/', { params: { status, employee, start_date, end_date } }).then(response => ({
       ...response,
       data: (response.data || []).map(normalizeLeaveRequest),
     })),

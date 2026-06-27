@@ -127,6 +127,30 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
     archived: !!task.archived,
   });
 
+  const normalizeTaskFromApi = (task: any): Task => ({
+    ...task,
+    id: String(task.id),
+    title: task.title || '',
+    description: task.description || '',
+    status: task.status || 'todo',
+    priority: task.priority || 'medium',
+    startDate: task.startDate || task.start_date || '',
+    dueDate: task.dueDate || task.due_date || '',
+    assignedTo: task.assignedTo || (task.assigned_to ? {
+      id: String(task.assigned_to.id || task.assigned_to),
+      name: task.assigned_to.name || task.assigned_to.email || task.assigned_to_email || 'User',
+      email: task.assigned_to.email || task.assigned_to_email || '',
+      avatar: `https://ui-avatars.com/api/?name=User&background=6366f1&color=fff`
+    } : undefined),
+    tags: task.tags || [],
+    attachments: task.attachments || [],
+    relatedModule: task.relatedModule || '',
+    archived: !!task.archived,
+    createdDate: task.createdDate || task.created_date || task.created_at || '',
+    comments: extractArray(task.comments || task.task_comments),
+    history: extractArray(task.history || task.task_history),
+  });
+
   const loadTaskData = async () => {
     if (!hasTaskViewPermission) {
       setIsLoading(true);
@@ -169,7 +193,9 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
       setMembers(nextMembers);
 
       if (tasksRes.status === 'fulfilled') {
-        setTasks(tasksRes.value.data || []);
+        const data = tasksRes.value.data;
+        const tasksArray = Array.isArray(data) ? data : (data?.tasks || []);
+        setTasks(tasksArray.map(normalizeTaskFromApi));
       }
       if (notificationsRes.status === 'fulfilled') {
         setNotifications(notificationsRes.value.data || []);
@@ -193,7 +219,11 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
       setErrorState(null);
     } catch (error) {
       console.error('[Tasks] Backend sync failed:', error);
-      setErrorState('Task backend is not reachable. Showing local demo data until API is available.');
+      setErrorState('Task backend is not reachable.');
+      // clear state on failure
+      setTasks([]);
+      setMembers([]);
+      setNotifications([]);
     } finally {
       setIsLoading(false);
     }
@@ -240,7 +270,7 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
     setIsLoading(true);
     try {
       const res = await tasksService.createTask(normalizeTaskForApi(newTask));
-      setTasks(prev => [res.data, ...prev]);
+      setTasks(prev => [normalizeTaskFromApi(res.data), ...prev]);
       const notificationsRes = await tasksService.getNotifications();
       setNotifications(notificationsRes.data || []);
     } catch (error: any) {

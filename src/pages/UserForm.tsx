@@ -325,30 +325,34 @@
 
 //         setLoading(true);
 
-//         const payload = {
-//             firstName,
-//             lastName,
-//             email,
-//             phoneNumber,
-//             gender,
-//             roleId: selectedRoleId ? Number(selectedRoleId) : null,
-//             supervisorUserId: supervisorUserId ? Number(supervisorUserId) : null,
-//             employeeId: employeeId || empCode || null,
-//             profileData: {
-//                 ...profileData,
-//                 emp_code: empCode || employeeId,
-//                 joining_date: joiningDate,
-//                 employee_type: employeeType,
-//                 designation,
-//                 work_mode: workMode,
-//                 date_of_birth: dateOfBirth,
-//                 address,
-//             },
-//             permissionIds: selectedPermissions,
-//             entityIds: selectedEntityIds,
-//             departmentIds: selectedDepartmentIds,
-//             ...(isEdit ? {} : { password }),
+//         // Build payload using snake_case keys expected by backend API
+//         const payload: Record<string, any> = {};
+//         // Helper to assign if value is not null/undefined/empty string
+//         const assign = (key: string, value: any) => {
+//             if (value !== null && value !== undefined && value !== '') {
+//                 payload[key] = value;
+//             }
 //         };
+//         assign('first_name', firstName);
+//         assign('last_name', lastName);
+//         assign('email', email);
+//         assign('phone_number', phoneNumber);
+//         assign('gender', gender);
+//         assign('role_id', selectedRoleId ? parseInt(selectedRoleId, 10) : null);
+//         assign('supervisor_user_id', supervisorUserId ? parseInt(supervisorUserId, 10) : null);
+//         assign('employee_id', employeeId);
+//         assign('date_of_birth', dateOfBirth);
+//         assign('joining_date', joiningDate);
+//         assign('employee_type_id', employeeTypeId ? parseInt(employeeTypeId, 10) : null);
+//         assign('designation_id', designationId ? parseInt(designationId, 10) : null);
+//         assign('work_mode_id', workModeId ? parseInt(workModeId, 10) : null);
+//         // Permissions, entities, departments are arrays; include even if empty to satisfy API
+//         payload['permission_ids'] = selectedPermissions;
+//         payload['entity_ids'] = selectedEntityIds;
+//         payload['department_ids'] = selectedDepartmentIds;
+//         if (!isEdit) {
+//             assign('password', password);
+//         }
 
 //         const selectedPermissionKeys = availablePermissions
 //             .filter(p => selectedPermissions.includes(p.id))
@@ -1338,26 +1342,33 @@ export default function UserForm({ userId, onClose }: UserFormProps = {}) {
         e.preventDefault();
         setLoading(true);
 
-        const payload = {
-            firstName,
-            lastName,
-            email,
-            phoneNumber,
-            gender,
-            roleId: selectedRoleId ? parseInt(selectedRoleId, 10) : null,
-            supervisorUserId: supervisorUserId ? parseInt(supervisorUserId, 10) : null,
-            employeeId: employeeId || null,
-            dateOfBirth: dateOfBirth || null,
-            joiningDate: joiningDate || null,
-            employeeTypeId: employeeTypeId ? parseInt(employeeTypeId, 10) : null,
-            designationId: designationId ? parseInt(designationId, 10) : null,
-            workModeId: workModeId ? parseInt(workModeId, 10) : null,
-
-            permissionIds: selectedPermissions,
-            entityIds: selectedEntityIds,
-            departmentIds: selectedDepartmentIds,
-            ...(isEdit ? {} : { password }),
+        // Build payload using snake_case keys expected by backend API
+        const payload: Record<string, any> = {};
+        const assign = (key: string, value: any) => {
+            if (value !== null && value !== undefined && value !== '') {
+                payload[key] = value;
+            }
         };
+        assign('firstName', firstName);
+        assign('lastName', lastName);
+        assign('email', email);
+        assign('phoneNumber', phoneNumber);
+        assign('gender', gender);
+        assign('roleId', selectedRoleId ? parseInt(selectedRoleId, 10) : null);
+        assign('supervisorUserId', supervisorUserId ? parseInt(supervisorUserId, 10) : null);
+        assign('employeeId', employeeId);
+        assign('dateOfBirth', dateOfBirth);
+        assign('joiningDate', joiningDate);
+        assign('employeeTypeId', employeeTypeId ? parseInt(employeeTypeId, 10) : null);
+        assign('designationId', designationId ? parseInt(designationId, 10) : null);
+        assign('workModeId', workModeId ? parseInt(workModeId, 10) : null);
+        // Include arrays even if empty
+        payload['permissionIds'] = selectedPermissions;
+        payload['entityIds'] = selectedEntityIds;
+        payload['departmentIds'] = selectedDepartmentIds;
+        if (!isEdit) {
+            assign('password', password);
+        }
 
         try {
             if (isEdit) {

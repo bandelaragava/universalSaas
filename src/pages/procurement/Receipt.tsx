@@ -34,32 +34,6 @@ interface VendorInvoice {
   notes?: string;
 }
 
-const mockInvoice: VendorInvoice = {
-  id: '1',
-  invoiceNumber: 'INV-2026-004',
-  requirementId: '984',
-  vendorName: 'Acme Supply Solutions LLC',
-  dueDate: '2026-07-15',
-  amountPaid: 12500,
-  amountValue: 12500,
-  amountPending: 0,
-  paymentHistory: JSON.stringify([
-    { note: 'Initial Deposit (50%)', date: '2026-06-01', amount: 6250 },
-    { note: 'Final Payment (50%)', date: '2026-06-08', amount: 6250 }
-  ]),
-  notes: 'Procurement of server rack hardware & network switches.'
-};
-
-const mockCompany: CompanyProfile = {
-  logoUrl: '',
-  companyName: 'Universal SaaS Operations Inc.',
-  email: 'finance@universalsaas.com',
-  gstNumber: '29ABCDE1234F1ZH',
-  addressLine1: '100 Innovation Parkway, Suite 500',
-  city: 'San Francisco',
-  state: 'CA',
-  pincode: '94107'
-};
 
 export function Receipt() {
   const { id } = useParams();
@@ -70,26 +44,19 @@ export function Receipt() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        let invData: VendorInvoice;
         try {
-          const res = await rolesApi.get(`/vendor-invoices/${id}`);
-          invData = res.data?.data || res.data;
+          const res = await rolesApi.get(`/api/vendor-invoices/${id}`);
+          setInvoice(res.data?.data || res.data);
         } catch (err) {
-          console.warn('Failed to fetch invoice details from backend, falling back to mock invoice:', err);
-          invData = mockInvoice;
+          console.error('Failed to fetch invoice details from backend:', err);
         }
 
-        let compData: CompanyProfile;
         try {
           const res = await rolesApi.get('/company-profile');
-          compData = res.data;
+          setCompany(res.data);
         } catch (err) {
-          console.warn('Failed to fetch company profile from backend, falling back to mock company:', err);
-          compData = mockCompany;
+          console.error('Failed to fetch company profile from backend:', err);
         }
-
-        setInvoice(invData);
-        setCompany(compData);
       } catch (err) {
         console.error('Error fetching receipt data', err);
       } finally {

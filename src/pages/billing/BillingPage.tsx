@@ -67,7 +67,7 @@ export function BillingPage() {
         durationDays,
         paymentReference: generatePaymentReference(),
       };
-      
+
       await rolesApi.post('/api/subscriptions', req);
       alert('Subscription upgraded successfully!');
       fetchHistory(true);
@@ -155,9 +155,8 @@ export function BillingPage() {
             return (
               <div
                 key={plan.name}
-                className={`bg-card border ${
-                  isCurrent ? 'border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.15)]' : 'border-border'
-                } rounded-xl p-6 flex flex-col relative overflow-hidden transition-all hover:-translate-y-0.5`}
+                className={`bg-card border ${isCurrent ? 'border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.15)]' : 'border-border'
+                  } rounded-xl p-6 flex flex-col relative overflow-hidden transition-all hover:-translate-y-0.5`}
               >
                 {isCurrent && (
                   <div className="absolute top-0 right-0 bg-cyan-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg">
@@ -176,7 +175,7 @@ export function BillingPage() {
                     </p>
                   </div>
                 </div>
-                
+
                 <ul className="space-y-2.5 mb-8 flex-grow">
                   {plan.features.map((feature, i) => (
                     <li key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -185,15 +184,14 @@ export function BillingPage() {
                     </li>
                   ))}
                 </ul>
-                
-                <Button 
+
+                <Button
                   onClick={() => handleUpgrade(plan.name, plan.price, plan.days)}
                   disabled={upgrading || isCurrent}
-                  className={`w-full ${
-                    isCurrent 
+                  className={`w-full ${isCurrent
                       ? 'bg-muted text-muted-foreground hover:bg-muted cursor-not-allowed border'
                       : 'bg-cyan-600 hover:bg-cyan-500 text-white'
-                  }`}
+                    }`}
                   size="sm"
                 >
                   {upgrading ? 'Processing...' : (isCurrent ? 'Active Plan' : 'Upgrade')}
@@ -271,5 +269,4 @@ export function BillingPage() {
 }
 
 export default BillingPage;
-
 

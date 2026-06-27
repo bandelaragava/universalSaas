@@ -15,7 +15,8 @@ import { BarChart3, Loader2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { usePermissions } from '@/auth/usePermissions'
-import { getFunnelStats } from '@/services/marketing'
+import rolesApi from '@/services/rolesApi'
+import { revenueService } from '@/services/revenue'
 
 const chartTooltipStyle = {
   contentStyle: {
@@ -64,27 +65,83 @@ export function DashboardCharts() {
     const fetchData = async () => {
       try {
         setLoading(true)
-        const [funnelRes] = await Promise.allSettled([
-          getFunnelStats()
+        const [leadsRes, revenueRes] = await Promise.allSettled([
+          rolesApi.get('/leads/'),
+          revenueService.getRevenueOverview()
         ])
         
         if (!mounted) return
         
-        if (funnelRes.status === 'fulfilled' && funnelRes.value) {
-          if (Array.isArray(funnelRes.value)) {
-            setFunnelData(funnelRes.value)
-          } else if (typeof funnelRes.value === 'object') {
-            const mapped = Object.entries(funnelRes.value).map(([key, value]) => ({
-              stage: key.charAt(0).toUpperCase() + key.slice(1),
-              count: Number(value) || 0
+        // Compute Funnel Data from Live Leads
+        if (leadsRes.status === 'fulfilled' && leadsRes.value?.data) {
+          const leadsArray = Array.isArray(leadsRes.value.data) ? leadsRes.value.data : (leadsRes.value.data.results || []);
+          const funnelCounts: Record<string, number> = {
+            'New': 0,
+            'Contacted': 0,
+            'Qualified': 0,
+            'Proposal': 0,
+            'Won': 0
+          };
+          
+          leadsArray.forEach((lead: any) => {
+            const status = lead.status || 'New';
+            if (funnelCounts[status] !== undefined) {
+              funnelCounts[status]++;
+            } else {
+              funnelCounts[status] = 1;
+            }
+          });
+
+          const mapped = Object.entries(funnelCounts)
+            .filter(([_, count]) => count > 0)
+            .map(([stage, count]) => ({
+              stage: stage.charAt(0).toUpperCase() + stage.slice(1),
+              count: count
             }))
-            setFunnelData(mapped)
-          }
+            .sort((a, b) => b.count - a.count); // Simple funnel sort
+            
+          setFunnelData(mapped)
         }
         
-        // Monthly revenue history endpoint does not exist yet. 
-        // Using empty array to remove dummy data.
-        setRevenueData([])
+        // Compute Revenue History from Live Leads
+        if (revenueRes.status === 'fulfilled' && revenueRes.value?.data) {
+          const confirmedLeads = revenueRes.value.data.confirmed_leads || [];
+          const now = new Date();
+          const trend = [];
+          
+          for (let i = 5; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+            const monthStr = d.toLocaleString('default', { month: 'short' })
+
+            // Current Revenue (cumulative up to this month)
+            const currentRevenue = confirmedLeads.filter((l: any) => {
+              if (!l.updated_at && !l.payment_date && !l.created_at) return true;
+              const lDate = new Date(l.updated_at || l.payment_date || l.created_at);
+              return lDate.getFullYear() < d.getFullYear() || 
+                     (lDate.getFullYear() === d.getFullYear() && lDate.getMonth() <= d.getMonth());
+            }).reduce((sum: number, l: any) => sum + (Number(l.amount) || 0), 0);
+
+            // Previous Revenue (cumulative up to previous month)
+            const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - i - 1, 1);
+            const prevRevenue = confirmedLeads.filter((l: any) => {
+              if (!l.updated_at && !l.payment_date && !l.created_at) return true;
+              const lDate = new Date(l.updated_at || l.payment_date || l.created_at);
+              return lDate.getFullYear() < prevMonthDate.getFullYear() || 
+                     (lDate.getFullYear() === prevMonthDate.getFullYear() && lDate.getMonth() <= prevMonthDate.getMonth());
+            }).reduce((sum: number, l: any) => sum + (Number(l.amount) || 0), 0);
+
+            const growth = prevRevenue > 0 ? ((currentRevenue - prevRevenue) / prevRevenue) * 100 : 0;
+
+            trend.push({
+              month: monthStr,
+              revenue: currentRevenue,
+              growth: Math.max(0, growth)
+            });
+          }
+          setRevenueData(trend);
+        } else {
+          setRevenueData([]);
+        }
       } catch (err) {
         console.error(err)
       } finally {

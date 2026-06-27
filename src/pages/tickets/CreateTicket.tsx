@@ -74,11 +74,11 @@ export default function CreateTicket({ onClose, onSuccess }: CreateTicketProps) 
             required
           >
             <option value="">Select issue category</option>
-            {types.map((type) => (
-              <option key={type.id} value={type.id}>
-                {type.name}
-              </option>
-            ))}
+              {(Array.isArray(types) ? types : []).map((type) => (
+                <option key={type.id} value={type.id}>
+                  {type.name}
+                </option>
+              ))}
           </select>
         </div>
 

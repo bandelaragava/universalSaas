@@ -38,7 +38,7 @@ export function Requirements() {
   const [isViewReqOpen, setIsViewReqOpen] = useState(false);
   const [selectedReq, setSelectedReq] = useState<Requirement | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [newReq, setNewReq] = useState<{
     description: string;
     vendorId: string;
@@ -189,10 +189,10 @@ export function Requirements() {
             </thead>
             <tbody className="divide-y divide-slate-800/50">
               {filteredRequirements.length > 0 ? filteredRequirements.map((req) => {
-                const itemsSummary = req.items && req.items.length > 0 
-                  ? req.items.map(i => i.itemName).join(', ') 
+                const itemsSummary = req.items && req.items.length > 0
+                  ? req.items.map(i => i.itemName).join(', ')
                   : 'No items';
-                
+
                 return (
                   <tr key={req.id} className="hover:bg-slate-800/30 transition-colors group">
                     <td className="p-4 font-mono text-cyan-400">REQ-{req.id}</td>
@@ -239,36 +239,36 @@ export function Requirements() {
                 <option value="OLD_ITEM" className="bg-background">Old Item</option>
               </select>
             </div>
-            
+
             <div>
               <label className="block text-xs font-medium text-slate-355 mb-1">Required Date</label>
-              <input 
-                type="date" 
-                className="input-field px-2 text-foreground bg-background border-border text-xs" 
-                value={newReq.requiredDate} 
-                onChange={(e) => setNewReq({ ...newReq, requiredDate: e.target.value })} 
+              <input
+                type="date"
+                className="input-field px-2 text-foreground bg-background border-border text-xs"
+                value={newReq.requiredDate}
+                onChange={(e) => setNewReq({ ...newReq, requiredDate: e.target.value })}
               />
             </div>
             {newReq.requirementType === 'LEASE' && (
               <div>
                 <label className="block text-xs font-medium text-slate-355 mb-1">Return Date</label>
-                <input 
-                  type="date" 
-                  className="input-field px-2 text-foreground bg-background border-border text-xs" 
-                  value={newReq.returnDate || ''} 
-                  onChange={(e) => setNewReq({ ...newReq, returnDate: e.target.value })} 
+                <input
+                  type="date"
+                  className="input-field px-2 text-foreground bg-background border-border text-xs"
+                  value={newReq.returnDate || ''}
+                  onChange={(e) => setNewReq({ ...newReq, returnDate: e.target.value })}
                 />
               </div>
             )}
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-355 mb-1">Description</label>
-            <textarea 
-              rows={3} 
-              className="input-field resize-none text-foreground bg-background border-border text-xs" 
-              placeholder="Detailed specifications..." 
-              value={newReq.description} 
-              onChange={(e) => setNewReq({ ...newReq, description: e.target.value })} 
+            <textarea
+              rows={3}
+              className="input-field resize-none text-foreground bg-background border-border text-xs"
+              placeholder="Detailed specifications..."
+              value={newReq.description}
+              onChange={(e) => setNewReq({ ...newReq, description: e.target.value })}
             />
           </div>
           <div className="pt-3 border-t border-slate-700/50 mt-3">
@@ -278,7 +278,7 @@ export function Requirements() {
                 <Plus size={14} className="mr-1" /> Add Item
               </button>
             </div>
-            
+
             {newReq.items.length > 0 ? (
               <div className="space-y-3">
                 {newReq.items.map((item, idx) => (
@@ -396,15 +396,14 @@ export function Requirements() {
               <p className="text-xs sm:text-sm font-semibold text-slate-300 mb-3">Update Workflow Status:</p>
               <div className="flex flex-wrap gap-2">
                 {['QUOTATION_RECEIVED', 'PO_CREATED', 'INVOICE_RECEIVED', 'PAYMENT_DONE'].map(st => (
-                  <button 
-                    key={st} 
+                  <button
+                    key={st}
                     onClick={() => updateStatus(selectedReq.id, st)}
                     disabled={selectedReq.status === st}
-                    className={`text-xs px-3 py-1.5 rounded-lg border transition-colors cursor-pointer ${
-                      selectedReq.status === st 
-                        ? 'bg-slate-800 border-slate-700 text-slate-500 cursor-not-allowed' 
+                    className={`text-xs px-3 py-1.5 rounded-lg border transition-colors cursor-pointer ${selectedReq.status === st
+                        ? 'bg-slate-800 border-slate-700 text-slate-500 cursor-not-allowed'
                         : 'border-slate-700 text-slate-300 hover:bg-slate-700'
-                    }`}
+                      }`}
                   >
                     Mark as {st.replace(/_/g, ' ')}
                   </button>

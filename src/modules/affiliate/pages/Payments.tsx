@@ -80,9 +80,9 @@ export const Payments: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-100/50 dark:divide-slate-900/50">
               {transactions.map((pay) => (
-                <tr 
-                  key={pay.id} 
-                  className="hover:bg-slate-50/50 dark:hover:bg-slate-900/40 transition-colors cursor-pointer" 
+                <tr
+                  key={pay.id}
+                  className="hover:bg-slate-50/50 dark:hover:bg-slate-900/40 transition-colors cursor-pointer"
                   onClick={() => setSelectedTx(pay)}
                 >
                   <td className="py-4 pl-2 font-mono text-xs font-bold text-slate-950 dark:text-slate-200">
@@ -123,19 +123,19 @@ export const Payments: React.FC = () => {
       {selectedTx && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
           <div className="bg-card border border-border rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-150 print:relative print:border-none print:shadow-none print:w-full">
-            
+
             {/* Header controls (Hidden on print) */}
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-850 p-5 print:hidden">
               <h3 className="font-extrabold text-base text-slate-900 dark:text-white">Transaction Details</h3>
               <div className="flex items-center gap-2">
-                <button 
+                <button
                   onClick={handlePrint}
                   className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 border border-border bg-card text-slate-700 dark:text-slate-300 rounded-xl text-xs font-semibold shadow-sm hover:bg-slate-50 dark:hover:bg-slate-900 transition cursor-pointer"
                 >
                   <Printer size={14} />
                   Print
                 </button>
-                <button 
+                <button
                   onClick={() => setSelectedTx(null)}
                   className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition cursor-pointer"
                 >
@@ -241,7 +241,7 @@ export const Payments: React.FC = () => {
 
             {/* Footer controls */}
             <div className="bg-slate-50 dark:bg-background border-t border-slate-100 dark:border-slate-850 p-4 flex justify-end gap-2 print:hidden">
-              <button 
+              <button
                 onClick={() => setSelectedTx(null)}
                 className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-md shadow-indigo-500/20 cursor-pointer"
               >
@@ -256,5 +256,4 @@ export const Payments: React.FC = () => {
 };
 
 export default Payments;
-
 

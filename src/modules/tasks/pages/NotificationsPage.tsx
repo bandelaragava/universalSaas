@@ -29,14 +29,14 @@ export default function NotificationsPage() {
   };
 
   const filteredNotifications = useMemo(() => {
-    return notifications.filter(n => {
+    return (Array.isArray(notifications) ? notifications : []).filter(n => {
       if (filterType === 'all') return true;
       if (filterType === 'unread') return !n.read;
       return n.type === filterType;
     });
   }, [notifications, filterType]);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = (Array.isArray(notifications) ? notifications : []).filter(n => !n.read).length;
 
   // Icon mapping based on notification type
   const getIcon = (type: Notification['type']) => {

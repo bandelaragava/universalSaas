@@ -13,17 +13,37 @@ export default defineConfig({
   server: {
     host: true,
     proxy: {
+      '/api/leads': {
+        target: 'http://54.164.162.68',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+        configure: (proxy) => {
+          proxy.on('proxyRes', (proxyRes, req, res) => {
+            res.setHeader('Access-Control-Allow-Origin', '*');
+          });
+        },
+      },
       '/api': {
         target: 'http://32.199.180.3:8080',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, ''),
+        configure: (proxy) => {
+          proxy.on('proxyRes', (proxyRes, req, res) => {
+            res.setHeader('Access-Control-Allow-Origin', '*');
+          });
+        },
       },
       '/lap-api': {
-        target: 'http://100.121.237.45:8000',
+        target: 'http://54.164.162.68',
         changeOrigin: true,
-        secure: false,
-        rewrite: (path) => path.replace(/^\/lap-api/, ''),
+        rewrite: (path) => path.replace(/^\/lap-api/, '/api'),
+        configure: (proxy) => {
+          proxy.on('proxyRes', (proxyRes, req, res) => {
+            res.setHeader('Access-Control-Allow-Origin', '*');
+          });
+        },
       },
     },
   },

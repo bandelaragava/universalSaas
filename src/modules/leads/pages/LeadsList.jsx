@@ -287,49 +287,52 @@ export default function LeadsList() {
     <div className="space-y-8">
       {portalNode ? createPortal(headerContent, portalNode) : headerContent}
 
-      <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-6 mt-2">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mt-2">
         {cards.map((card, index) => (
-          <Card key={`${card.label}-${index}`} className={`min-h-44 rounded-2xl p-5 shadow-sm border-border ${card.active ? 'bg-zinc-950 text-white dark:bg-zinc-900 border-zinc-800' : 'bg-card text-card-foreground'}`}>
-            <div className="mb-8 flex items-center justify-between">
-              <span className={`flex h-11 w-11 items-center justify-center rounded-xl ${card.active ? 'bg-white/10' : 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400'}`}>
-                <Users className="h-5 w-5" />
+          <Card key={`${card.label}-${index}`} className={`rounded-xl p-4 shadow-sm border-border ${card.active ? 'bg-zinc-950 text-white dark:bg-zinc-900 border-zinc-800' : 'bg-card text-card-foreground'}`}>
+            <div className="mb-4 flex items-center justify-between">
+              <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${card.active ? 'bg-white/10' : 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400'}`}>
+                <Users className="h-4 w-4" />
               </span>
-              <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${card.active ? 'bg-white/10 text-white' : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'}`}>
+              <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${card.active ? 'bg-white/10 text-white' : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'}`}>
                 {card.active ? 'Active' : 'View'}
               </span>
             </div>
-            <div className="text-3xl font-bold">{isLoading ? '...' : card.count}</div>
-            <div className={`mt-2 font-bold ${card.active ? 'text-white' : 'text-foreground'}`}>{card.label}</div>
-            <div className={`mt-1 text-sm ${card.active ? 'text-white/70' : 'text-muted-foreground'}`}>{card.active ? 'Complete directory' : 'Current status'}</div>
+            <div className="text-2xl font-bold">{isLoading ? '...' : card.count}</div>
+            <div className={`mt-1 font-semibold text-sm ${card.active ? 'text-white' : 'text-foreground'}`}>{card.label}</div>
+            <div className={`mt-0.5 text-xs ${card.active ? 'text-white/70' : 'text-muted-foreground'}`}>{card.active ? 'Complete directory' : 'Current status'}</div>
           </Card>
         ))}
       </div>
 
       <Card className="rounded-3xl bg-card text-card-foreground p-6 shadow-sm border-border">
-        <div className="grid gap-4 xl:grid-cols-[2fr_1fr_1fr_1fr]">
-          <label className="relative">
-            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+          <label className="relative sm:col-span-2 lg:col-span-3">
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search leads..."
-              className="h-12 w-full rounded-xl border border-border bg-background text-foreground pl-12 pr-4 text-sm outline-none focus:border-violet-300 focus:ring-4 focus:ring-violet-100/30"
+              className="h-9 w-full rounded-lg border border-border bg-background text-foreground pl-10 pr-4 text-sm outline-none transition-all focus:border-violet-400 focus:ring-4 focus:ring-violet-400/20"
             />
           </label>
-          <select value={status} onChange={(event) => setStatus(event.target.value)} className="h-12 rounded-xl border border-border bg-background text-foreground px-4 text-sm">
+          <select value={status} onChange={(event) => setStatus(event.target.value)} className="h-9 w-full rounded-lg border border-border bg-background text-foreground px-3 text-sm outline-none transition-all focus:border-violet-400 focus:ring-4 focus:ring-violet-400/20 cursor-pointer lg:col-span-1">
             <option value="">All Statuses</option>
             {statuses.map((item) => <option key={optionValue(item)} value={optionValue(item)}>{optionLabel(item)}</option>)}
           </select>
-          <select value={course} onChange={(event) => setCourse(event.target.value)} className="h-12 rounded-xl border border-border bg-background text-foreground px-4 text-sm">
+          <select value={course} onChange={(event) => setCourse(event.target.value)} className="h-9 w-full rounded-lg border border-border bg-background text-foreground px-3 text-sm outline-none transition-all focus:border-violet-400 focus:ring-4 focus:ring-violet-400/20 cursor-pointer lg:col-span-1">
             <option value="">All Courses</option>
             {courses.map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
-          <select value={counselor} onChange={(event) => setCounselor(event.target.value)} className="h-12 rounded-xl border border-border bg-background text-foreground px-4 text-sm">
+          <select value={counselor} onChange={(event) => setCounselor(event.target.value)} className="h-9 w-full rounded-lg border border-border bg-background text-foreground px-3 text-sm outline-none transition-all focus:border-violet-400 focus:ring-4 focus:ring-violet-400/20 cursor-pointer lg:col-span-1">
             <option value="">All Counselors</option>
             {users.map((user) => <option key={user.id} value={user.id}>{user.full_name || user.email}</option>)}
           </select>
         </div>
-        <div className="mt-7 text-sm font-bold uppercase text-muted-foreground">Found {filteredLeads.length} Leads</div>
+        <div className="mt-5 text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-violet-500"></div>
+          Found {filteredLeads.length} Leads
+        </div>
       </Card>
 
       <Card className="overflow-hidden rounded-3xl bg-card text-card-foreground shadow-sm border-border">

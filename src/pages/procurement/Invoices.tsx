@@ -714,8 +714,8 @@ export default function Invoices() {
                   onClick={submitPayment}
                   disabled={!paymentModal.inputValue || parseFloat(paymentModal.inputValue) <= 0 || parseFloat(paymentModal.inputValue) > remaining}
                   className={`flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all cursor-pointer ${!paymentModal.inputValue || parseFloat(paymentModal.inputValue) <= 0 || parseFloat(paymentModal.inputValue) > remaining
-                      ? 'bg-secondary text-muted-foreground cursor-not-allowed opacity-50'
-                      : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm'
+                    ? 'bg-secondary text-muted-foreground cursor-not-allowed opacity-50'
+                    : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm'
                     }`}
                 >
                   Confirm Payment

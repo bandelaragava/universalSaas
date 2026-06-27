@@ -26,7 +26,7 @@ function TaskAppContent() {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [showDemoTools, setShowDemoTools] = useState(false);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = Array.isArray(notifications) ? notifications.filter(n => !n.read).length : 0;
   const navItems = useMemo(() => ([
     { id: 'dashboard', label: 'Dashboard' },
     { id: 'tasks-list', label: 'Task List', permissions: ['TASKS_VIEW_TASKS', 'TASKS_VIEW_TASKS', 'TASKS_VIEW_TASKS', 'TASKS_EDIT_TASK'] },

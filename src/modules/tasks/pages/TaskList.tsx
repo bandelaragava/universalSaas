@@ -76,14 +76,14 @@ export default function TaskList() {
 
   // Filter Tasks
   const filteredTasks = useMemo(() => {
-    return tasks.filter(task => {
+    return (Array.isArray(tasks) ? tasks : []).filter(task => {
       if (task.archived) return false;
 
       // Search term
       const matchesSearch = 
-        task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        task.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        task.description.toLowerCase().includes(searchTerm.toLowerCase());
+        (task.title?.toLowerCase() ?? '').includes(searchTerm.toLowerCase()) ||
+        (task.id?.toLowerCase() ?? '').includes(searchTerm.toLowerCase()) ||
+        (task.description?.toLowerCase() ?? '').includes(searchTerm.toLowerCase());
 
       if (!matchesSearch) return false;
 
@@ -366,7 +366,7 @@ export default function TaskList() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border text-xs">
-                  {paginatedTasks.map((task) => {
+                  {paginatedTasks.map((task, idx) => {
                     const statusInfo = getTaskStatusLabel(task);
                     const isRowSelected = selectedIds.includes(task.id);
                     

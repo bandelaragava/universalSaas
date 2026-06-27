@@ -53,11 +53,20 @@ export function useReports(isAdmin: boolean) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [generating, setGenerating] = useState(false)
 
-  const [realSummary, setRealSummary] = useState({
+  const [realSummary, setRealSummary] = useState<{
+    totalUsers: number;
+    activeUsers: number;
+    totalRevenue: number;
+    loaded: boolean;
+    usersList: any[];
+    confirmedLeads: any[];
+  }>({
     totalUsers: 0,
     activeUsers: 0,
     totalRevenue: 0,
     loaded: false,
+    usersList: [],
+    confirmedLeads: [],
   })
 
   useEffect(() => {
@@ -70,7 +79,8 @@ export function useReports(isAdmin: boolean) {
         ...prev,
         totalUsers: usersList.length || 0,
         activeUsers: activeCount || 0,
-        loaded: true,
+        usersList: usersList,
+        loaded: prev.confirmedLeads ? true : prev.loaded, // Ensure loaded triggers update if needed
       }));
     }).catch(() => {
       setRealSummary(prev => ({ ...prev, loaded: true }));
@@ -78,9 +88,11 @@ export function useReports(isAdmin: boolean) {
 
     // Fetch Revenue independently
     revenueService.getRevenueOverview().then((revenueRes) => {
+      const confirmedLeads = revenueRes.data?.confirmed_leads || [];
       setRealSummary(prev => ({
         ...prev,
         totalRevenue: revenueRes.data?.confirmed_revenue || 0,
+        confirmedLeads: confirmedLeads,
         loaded: true,
       }));
     }).catch(() => {
@@ -88,30 +100,45 @@ export function useReports(isAdmin: boolean) {
     });
   }, [])
 
-  // Generate dynamic trend data based on real backend totals
+  // Generate dynamic trend data based on real backend totals and dates
   const dynamicTrendData = useMemo(() => {
     if (!realSummary.loaded) return monthlyTrendData
 
-    const { totalUsers, totalRevenue } = realSummary
+    const { usersList, confirmedLeads } = realSummary
     const trend: typeof monthlyTrendData = []
     const now = new Date()
     
-    // Create a 6-month synthetic trend ending in the current month
-    let previousUsers = Math.max(0, Math.floor(totalUsers * 0.5))
-    let previousRevenue = Math.max(0, Math.floor(totalRevenue * 0.5))
-
+    // Create a 6-month array based on REAL data grouping
     for (let i = 5; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
       const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
       const labelStr = d.toLocaleString('default', { month: 'short' })
 
-      // For the final month, use the exact totals. For previous months, use an incremental curve.
-      const isLast = i === 0
-      const currentUsers = isLast ? totalUsers : previousUsers + Math.floor((totalUsers - previousUsers) / (i + 1))
-      const currentRevenue = isLast ? totalRevenue : previousRevenue + Math.floor((totalRevenue - previousRevenue) / (i + 1))
+      // Calculate how many users joined BEFORE or DURING this month
+      const currentUsers = usersList.filter((u: any) => {
+        if (!u.created_at && !u.createdAt && !u.joiningDate) return true; // Assume old user
+        const uDate = new Date(u.created_at || u.createdAt || u.joiningDate);
+        return uDate.getFullYear() < d.getFullYear() || 
+               (uDate.getFullYear() === d.getFullYear() && uDate.getMonth() <= d.getMonth());
+      }).length;
+
+      // Calculate how many users joined exactly IN this month
+      const newUsers = usersList.filter((u: any) => {
+        if (!u.created_at && !u.createdAt && !u.joiningDate) return false;
+        const uDate = new Date(u.created_at || u.createdAt || u.joiningDate);
+        return uDate.getFullYear() === d.getFullYear() && uDate.getMonth() === d.getMonth();
+      }).length;
+
+      // Calculate cumulative revenue BEFORE or DURING this month
+      const currentRevenue = confirmedLeads.filter((l: any) => {
+        if (!l.updated_at && !l.payment_date && !l.created_at) return true;
+        const lDate = new Date(l.updated_at || l.payment_date || l.created_at);
+        return lDate.getFullYear() < d.getFullYear() || 
+               (lDate.getFullYear() === d.getFullYear() && lDate.getMonth() <= d.getMonth());
+      }).reduce((sum: number, l: any) => sum + (Number(l.amount) || 0), 0);
       
-      const newUsers = currentUsers - previousUsers
-      const growth = previousUsers > 0 ? ((currentUsers - previousUsers) / previousUsers) * 100 : 0
+      const previousUsers = currentUsers - newUsers;
+      const growth = previousUsers > 0 ? (newUsers / previousUsers) * 100 : 0;
 
       trend.push({
         month: monthStr,
@@ -121,9 +148,6 @@ export function useReports(isAdmin: boolean) {
         revenue: currentRevenue,
         growth: Math.max(0, growth),
       })
-
-      previousUsers = currentUsers
-      previousRevenue = currentRevenue
     }
 
     return trend

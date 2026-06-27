@@ -1,7 +1,7 @@
 import rolesApi from '@/services/rolesApi';
-import { 
-  AffiliateProfile, Referral, ReferralLink, CommissionRecord, 
-  PayoutTransaction, PerformanceTrend, AffiliateNotification 
+import {
+  AffiliateProfile, Referral, ReferralLink, CommissionRecord,
+  PayoutTransaction, PerformanceTrend, AffiliateNotification
 } from '../types';
 
 const USE_API = true;
@@ -439,8 +439,8 @@ export const affiliateService = {
     try {
       const data = await unwrap<RawReferral[]>(rolesApi.get('/affiliate/referrals/'));
       return data.map(mapReferral);
-    } catch {
-      return [];
+    } catch (error) {
+      throw error;
     }
   },
 
@@ -506,17 +506,8 @@ export const affiliateService = {
         totalReferrals: data.total_referrals || 0,
         activeCampaigns: data.active_campaigns || 0,
       };
-    } catch {
-      return {
-        total: mockUser.earnings.total,
-        pending: mockUser.earnings.pending,
-        paid: mockUser.earnings.paid,
-        thisMonth: mockUser.earnings.thisMonth,
-        conversionRate: 6.27,
-        totalClicks: 26400,
-        totalReferrals: mockReferrals.length,
-        activeCampaigns: 3,
-      };
+    } catch (error) {
+      throw error;
     }
   },
 
@@ -547,8 +538,8 @@ export const affiliateService = {
           status: (comm.status === 'paid' || comm.status === 'failed' ? comm.status : 'pending') as CommissionRecord['status'],
         };
       });
-    } catch {
-      return fallbackCommissions();
+    } catch (error) {
+      throw error;
     }
   },
 
@@ -557,8 +548,8 @@ export const affiliateService = {
     try {
       const data = await unwrap<RawPayment[]>(rolesApi.get('/affiliate/payments/'));
       return data ? data.map(mapPayment) : [];
-    } catch {
-      return [];
+    } catch (error) {
+      throw error;
     }
   },
 
@@ -600,8 +591,8 @@ export const affiliateService = {
         commission: item.earnings || item.commission || 0,
         clicks: item.clicks || 0,
       }));
-    } catch {
-      return [];
+    } catch (error) {
+      throw error;
     }
   },
 
@@ -617,8 +608,8 @@ export const affiliateService = {
         read: n.read ?? n.is_read ?? false,
         date: n.date || n.created_at || new Date().toISOString(),
       }));
-    } catch {
-      return [];
+    } catch (error) {
+      throw error;
     }
   },
 
@@ -626,8 +617,8 @@ export const affiliateService = {
     if (!USE_API) return { id };
     try {
       return await unwrap<unknown>(rolesApi.put(`/affiliate/notifications/${id}/read/`));
-    } catch {
-      return { id };
+    } catch (error) {
+      throw error;
     }
   },
 
@@ -635,10 +626,9 @@ export const affiliateService = {
     if (!USE_API) return { ok: true };
     try {
       return await unwrap<unknown>(rolesApi.put('/affiliate/notifications/read-all/'));
-    } catch {
-      return { ok: true };
+    } catch (error) {
+      throw error;
     }
   }
 };
-
 

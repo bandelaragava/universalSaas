@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { usePermissions } from '@/auth/usePermissions';
 import { payrollService, SalaryStructure, PayrollRun, PayrollRunEntry } from '@/services/payroll';
+import { employeeService } from '../../services/employees';
 import toast from 'react-hot-toast';
 
 const MONTH_NAMES = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -28,14 +29,14 @@ const n = (v: number | string | undefined | null) => parseFloat(String(v || 0));
 const fmtD = (v: number | string | undefined | null) => parseFloat(String(v || 0)).toFixed(1);
 const moneyRows = (source: Record<string, number> | undefined, keys: Array<[string, string]>) =>
   keys.map(([key, label]) => ({ key, label, value: n(source?.[key]) })).filter((row) => row.value !== 0);
-const javaUserId = (user: any) => String(user?.id ?? user?.userId ?? user?.user_id ?? '');
-const javaUserFirstName = (user: any) => String(user?.firstName ?? user?.first_name ?? '').trim();
-const javaUserLastName = (user: any) => String(user?.lastName ?? user?.last_name ?? '').trim();
+const javaUserId = (user: any) => String(user?.user_id ?? user?.id ?? user?.userId ?? '');
+const javaUserFirstName = (user: any) => String(user?.first_name ?? user?.firstName ?? '').trim();
+const javaUserLastName = (user: any) => String(user?.last_name ?? user?.lastName ?? '').trim();
 const javaUserName = (user: any) => {
   const fullName = `${javaUserFirstName(user)} ${javaUserLastName(user)}`.trim();
-  return fullName || String(user?.name ?? user?.username ?? user?.email ?? 'User');
+  return fullName || String(user?.display_name ?? user?.name ?? user?.username ?? user?.email ?? 'User');
 };
-const javaUserEmpCode = (user: any) => String(user?.employeeId ?? user?.leadId ?? user?.profileData?.emp_code ?? user?.emp_code ?? '');
+const javaUserEmpCode = (user: any) => String(user?.emp_code ?? user?.employeeId ?? user?.leadId ?? user?.profileData?.emp_code ?? '');
 const javaUserEmail = (user: any) => String(user?.email ?? user?.username ?? '');
 
 const FALLBACK_DEFAULTS = {
@@ -170,7 +171,7 @@ export function PayrollPage() {
         const configRes = await payrollService.getSalaryList();
         setSalaryStructuresList(configRes.data || []);
 
-        const empRes = await payrollService.listEmployees();
+        const empRes = await employeeService.list({ active: true });
         setEmployees(empRes.data || []);
       }
     } catch {
@@ -972,102 +973,102 @@ export function PayrollPage() {
 
                               return (
                                 <>
-                                <tr key={entry.id} className="border-b last:border-0 hover:bg-muted/5">
-                                  <td className="p-3">
-                                    <p className="font-bold text-foreground text-sm">{entry.employee_name}</p>
-                                    <p className="text-[10px] text-muted-foreground">{entry.emp_code} • {entry.department}</p>
-                                  </td>
-                                  <td className="p-3">
-                                    <p className="font-bold">{fmtD(entry.present_days)} / {entry.working_days} days</p>
-                                    {isLop && <span className="text-[9px] text-orange-400 font-medium">⚡ {fmtD(entry.lop_days)} LOP</span>}
-                                  </td>
-                                  <td className="p-3 font-semibold text-blue-400">{fmt(entry.gross)}</td>
-                                  <td className="p-3 font-semibold text-red-500">-{fmt(entry.total_deductions)}</td>
-                                  <td className="p-3 font-bold text-emerald-400">{fmt(entry.net_pay)}</td>
-                                  <td className="p-3 text-right space-x-1.5">
-                                    {activeRunDetail.run.status !== 'locked' && (
+                                  <tr key={entry.id} className="border-b last:border-0 hover:bg-muted/5">
+                                    <td className="p-3">
+                                      <p className="font-bold text-foreground text-sm">{entry.employee_name}</p>
+                                      <p className="text-[10px] text-muted-foreground">{entry.emp_code} • {entry.department}</p>
+                                    </td>
+                                    <td className="p-3">
+                                      <p className="font-bold">{fmtD(entry.present_days)} / {entry.working_days} days</p>
+                                      {isLop && <span className="text-[9px] text-orange-400 font-medium">⚡ {fmtD(entry.lop_days)} LOP</span>}
+                                    </td>
+                                    <td className="p-3 font-semibold text-blue-400">{fmt(entry.gross)}</td>
+                                    <td className="p-3 font-semibold text-red-500">-{fmt(entry.total_deductions)}</td>
+                                    <td className="p-3 font-bold text-emerald-400">{fmt(entry.net_pay)}</td>
+                                    <td className="p-3 text-right space-x-1.5">
+                                      {activeRunDetail.run.status !== 'locked' && (
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          className="h-7 px-2 text-[10px]"
+                                          onClick={() => {
+                                            setAdjEntry(entry);
+                                            setAdjForm({ type: 'bonus', amount: '', reason: '' });
+                                          }}
+                                        >
+                                          + Adj
+                                        </Button>
+                                      )}
                                       <Button
                                         size="sm"
-                                        variant="outline"
-                                        className="h-7 px-2 text-[10px]"
-                                        onClick={() => {
-                                          setAdjEntry(entry);
-                                          setAdjForm({ type: 'bonus', amount: '', reason: '' });
-                                        }}
+                                        variant="ghost"
+                                        className="h-7 px-2 text-primary text-[10px]"
+                                        onClick={() => setExpandEntryId(isExpanded ? null : entry.id)}
                                       >
-                                        + Adj
+                                        {isExpanded ? 'Hide' : 'Details'}
                                       </Button>
-                                    )}
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-7 px-2 text-primary text-[10px]"
-                                      onClick={() => setExpandEntryId(isExpanded ? null : entry.id)}
-                                    >
-                                      {isExpanded ? 'Hide' : 'Details'}
-                                    </Button>
-                                  </td>
-                                </tr>
-                                {isExpanded && (
-                                  <tr className="border-b bg-muted/10">
-                                    <td colSpan={6} className="p-4">
-                                      <div className="grid gap-4 md:grid-cols-3">
-                                        <div className="rounded-lg border bg-background p-3">
-                                          <p className="mb-2 text-[10px] font-bold uppercase text-muted-foreground">Attendance Basis</p>
-                                          <div className="space-y-1 text-[11px]">
-                                            <div className="flex justify-between"><span>Calendar days</span><strong>{entry.attendance_breakdown?.total_days ?? entry.working_days}</strong></div>
-                                            <div className="flex justify-between"><span>Working days</span><strong>{entry.attendance_breakdown?.working_days ?? entry.working_days}</strong></div>
-                                            <div className="flex justify-between"><span>Paid present days</span><strong>{fmtD(entry.attendance_breakdown?.present_days ?? entry.present_days)}</strong></div>
-                                            <div className="flex justify-between text-orange-400"><span>LOP days</span><strong>{fmtD(entry.attendance_breakdown?.lop_days ?? entry.lop_days)}</strong></div>
-                                            <div className="flex justify-between"><span>Holidays</span><strong>{entry.attendance_breakdown?.holiday_count ?? entry.holiday_count}</strong></div>
-                                            <div className="flex justify-between"><span>OT hours</span><strong>{fmtD(entry.attendance_breakdown?.ot_hours ?? entry.ot_hours)}</strong></div>
-                                            <div className="flex justify-between"><span>Extra work days</span><strong>{fmtD(entry.attendance_breakdown?.extra_work_days ?? entry.extra_work_days)}</strong></div>
-                                            <div className="flex justify-between"><span>Comp-off adjusted</span><strong>{fmtD(entry.attendance_breakdown?.comp_off_days ?? entry.comp_off_days)}</strong></div>
-                                          </div>
-                                        </div>
-
-                                        <div className="rounded-lg border bg-background p-3">
-                                          <p className="mb-2 text-[10px] font-bold uppercase text-muted-foreground">Earnings</p>
-                                          <div className="space-y-1 text-[11px]">
-                                            {moneyRows(entry.earnings_breakdown, [
-                                              ['basic', 'Basic'],
-                                              ['hra', 'HRA'],
-                                              ['da', 'DA'],
-                                              ['special_allowance', 'Special allowance'],
-                                              ['transport', 'Transport'],
-                                              ['medical', 'Medical'],
-                                              ['other_allowance', 'Other allowance'],
-                                              ['ot_pay', 'OT pay'],
-                                              ['extra_work_pay', 'Extra work pay'],
-                                              ['adjustment_credits', 'Adjustment credits'],
-                                            ]).map((row) => (
-                                              <div key={row.key} className="flex justify-between"><span>{row.label}</span><strong>{fmt(row.value)}</strong></div>
-                                            ))}
-                                            <div className="flex justify-between border-t pt-1 text-blue-400"><span>Gross</span><strong>{fmt(entry.gross)}</strong></div>
-                                          </div>
-                                        </div>
-
-                                        <div className="rounded-lg border bg-background p-3">
-                                          <p className="mb-2 text-[10px] font-bold uppercase text-muted-foreground">Deductions & Net</p>
-                                          <div className="space-y-1 text-[11px]">
-                                            {moneyRows(entry.deductions_breakdown, [
-                                              ['pf_employee', 'PF employee'],
-                                              ['esi_employee', 'ESI employee'],
-                                              ['pt', 'Professional tax'],
-                                              ['tds', 'TDS'],
-                                              ['lop_deduction', 'LOP deduction'],
-                                              ['adjustment_deductions', 'Adjustment deductions'],
-                                            ]).map((row) => (
-                                              <div key={row.key} className="flex justify-between text-red-400"><span>{row.label}</span><strong>-{fmt(row.value)}</strong></div>
-                                            ))}
-                                            <div className="flex justify-between border-t pt-1 text-red-500"><span>Total deductions</span><strong>-{fmt(entry.total_deductions)}</strong></div>
-                                            <div className="flex justify-between rounded-md bg-emerald-500/10 p-2 text-emerald-400"><span>Net payable</span><strong>{fmt(entry.net_pay)}</strong></div>
-                                          </div>
-                                        </div>
-                                      </div>
                                     </td>
                                   </tr>
-                                )}
+                                  {isExpanded && (
+                                    <tr className="border-b bg-muted/10">
+                                      <td colSpan={6} className="p-4">
+                                        <div className="grid gap-4 md:grid-cols-3">
+                                          <div className="rounded-lg border bg-background p-3">
+                                            <p className="mb-2 text-[10px] font-bold uppercase text-muted-foreground">Attendance Basis</p>
+                                            <div className="space-y-1 text-[11px]">
+                                              <div className="flex justify-between"><span>Calendar days</span><strong>{entry.attendance_breakdown?.total_days ?? entry.working_days}</strong></div>
+                                              <div className="flex justify-between"><span>Working days</span><strong>{entry.attendance_breakdown?.working_days ?? entry.working_days}</strong></div>
+                                              <div className="flex justify-between"><span>Paid present days</span><strong>{fmtD(entry.attendance_breakdown?.present_days ?? entry.present_days)}</strong></div>
+                                              <div className="flex justify-between text-orange-400"><span>LOP days</span><strong>{fmtD(entry.attendance_breakdown?.lop_days ?? entry.lop_days)}</strong></div>
+                                              <div className="flex justify-between"><span>Holidays</span><strong>{entry.attendance_breakdown?.holiday_count ?? entry.holiday_count}</strong></div>
+                                              <div className="flex justify-between"><span>OT hours</span><strong>{fmtD(entry.attendance_breakdown?.ot_hours ?? entry.ot_hours)}</strong></div>
+                                              <div className="flex justify-between"><span>Extra work days</span><strong>{fmtD(entry.attendance_breakdown?.extra_work_days ?? entry.extra_work_days)}</strong></div>
+                                              <div className="flex justify-between"><span>Comp-off adjusted</span><strong>{fmtD(entry.attendance_breakdown?.comp_off_days ?? entry.comp_off_days)}</strong></div>
+                                            </div>
+                                          </div>
+
+                                          <div className="rounded-lg border bg-background p-3">
+                                            <p className="mb-2 text-[10px] font-bold uppercase text-muted-foreground">Earnings</p>
+                                            <div className="space-y-1 text-[11px]">
+                                              {moneyRows(entry.earnings_breakdown, [
+                                                ['basic', 'Basic'],
+                                                ['hra', 'HRA'],
+                                                ['da', 'DA'],
+                                                ['special_allowance', 'Special allowance'],
+                                                ['transport', 'Transport'],
+                                                ['medical', 'Medical'],
+                                                ['other_allowance', 'Other allowance'],
+                                                ['ot_pay', 'OT pay'],
+                                                ['extra_work_pay', 'Extra work pay'],
+                                                ['adjustment_credits', 'Adjustment credits'],
+                                              ]).map((row) => (
+                                                <div key={row.key} className="flex justify-between"><span>{row.label}</span><strong>{fmt(row.value)}</strong></div>
+                                              ))}
+                                              <div className="flex justify-between border-t pt-1 text-blue-400"><span>Gross</span><strong>{fmt(entry.gross)}</strong></div>
+                                            </div>
+                                          </div>
+
+                                          <div className="rounded-lg border bg-background p-3">
+                                            <p className="mb-2 text-[10px] font-bold uppercase text-muted-foreground">Deductions & Net</p>
+                                            <div className="space-y-1 text-[11px]">
+                                              {moneyRows(entry.deductions_breakdown, [
+                                                ['pf_employee', 'PF employee'],
+                                                ['esi_employee', 'ESI employee'],
+                                                ['pt', 'Professional tax'],
+                                                ['tds', 'TDS'],
+                                                ['lop_deduction', 'LOP deduction'],
+                                                ['adjustment_deductions', 'Adjustment deductions'],
+                                              ]).map((row) => (
+                                                <div key={row.key} className="flex justify-between text-red-400"><span>{row.label}</span><strong>-{fmt(row.value)}</strong></div>
+                                              ))}
+                                              <div className="flex justify-between border-t pt-1 text-red-500"><span>Total deductions</span><strong>-{fmt(entry.total_deductions)}</strong></div>
+                                              <div className="flex justify-between rounded-md bg-emerald-500/10 p-2 text-emerald-400"><span>Net payable</span><strong>{fmt(entry.net_pay)}</strong></div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  )}
                                 </>
                               );
                             })}

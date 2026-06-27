@@ -21,6 +21,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { leaveService, LeaveType, LeaveBalance, LeaveRequest, Holiday } from '@/services/leave';
+import { employeeService, EmployeeOption } from '../../services/employees';
 import { usePermissions } from '@/auth/usePermissions';
 
 // --- STYLING CONSTANTS ---
@@ -35,6 +36,8 @@ const STATUS_BADGES = {
   rejected: "bg-rose-500/10 text-rose-455 border-rose-500/20",
   cancelled: "bg-slate-800/40 text-slate-400 border-slate-700/50",
 };
+
+const employeeFilterValue = (employee: EmployeeOption) => employee.attendance_id || String(employee.user_id);
 
 interface AxiosErrorLike {
   response?: {
@@ -73,13 +76,13 @@ function BalanceDashboard() {
     leaveService.getSystemSettings().then(res => {
       const all = Object.values(res.data).flat();
       const find = (key: string) => all.find(s => s.key === key);
-      
+
       const lt = find('leave_balance_low_threshold');
       if (lt) setLowThreshold(parseInt(lt.value, 10) || 2);
-      
+
       const enc = find('leave_encashment_enabled');
       if (enc) setEncashEnabled(enc.value === 'true');
-    }).catch(() => {});
+    }).catch(() => { });
   }, []);
 
   useEffect(() => {
@@ -119,7 +122,7 @@ function BalanceDashboard() {
             )}
           </p>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <button
             onClick={refreshBalances}
@@ -192,9 +195,8 @@ function BalanceDashboard() {
             return (
               <div
                 key={b.id || b.leave_type_id}
-                className={`bg-slate-950/40 backdrop-blur-md border rounded-2xl p-5 shadow-xl relative flex flex-col justify-between ${
-                  isEmpty ? 'border-rose-900/40' : isLow ? 'border-amber-900/40' : carried > 0 ? 'border-blue-900/40' : 'border-slate-800'
-                }`}
+                className={`bg-slate-950/40 backdrop-blur-md border rounded-2xl p-5 shadow-xl relative flex flex-col justify-between ${isEmpty ? 'border-rose-900/40' : isLow ? 'border-amber-900/40' : carried > 0 ? 'border-blue-900/40' : 'border-slate-800'
+                  }`}
               >
                 {/* Header */}
                 <div className="flex justify-between items-start mb-4">
@@ -660,11 +662,10 @@ function MyRequests() {
           <button
             key={f.value}
             onClick={() => setFilter(f.value)}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
-              filter === f.value
+            className={`px-4 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${filter === f.value
                 ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400'
                 : 'bg-slate-900/40 border-slate-850 text-slate-400 hover:text-slate-200'
-            }`}
+              }`}
           >
             {f.label}
           </button>
@@ -751,11 +752,10 @@ function MyRequests() {
                     {canCancel && (
                       <button
                         onClick={() => handleCancel(req.id)}
-                        className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
-                          req.status === 'approved'
+                        className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${req.status === 'approved'
                             ? 'bg-amber-500/10 text-amber-400 border-amber-500/25 hover:bg-amber-500/20'
                             : 'bg-rose-500/10 text-rose-455 border-rose-500/25 hover:bg-rose-500/20'
-                        }`}
+                          }`}
                       >
                         {req.status === 'approved' ? 'Withdraw' : 'Cancel'}
                       </button>
@@ -948,8 +948,10 @@ function PriorUsageModal({ data, note, onNoteChange, onConfirm, onCancel, loadin
 
 function LeaveApprovals() {
   const [requests, setRequests] = useState<LeaveRequest[]>([]);
+  const [employees, setEmployees] = useState<EmployeeOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState('pending');
+  const [employeeFilter, setEmployeeFilter] = useState('');
 
   const [popup, setPopup] = useState<{ leaveId: number; data: PriorUsageData } | null>(null);
   const [popupNote, setPopupNote] = useState('');
@@ -959,25 +961,31 @@ function LeaveApprovals() {
   const loadRequests = useCallback(async () => {
     setLoading(true);
     try {
-      const r = await leaveService.getAllRequests(filter || undefined);
-      let nextRequests = r.data || [];
-
-      if (filter === 'pending' && nextRequests.length === 0) {
-        const myPending = await leaveService.getMyRequests('pending');
-        nextRequests = myPending.data || [];
-      }
-
-      setRequests(nextRequests);
+      const r = await leaveService.getAllRequests(filter || undefined, employeeFilter || undefined);
+      setRequests(r.data || []);
     } catch {
       toast.error('Failed to load leave approvals');
     } finally {
       setLoading(false);
     }
-  }, [filter]);
+  }, [filter, employeeFilter]);
+
+  const loadEmployees = useCallback(async () => {
+    try {
+      const r = await employeeService.list({ active: true });
+      setEmployees(r.data || []);
+    } catch {
+      setEmployees([]);
+    }
+  }, []);
 
   useEffect(() => {
     loadRequests();
   }, [loadRequests]);
+
+  useEffect(() => {
+    loadEmployees();
+  }, [loadEmployees]);
 
   const handleApproveClick = async (req: LeaveRequest) => {
     setCheckingId(req.id);
@@ -1045,15 +1053,27 @@ function LeaveApprovals() {
           <button
             key={s}
             onClick={() => setFilter(s)}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold border transition-all uppercase tracking-wider cursor-pointer ${
-              filter === s
+            className={`px-4 py-2 rounded-xl text-xs font-semibold border transition-all uppercase tracking-wider cursor-pointer ${filter === s
                 ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400'
                 : 'bg-slate-900/40 border-slate-850 text-slate-400 hover:text-slate-200'
-            }`}
+              }`}
           >
             {s}
           </button>
         ))}
+        <select
+          value={employeeFilter}
+          onChange={(event) => setEmployeeFilter(event.target.value)}
+          className="ml-auto min-w-[220px] px-3 py-2 rounded-xl text-xs font-semibold border bg-slate-900/40 border-slate-850 text-slate-300 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+        >
+          <option value="">All visible employees</option>
+          {employees.map((employee) => (
+            <option key={employee.user_id} value={employeeFilterValue(employee)}>
+              {employee.display_name || `${employee.first_name} ${employee.last_name}`.trim() || employee.username}
+              {employee.emp_code ? ` (${employee.emp_code})` : ''}
+            </option>
+          ))}
+        </select>
       </div>
 
       {loading ? (
@@ -1762,9 +1782,8 @@ function HolidayRow({ h, onEdit, onDelete, deletingId, isUpcoming = false }: Hol
   return (
     <div className="flex items-center gap-4 p-4 hover:bg-slate-900/30 transition-all">
       {/* Date badge */}
-      <div className={`w-12 h-12 flex flex-col justify-center items-center rounded-xl font-bold flex-shrink-0 text-center ${
-        isUpcoming ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/10' : 'bg-slate-800 text-slate-400'
-      }`}>
+      <div className={`w-12 h-12 flex flex-col justify-center items-center rounded-xl font-bold flex-shrink-0 text-center ${isUpcoming ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/10' : 'bg-slate-800 text-slate-400'
+        }`}>
         <span className="text-base font-extrabold leading-none">{dateObj.getDate()}</span>
         <span className="text-[9px] uppercase tracking-wider font-semibold mt-0.5">
           {dateObj.toLocaleDateString('en-IN', { month: 'short' })}
@@ -1813,11 +1832,25 @@ function HolidayRow({ h, onEdit, onDelete, deletingId, isUpcoming = false }: Hol
 // --- CONTAINER PAGE: LeavePage ---
 export function LeavePage() {
   const [activeTab, setActiveTab] = useState('balance');
-  const { role, hasAnyPermission } = usePermissions();
+  const { role, hasAnyPermission, user } = usePermissions();
+
+  const [employees, setEmployees] = useState<EmployeeOption[]>([]);
+  useEffect(() => {
+    employeeService.list({ active: true }).then(r => setEmployees(r.data || [])).catch(() => { });
+  }, []);
 
   // Admin tabs are visible to HR/Admin roles
   const isAdminOrHR = role === 'ADMIN' || role === 'SUPER_ADMIN' || role === 'HR';
-  const canManageApprovals = isAdminOrHR || hasAnyPermission(['view_all_leave', 'approve_leave']);
+  const currentUserOption = employees.find(emp => Number(emp.user_id) === Number(user?.id));
+  const isManagerOrLead = role === 'MANAGER' ||
+    isAdminOrHR ||
+    String(currentUserOption?.designation || '').toLowerCase().includes('lead') ||
+    String(currentUserOption?.designation || '').toLowerCase().includes('manager') ||
+    employees.some(emp => Number(emp.manager) === Number(user?.id));
+
+  const canManageApprovals = isAdminOrHR || hasAnyPermission([
+    'view_all_leave', 'approve_leave', 'leave_approve', 'leave_view', 'hrms_leave_approve', 'hrms_leave_view'
+  ]) || isManagerOrLead;
   const canConfigureLeave = isAdminOrHR || hasAnyPermission(['configure_leave']);
 
   const tabs = [
@@ -1860,11 +1893,10 @@ export function LeavePage() {
             <button
               key={t.key}
               onClick={() => setActiveTab(t.key)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                isActive
+              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${isActive
                   ? 'bg-slate-950 text-cyan-400 shadow-md border border-slate-850/60'
                   : 'text-slate-400 hover:text-slate-200'
-              }`}
+                }`}
             >
               <Icon className={`w-4 h-4 ${isActive ? 'text-cyan-400' : 'text-slate-400'}`} />
               {t.label}

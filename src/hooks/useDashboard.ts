@@ -26,7 +26,7 @@ export function useDashboard() {
       try {
         const [followupsRes, revenueRes, tasksRes, ticketsRes] = await Promise.allSettled([
           rolesApi.get('/leads/followups/'),
-          rolesApi.get('/revenue/overview'),
+          rolesApi.get('/revenue/overview/'),
           rolesApi.get('/tasks/'),
           rolesApi.get('/support/tickets/all/'),
         ]);
@@ -48,7 +48,7 @@ export function useDashboard() {
 
         // 1. Followups
         const followups = followupsRes.status === 'fulfilled' ? (followupsRes.value.data || []) : [];
-        const todayFollowups = followups.filter((f: any) => !f.completed && isToday(f.scheduled_at)).length;
+        const todayFollowups = followups.filter((f: any) => !f.completed && isToday(f.scheduled_at || f.scheduledAt)).length;
         const pendingFollowups = followups.filter((f: any) => !f.completed).length;
 
         // 2. Revenue
@@ -70,7 +70,7 @@ export function useDashboard() {
 
         // 3. Tasks
         const tasks = tasksRes.status === 'fulfilled' ? (tasksRes.value.data || []) : [];
-        const todayTasks = tasks.filter((t: any) => t.status !== 'completed' && isToday(t.dueDate)).length;
+        const todayTasks = tasks.filter((t: any) => t.status !== 'completed' && isToday(t.dueDate || t.due_date || t.created_at)).length;
         const pendingTasks = tasks.filter((t: any) => t.status !== 'completed').length;
 
         // 4. Tickets

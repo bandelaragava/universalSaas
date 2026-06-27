@@ -94,7 +94,7 @@ export default function VendorPortal() {
       await rolesApi.put(`/api/purchase-orders/${selectedPO.id}`, payload);
 
       const totalAmount = payload.items.reduce((sum, item) => sum + (parseFloat(item.unitPrice?.toString() || '0') * (item.quantity || 1)), 0);
-      
+
       const invoicePayload = {
         invoiceNumber: `INV-${selectedPO.poNumber}`,
         vendorId: selectedPO.vendorId,
@@ -167,7 +167,7 @@ export default function VendorPortal() {
             <ShoppingCart className="text-cyan-400" size={20} />
             <h2 className="text-lg font-semibold text-foreground">Your Pending Requests</h2>
           </div>
-          
+
           {loading ? (
             <div className="p-8 text-center text-muted-foreground">Loading your purchase orders...</div>
           ) : purchaseOrders.filter(po => ['Requested', 'Approved', 'In Transit'].includes(po.status)).length === 0 ? (
@@ -180,9 +180,8 @@ export default function VendorPortal() {
                     <div>
                       <div className="flex items-center gap-3 mb-1">
                         <span className="font-mono text-cyan-400 font-medium">{po.poNumber}</span>
-                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-                          po.status === 'Requested' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                        }`}>
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${po.status === 'Requested' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                          }`}>
                           {po.status}
                         </span>
                       </div>
@@ -190,7 +189,7 @@ export default function VendorPortal() {
                         Requested on {new Date(po.date).toLocaleDateString()} • Expected by {new Date(po.deliveryDate).toLocaleDateString()}
                       </p>
                     </div>
-                    
+
                     <div className="text-left sm:text-right">
                       <p className="text-xs text-muted-foreground mb-1">Total Items</p>
                       <p className="text-sm font-medium text-foreground">
@@ -200,13 +199,13 @@ export default function VendorPortal() {
 
                     {po.status === 'Requested' ? (
                       <div className="flex gap-2">
-                        <button 
+                        <button
                           onClick={() => handleReject(po)}
                           className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer"
                         >
                           Reject
                         </button>
-                        <button 
+                        <button
                           onClick={() => { setSelectedPO(JSON.parse(JSON.stringify(po))); setQuoteModalOpen(true); }}
                           className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer"
                         >
@@ -216,7 +215,7 @@ export default function VendorPortal() {
                     ) : po.status === 'Approved' ? (
                       <div className="flex flex-col items-end gap-2">
                         <span className="text-muted-foreground text-sm italic">Quotation Submitted</span>
-                        <button 
+                        <button
                           onClick={() => handleTransit(po)}
                           className="bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer"
                         >
@@ -225,7 +224,7 @@ export default function VendorPortal() {
                       </div>
                     ) : po.status === 'In Transit' ? (
                       <div className="flex flex-col items-end gap-2">
-                        <button 
+                        <button
                           onClick={() => handleDelivered(po)}
                           className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer"
                         >
@@ -236,7 +235,7 @@ export default function VendorPortal() {
                       <span className="text-muted-foreground text-sm italic">Status: {po.status}</span>
                     )}
                   </div>
-                  
+
                   {po.items && po.items.length > 0 && (
                     <div className="mt-4 pt-4 border-t border-border/50">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Items</p>
@@ -268,7 +267,7 @@ export default function VendorPortal() {
             <History className="text-muted-foreground" size={20} />
             <h2 className="text-lg font-semibold text-muted-foreground">Order History</h2>
           </div>
-          
+
           {loading ? (
             <div className="p-8 text-center text-muted-foreground">Loading history...</div>
           ) : purchaseOrders.filter(po => ['Delivered', 'Rejected'].includes(po.status)).length === 0 ? (
@@ -281,9 +280,8 @@ export default function VendorPortal() {
                     <div>
                       <div className="flex items-center gap-3 mb-1">
                         <span className="font-mono text-cyan-400 font-medium">{po.poNumber}</span>
-                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-                          po.status === 'Rejected' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20' : 'bg-muted text-muted-foreground border-border'
-                        }`}>
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${po.status === 'Rejected' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20' : 'bg-muted text-muted-foreground border-border'
+                          }`}>
                           {po.status}
                         </span>
                       </div>
@@ -291,7 +289,7 @@ export default function VendorPortal() {
                         Requested on {new Date(po.date).toLocaleDateString()}
                       </p>
                     </div>
-                    
+
                     <div className="text-left sm:text-right">
                       <p className="text-xs text-muted-foreground mb-1">Total Items</p>
                       <p className="text-sm font-medium text-muted-foreground">
@@ -323,8 +321,8 @@ export default function VendorPortal() {
                     </div>
                     <div>
                       <label className="block text-xs text-muted-foreground mb-1">Unit Price ($)</label>
-                      <input 
-                        type="number" 
+                      <input
+                        type="number"
                         step="0.01"
                         min="0"
                         required

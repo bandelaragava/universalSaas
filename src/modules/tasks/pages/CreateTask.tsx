@@ -27,7 +27,7 @@ export default function CreateTask({ onClose }: { onClose?: () => void } = {}) {
   } = useTasks();
 
   const isEditMode = selectedTaskId !== null;
-  const existingTask = tasks.find(t => t.id === selectedTaskId);
+  const existingTask = Array.isArray(tasks) ? tasks.find(t => t.id === selectedTaskId) : undefined;
 
   // Form states
   const [title, setTitle] = useState(() => existingTask?.title || '');

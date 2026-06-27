@@ -11,6 +11,9 @@ export interface OfficeLocation {
 
 export interface AttendanceRecord {
   id?: string | null;
+  employee?: string | number;
+  employee_name?: string;
+  emp_code?: string;
   date: string;
   check_in?: string | null;
   check_out?: string | null;
@@ -76,6 +79,7 @@ export interface RegularizationRequest {
 
 const normalizeRegularization = (request: RegularizationRequest): RegularizationRequest => ({
   ...request,
+  employee_id: String(request.employee_id || (request as any).employee || ''),
   requested_check_in: request.requested_check_in ?? request.requested_checkin ?? null,
   requested_check_out: request.requested_check_out ?? request.requested_checkout ?? null,
   manager_note: request.manager_note ?? request.approver_note ?? '',
@@ -99,10 +103,14 @@ export const attendanceService = {
     hours_worked?: number;
     ot_hours?: number;
   }>('/attendance/today/'),
-  getMyAttendance: (month: number, year: number) =>
-    rolesApi.get<MonthlyAttendanceResponse | AttendanceRecord[]>('/attendance/my/', { params: { month, year } }),
-  getAllAttendance: (month: number, year: number, employeeId?: string) =>
-    rolesApi.get<AttendanceRecord[]>('/attendance/all/', { params: { month, year, employee: employeeId } }),
+  getMyAttendance: (month: number, year: number, employeeId?: string | number, startDate?: string, endDate?: string) =>
+    rolesApi.get<MonthlyAttendanceResponse | AttendanceRecord[]>('/attendance/my/', {
+      params: { month, year, employee: employeeId, start_date: startDate, end_date: endDate },
+    }),
+  getAllAttendance: (month: number, year: number, employeeId?: string | number, startDate?: string, endDate?: string) =>
+    rolesApi.get<AttendanceRecord[]>('/attendance/all/', {
+      params: { month, year, employee: employeeId, start_date: startDate, end_date: endDate },
+    }),
   applyRegularization: (data: { date: string; requested_check_in?: string; requested_check_out?: string; reason: string }) => {
     const formatTime = (t?: string) => t ? (t.length === 5 ? `${t}:00` : t) : null;
     return rolesApi.post<RegularizationRequest>('/attendance/regularize/', {
@@ -117,8 +125,8 @@ export const attendanceService = {
       ...res,
       data: (res.data || []).map(normalizeRegularization),
     })),
-  getAllRegularizations: (status?: string) =>
-    rolesApi.get<RegularizationRequest[]>('/attendance/regularize/all/', { params: { status } }).then((res) => ({
+  getAllRegularizations: (status?: string, employeeId?: string | number) =>
+    rolesApi.get<RegularizationRequest[]>('/attendance/regularize/all/', { params: { status, employee: employeeId } }).then((res) => ({
       ...res,
       data: (res.data || []).map(normalizeRegularization),
     })),

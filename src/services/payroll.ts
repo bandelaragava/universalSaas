@@ -125,7 +125,7 @@ export interface PayrollDashboardStats {
 }
 
 export const payrollService = {
-  getSalaryList: (employeeId?: string) =>
+  getSalaryList: (employeeId?: string | number) =>
     rolesApi.get<SalaryStructure[]>('/payroll/salary/', { params: { employee: employeeId } }),
   createSalary: (data: unknown) =>
     rolesApi.post<SalaryStructure>('/payroll/salary/create/', data),
@@ -145,9 +145,12 @@ export const payrollService = {
     rolesApi.patch<PayrollRunEntry>(`/payroll/entries/${id}/`, data),
   addAdjustment: (id: string, data: { type: string; amount: string; reason: string }) =>
     rolesApi.post<PayrollRunEntry>(`/payroll/entries/${id}/adjust/`, data),
-  getMyPayslips: () => rolesApi.get<unknown[]>('/payroll/payslips/'),
+  getMyPayslips: (employeeId?: string | number, startDate?: string, endDate?: string) =>
+    rolesApi.get<unknown[]>('/payroll/payslips/', {
+      params: { employee: employeeId, start_date: startDate, end_date: endDate },
+    }),
   getPayslipDetail: (month: number, year: number) =>
     rolesApi.get<Payslip>(`/payroll/payslips/${month}/${year}/`),
   getDashboardStats: () => rolesApi.get<PayrollDashboardStats>('/payroll/dashboard-stats/'),
-  listEmployees: () => rolesApi.get<unknown[]>('/users'),
+  listEmployees: () => rolesApi.get<unknown[]>('/employees/'),
 };
