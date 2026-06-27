@@ -6,6 +6,7 @@ export default function Signup() {
   const navigate = useNavigate();
   
   const [tenantName, setTenantName] = useState('');
+  const [tenantCode, setTenantCode] = useState('');
   const [adminFirstName, setAdminFirstName] = useState('');
   const [adminLastName, setAdminLastName] = useState('');
   const [adminEmail, setAdminEmail] = useState('');
@@ -15,6 +16,7 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -24,6 +26,7 @@ export default function Signup() {
 
     const payload = {
       tenantName,
+      tenantCode,
       adminFirstName,
       adminLastName,
       adminEmail,
@@ -36,8 +39,19 @@ export default function Signup() {
       setMessage('Company registered successfully! Your 15-Day Trial has started.');
       setTimeout(() => navigate('/login'), 2500);
     } catch (err: unknown) {
-      const axiosError = err as { response?: { data?: { message?: string } } };
-      setError(axiosError.response?.data?.message || 'Registration failed. Please try again.');
+      const axiosError = err as { response?: { data?: { message?: string, data?: Record<string, string> } } };
+      const responseData = axiosError.response?.data;
+      
+      if (responseData?.data) {
+        setFieldErrors(responseData.data);
+        setError('Validation failed. See highlighted fields.');
+        // Force the user to see the exact error response payload
+        alert("BACKEND REJECTED YOUR INPUT:\n\n" + JSON.stringify(responseData.data, null, 2));
+      } else {
+        const msg = responseData?.message || 'Registration failed. Please try again.';
+        setError(msg);
+        alert("BACKEND ERROR:\n\n" + msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -71,6 +85,20 @@ export default function Signup() {
               value={tenantName}
               onChange={(e) => setTenantName(e.target.value)}
             />
+            {fieldErrors.tenantName && <p className="text-rose-500 text-xs mt-1 font-medium">{fieldErrors.tenantName}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">Workspace / Tenant Code</label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. ACMECORP"
+              className="w-full bg-background border border-border text-foreground rounded-xl px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 transition-all placeholder:text-muted-foreground text-sm uppercase"
+              value={tenantCode}
+              onChange={(e) => setTenantCode(e.target.value.toUpperCase())}
+            />
+            {fieldErrors.tenantCode && <p className="text-rose-500 text-xs mt-1 font-medium">{fieldErrors.tenantCode}</p>}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -84,6 +112,7 @@ export default function Signup() {
                 value={adminFirstName}
                 onChange={(e) => setAdminFirstName(e.target.value)}
               />
+              {fieldErrors.adminFirstName && <p className="text-rose-500 text-xs mt-1 font-medium">{fieldErrors.adminFirstName}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">Last Name</label>
@@ -95,6 +124,7 @@ export default function Signup() {
                 value={adminLastName}
                 onChange={(e) => setAdminLastName(e.target.value)}
               />
+              {fieldErrors.adminLastName && <p className="text-rose-500 text-xs mt-1 font-medium">{fieldErrors.adminLastName}</p>}
             </div>
           </div>
 
@@ -109,6 +139,7 @@ export default function Signup() {
                 value={adminEmail}
                 onChange={(e) => setAdminEmail(e.target.value)}
               />
+              {fieldErrors.adminEmail && <p className="text-rose-500 text-xs mt-1 font-medium">{fieldErrors.adminEmail}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">Phone Number</label>
@@ -118,8 +149,9 @@ export default function Signup() {
                 placeholder="+1 234 567 8900"
                 className="w-full bg-background border border-border text-foreground rounded-xl px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 transition-all placeholder:text-muted-foreground text-sm"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
               />
+              {fieldErrors.phone && <p className="text-rose-500 text-xs mt-1 font-medium">{fieldErrors.phone}</p>}
             </div>
           </div>
 
@@ -134,6 +166,7 @@ export default function Signup() {
               value={adminPassword}
               onChange={(e) => setAdminPassword(e.target.value)}
             />
+            {fieldErrors.adminPassword && <p className="text-rose-500 text-xs mt-1 font-medium">{fieldErrors.adminPassword}</p>}
           </div>
 
           <button
