@@ -35,7 +35,9 @@ export default function Login() {
         password
       });
 
-      const { token, tenantCode: respTenantCode, roleName, permissions, modules } = response.data;
+      const { token, tenantCode: respTenantCode, tenant_code, roleName, permissions, modules } = response.data as any;
+      
+      const finalTenantCode = respTenantCode || tenant_code;
       
       console.log("Login API response permissions count:", permissions?.length || 0);
       console.log("Login API response modules count:", modules?.length || 0);
@@ -43,7 +45,7 @@ export default function Login() {
       console.log("modules passed to auth.login:", modules);
       
       // We pass exactly what the backend gives us. No fallbacks.
-      authLogin(token, permissions, modules, respTenantCode, roleName);
+      authLogin(token, permissions, modules, finalTenantCode, roleName);
       
       const isVendor = roleName && roleName.toUpperCase() === 'VENDOR';
       const storeRole = isVendor ? 'VENDOR' : 'STAFF';

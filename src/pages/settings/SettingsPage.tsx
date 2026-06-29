@@ -5,6 +5,14 @@ import { Landmark, Fingerprint, FileText, Award, Workflow, Grid, ArrowRight, Blo
 
 const settingsCards = [
   {
+    id: 'user-management',
+    label: 'User Management',
+    description: 'Manage users, roles, permissions, and organizational access control.',
+    path: '/users',
+    icon: Users,
+    color: 'text-primary border-primary/20 bg-primary/5'
+  },
+  {
     id: 'company',
     label: 'Company Profile',
     description: 'Manage branding materials, seal specimen, official signatures, and locale settings.',

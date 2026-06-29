@@ -11,12 +11,14 @@ import {
   Headphones 
 } from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
+import { usePermissions } from '@/auth/usePermissions';
 
 export function useDashboard() {
   const [stats, setStats] = useState<DashboardStatsResponse>([]);
   const [activities, setActivities] = useState<ActivityLog>([]);
   const [loading, setLoading] = useState(true);
   const { error } = useToast();
+  const { isModuleEnabled, hasPermission } = usePermissions();
 
   useEffect(() => {
     let isMounted = true;
@@ -24,11 +26,19 @@ export function useDashboard() {
     const fetchDashboardData = async () => {
       setLoading(true);
       try {
+        const fetchPromises = [];
+
+        // Conditionally fetch data based on enabled modules and permissions
+        const hasLeads = isModuleEnabled('CRM') || isModuleEnabled('LEADS');
+        const hasRevenue = isModuleEnabled('REVENUE');
+        const hasTasks = isModuleEnabled('TASKS');
+        const hasTickets = isModuleEnabled('SUPPORT_TICKETS');
+
         const [followupsRes, revenueRes, tasksRes, ticketsRes] = await Promise.allSettled([
-          rolesApi.get('/leads/followups/'),
-          rolesApi.get('/revenue/overview/'),
-          rolesApi.get('/tasks/'),
-          rolesApi.get('/support/tickets/all/'),
+          hasLeads ? rolesApi.get('/leads/followups/', { ignore403: true }) : Promise.reject('Module disabled'),
+          hasRevenue ? rolesApi.get('/revenue/overview/', { ignore403: true }) : Promise.reject('Module disabled'),
+          hasTasks ? rolesApi.get('/tasks/', { ignore403: true }) : Promise.reject('Module disabled'),
+          hasTickets ? rolesApi.get('/support/tickets/all/', { ignore403: true }) : Promise.reject('Module disabled'),
         ]);
 
         if (!isMounted) return;

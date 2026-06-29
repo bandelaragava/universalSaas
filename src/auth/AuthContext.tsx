@@ -269,9 +269,9 @@ const parseToken = (jwtToken: string | null): User | null => {
     return {
       id: payload.id || payload.userId || payload.sub,
       email: payload.sub,
-      tenantId: payload.tenantId,
-      tenantCode: payload.tenantCode,
-      isPlatformAdmin: Boolean(payload.isPlatformAdmin),
+      tenantId: payload.tenantId || payload.tenant_id,
+      tenantCode: payload.tenantCode || payload.tenant_code,
+      isPlatformAdmin: Boolean(payload.isPlatformAdmin || payload.is_platform_admin),
       role,
     }
   } catch {
@@ -371,7 +371,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           tenantCode?: string
           tenantId?: number
           isPlatformAdmin?: boolean
-        }>('/users/me')
+        }>('/users/me', { ignore403: true })
 
         if (!isMounted) return
 

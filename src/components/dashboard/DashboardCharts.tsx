@@ -59,15 +59,20 @@ export function DashboardCharts() {
   const [funnelData, setFunnelData] = useState<any[]>([])
   const [revenueData, setRevenueData] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const { isModuleEnabled } = usePermissions()
 
   useEffect(() => {
     let mounted = true
     const fetchData = async () => {
       try {
         setLoading(true)
+        
+        const hasLeads = isModuleEnabled('CRM') || isModuleEnabled('LEADS')
+        const hasRevenue = isModuleEnabled('REVENUE')
+
         const [leadsRes, revenueRes] = await Promise.allSettled([
-          rolesApi.get('/leads/'),
-          revenueService.getRevenueOverview()
+          hasLeads ? rolesApi.get('/leads/', { ignore403: true }) : Promise.reject('Module disabled'),
+          hasRevenue ? revenueService.getRevenueOverview({ ignore403: true }) : Promise.reject('Module disabled')
         ])
         
         if (!mounted) return

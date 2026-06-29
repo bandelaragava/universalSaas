@@ -23,6 +23,6 @@ export interface RevenueOverviewResponse {
 }
 
 export const revenueService = {
-  getRevenueOverview: () => rolesApi.get<RevenueOverviewResponse>('/revenue/overview/'),
+  getRevenueOverview: (config?: any) => rolesApi.get<RevenueOverviewResponse>('/revenue/overview/', config),
 };
 

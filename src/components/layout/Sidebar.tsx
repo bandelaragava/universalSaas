@@ -54,7 +54,21 @@ export function Sidebar() {
       if (section.id === 'platform' && auth.user?.tenantCode !== 'SYS') {
         return null;
       }
-      const items = section.items.filter(canShowItem)
+      
+      const items = section.items.filter(canShowItem).map(item => {
+        // Dynamically fix the path for modules with multiple tabs so users aren't sent to a tab they lack permission for
+        if (item.id === 'hrms') {
+           if (permission.can('ATTENDANCE_VIEW_ATTENDANCE')) return { ...item, path: '/attendance' };
+           if (permission.can('LEAVE_VIEW_LEAVE')) return { ...item, path: '/leave' };
+           if (permission.can('PAYROLL_VIEW_SALARY') || permission.can('PAYROLL_VIEW_PAYSLIP') || permission.can('PAYROLL_VIEW_PAYROLL') || permission.can('PAYROLL_PROCESS_PAYROLL')) return { ...item, path: '/payroll' };
+        }
+        if (item.id === 'crm') {
+           if (permission.can('LEADS_VIEW_LEADS')) return { ...item, path: '/leads' };
+           if (permission.can('LEADS_VIEW_FOLLOWUPS')) return { ...item, path: '/leads/follow-ups' };
+        }
+        return item;
+      });
+
       if (items.length === 0) return null
       return { ...section, items }
     })

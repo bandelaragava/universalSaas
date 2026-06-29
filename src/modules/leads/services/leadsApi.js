@@ -4,7 +4,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 export const leadsApi = createApi({
   reducerPath: 'leadsApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: `${import.meta.env.VITE_LAP_API_BASE || import.meta.env.VITE_API_BASE || '/api'}/api`,
+    baseUrl: '/lap-api',
     prepareHeaders: (headers) => {
       const token = localStorage.getItem('token');
       if (token) {
