@@ -9,7 +9,7 @@ interface Template {
   id: number;
   templateCode: string;
   templateName: string;
-  templateType: 'DOCUMENT' | 'CERTIFICATE';
+  templateType: 'DOCUMENT' | 'CERTIFICATE' | 'INVOICE';
   isSystemTemplate: boolean;
   active: boolean;
   contentHtml: string;
@@ -28,7 +28,9 @@ const PLACEHOLDERS = [
   '{{COURSE_NAME}}', '{{COMPLETION_DATE}}', '{{TRAINING_NAME}}',
   '{{ACHIEVEMENT_NAME}}', '{{EVENT_NAME}}', '{{EVENT_DATE}}',
   '{{SIGNATORY_NAME}}', '{{SIGNATORY_DESIGNATION}}',
-  '{{QR_CODE}}', '{{VERIFICATION_URL}}'
+  '{{QR_CODE}}', '{{VERIFICATION_URL}}',
+  '{{INVOICE_NUMBER}}', '{{CUSTOMER_NAME}}', '{{CUSTOMER_ADDRESS}}',
+  '{{INVOICE_ITEMS}}', '{{SUBTOTAL}}', '{{TAX_AMOUNT}}', '{{TOTAL_AMOUNT}}'
 ];
 
 export default function TemplatesPage() {
@@ -274,6 +276,17 @@ export default function TemplatesPage() {
           >
             Certificates
           </button>
+          <button
+            type="button"
+            className={`px-3 py-1.5 rounded-md text-xs font-semibold border transition-all ${
+              filterType === 'INVOICE'
+                ? 'bg-primary/10 border-primary/20 text-primary'
+                : 'bg-transparent border-input text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+            }`}
+            onClick={() => setFilterType('INVOICE')}
+          >
+            Invoices
+          </button>
         </div>
 
         <div className="overflow-x-auto">
@@ -301,6 +314,8 @@ export default function TemplatesPage() {
                       className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold border ${
                         t.templateType === 'CERTIFICATE'
                           ? 'bg-warning/10 text-warning border-warning/20'
+                          : t.templateType === 'INVOICE'
+                          ? 'bg-purple-500/10 text-purple-600 border-purple-500/20'
                           : 'bg-primary/10 text-primary border-primary/20'
                       }`}
                     >

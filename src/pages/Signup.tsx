@@ -1,21 +1,29 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Eye, EyeOff, CheckCircle2, XCircle } from 'lucide-react';
 import rolesApi from '@/services/rolesApi';
 
 export default function Signup() {
   const navigate = useNavigate();
-
+  
   const [tenantName, setTenantName] = useState('');
   const [adminFirstName, setAdminFirstName] = useState('');
   const [adminLastName, setAdminLastName] = useState('');
   const [adminEmail, setAdminEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
-
+  
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Live password match state
+  const passwordsMatch = confirmPassword.length > 0 && adminPassword === confirmPassword;
+  const passwordsMismatch = confirmPassword.length > 0 && adminPassword !== confirmPassword;
 
   const validate = () => {
     const errors: { [key: string]: string } = {};
@@ -25,7 +33,9 @@ export default function Signup() {
     if (!/^[a-zA-Z0-9.\-_]+@gmail\.com$/.test(adminEmail)) errors.adminEmail = "Email must be a valid Gmail address";
     if (!/^\d{10}$/.test(phone)) errors.phone = "Phone number must be exactly 10 digits";
     if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/.test(adminPassword)) errors.adminPassword = "Password must include one uppercase, one lowercase, one digit, and one special char";
-
+    if (!confirmPassword) errors.confirmPassword = "Please confirm your password";
+    else if (adminPassword !== confirmPassword) errors.confirmPassword = "Passwords do not match";
+    
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -33,7 +43,7 @@ export default function Signup() {
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validate()) return;
-
+    
     setMessage(null);
     setError(null);
     setLoading(true);
@@ -59,17 +69,17 @@ export default function Signup() {
     } catch (err: unknown) {
       const axiosError = err as { response?: { data?: any }; message?: string };
       let errorMsg = 'Registration failed. Please try again.';
-
+      
       if (axiosError.response?.data) {
         if (typeof axiosError.response.data === 'object') {
-          if (axiosError.response.data.errors) {
-            setFormErrors(axiosError.response.data.errors);
-            errorMsg = "Please correct the highlighted errors.";
-          } else if (axiosError.response.data.message) {
-            errorMsg = axiosError.response.data.message;
-          }
+           if (axiosError.response.data.errors) {
+              setFormErrors(axiosError.response.data.errors);
+              errorMsg = "Please correct the highlighted errors.";
+           } else if (axiosError.response.data.message) {
+              errorMsg = axiosError.response.data.message;
+           }
         } else if (typeof axiosError.response.data === 'string') {
-          errorMsg = axiosError.response.data;
+           errorMsg = axiosError.response.data;
         }
       } else if (axiosError.message) {
         errorMsg = axiosError.message;
@@ -98,6 +108,7 @@ export default function Signup() {
         {error && <div className="bg-rose-500/10 text-rose-400 p-3 rounded-xl mb-6 border border-rose-500/20 text-sm relative z-10">{error}</div>}
 
         <form onSubmit={handleSignup} className="space-y-4 relative z-10">
+          {/* Company Name */}
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">Company Name</label>
             <input
@@ -106,11 +117,12 @@ export default function Signup() {
               placeholder="e.g. Acme Corp"
               className={`w-full bg-background border ${formErrors.tenantName ? 'border-rose-500' : 'border-border'} text-foreground rounded-xl px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 transition-all placeholder:text-muted-foreground text-sm`}
               value={tenantName}
-              onChange={(e) => { setTenantName(e.target.value); setFormErrors(prev => ({ ...prev, tenantName: '' })) }}
+              onChange={(e) => { setTenantName(e.target.value); setFormErrors(prev => ({...prev, tenantName: ''})) }}
             />
             {formErrors.tenantName && <span className="text-[10px] text-rose-500 block mt-1" aria-live="polite">{formErrors.tenantName}</span>}
           </div>
 
+          {/* First / Last Name */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">First Name</label>
@@ -120,7 +132,7 @@ export default function Signup() {
                 placeholder="John"
                 className={`w-full bg-background border ${formErrors.adminFirstName ? 'border-rose-500' : 'border-border'} text-foreground rounded-xl px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 transition-all placeholder:text-muted-foreground text-sm`}
                 value={adminFirstName}
-                onChange={(e) => { setAdminFirstName(e.target.value); setFormErrors(prev => ({ ...prev, adminFirstName: '' })) }}
+                onChange={(e) => { setAdminFirstName(e.target.value); setFormErrors(prev => ({...prev, adminFirstName: ''})) }}
               />
               {formErrors.adminFirstName && <span className="text-[10px] text-rose-500 block mt-1" aria-live="polite">{formErrors.adminFirstName}</span>}
             </div>
@@ -132,12 +144,13 @@ export default function Signup() {
                 placeholder="Doe"
                 className={`w-full bg-background border ${formErrors.adminLastName ? 'border-rose-500' : 'border-border'} text-foreground rounded-xl px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 transition-all placeholder:text-muted-foreground text-sm`}
                 value={adminLastName}
-                onChange={(e) => { setAdminLastName(e.target.value); setFormErrors(prev => ({ ...prev, adminLastName: '' })) }}
+                onChange={(e) => { setAdminLastName(e.target.value); setFormErrors(prev => ({...prev, adminLastName: ''})) }}
               />
               {formErrors.adminLastName && <span className="text-[10px] text-rose-500 block mt-1" aria-live="polite">{formErrors.adminLastName}</span>}
             </div>
           </div>
 
+          {/* Email / Phone */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">Work Email</label>
@@ -147,7 +160,7 @@ export default function Signup() {
                 placeholder="john@gmail.com"
                 className={`w-full bg-background border ${formErrors.adminEmail ? 'border-rose-500' : 'border-border'} text-foreground rounded-xl px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 transition-all placeholder:text-muted-foreground text-sm`}
                 value={adminEmail}
-                onChange={(e) => { setAdminEmail(e.target.value); setFormErrors(prev => ({ ...prev, adminEmail: '' })) }}
+                onChange={(e) => { setAdminEmail(e.target.value); setFormErrors(prev => ({...prev, adminEmail: ''})) }}
               />
               {formErrors.adminEmail && <span className="text-[10px] text-rose-500 block mt-1" aria-live="polite">{formErrors.adminEmail}</span>}
             </div>
@@ -159,29 +172,107 @@ export default function Signup() {
                 placeholder="1234567890"
                 className={`w-full bg-background border ${formErrors.phone ? 'border-rose-500' : 'border-border'} text-foreground rounded-xl px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 transition-all placeholder:text-muted-foreground text-sm`}
                 value={phone}
-                onChange={(e) => { setPhone(e.target.value); setFormErrors(prev => ({ ...prev, phone: '' })) }}
+                onChange={(e) => { setPhone(e.target.value); setFormErrors(prev => ({...prev, phone: ''})) }}
               />
               {formErrors.phone && <span className="text-[10px] text-rose-500 block mt-1" aria-live="polite">{formErrors.phone}</span>}
             </div>
           </div>
 
+          {/* Password with show/hide */}
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">Password</label>
-            <input
-              type="password"
-              required
-              placeholder="••••••••"
-              className={`w-full bg-background border ${formErrors.adminPassword ? 'border-rose-500' : 'border-border'} text-foreground rounded-xl px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 transition-all placeholder:text-muted-foreground text-sm`}
-              value={adminPassword}
-              onChange={(e) => { setAdminPassword(e.target.value); setFormErrors(prev => ({ ...prev, adminPassword: '' })) }}
-            />
-            {formErrors.adminPassword && <span className="text-[10px] text-rose-500 block mt-1" aria-live="polite">{formErrors.adminPassword}</span>}
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                placeholder="••••••••"
+                className={`w-full bg-background border ${formErrors.adminPassword ? 'border-rose-500' : 'border-border'} text-foreground rounded-xl px-4 py-2.5 pr-11 focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 transition-all placeholder:text-muted-foreground text-sm`}
+                value={adminPassword}
+                onChange={(e) => {
+                  setAdminPassword(e.target.value);
+                  setFormErrors(prev => ({...prev, adminPassword: '', confirmPassword: ''}));
+                }}
+              />
+              <button
+                type="button"
+                tabIndex={-1}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => setShowPassword(v => !v)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            {formErrors.adminPassword && (
+              <span className="text-[10px] text-rose-500 block mt-1" aria-live="polite">{formErrors.adminPassword}</span>
+            )}
           </div>
 
+          {/* Confirm Password with show/hide + live match indicator */}
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">Confirm Password</label>
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                required
+                placeholder="••••••••"
+                className={`w-full bg-background border ${
+                  formErrors.confirmPassword
+                    ? 'border-rose-500'
+                    : passwordsMatch
+                    ? 'border-emerald-500'
+                    : passwordsMismatch
+                    ? 'border-rose-500'
+                    : 'border-border'
+                } text-foreground rounded-xl px-4 py-2.5 pr-20 focus:outline-none focus:ring-1 ${
+                  passwordsMatch
+                    ? 'focus:ring-emerald-500 focus:border-emerald-500'
+                    : 'focus:ring-cyan-500 focus:border-cyan-500'
+                } transition-all placeholder:text-muted-foreground text-sm`}
+                value={confirmPassword}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  setFormErrors(prev => ({...prev, confirmPassword: ''}));
+                }}
+              />
+              {/* Match / Mismatch icon */}
+              {confirmPassword.length > 0 && (
+                <span className="absolute right-10 top-1/2 -translate-y-1/2 pointer-events-none">
+                  {passwordsMatch
+                    ? <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    : <XCircle className="w-4 h-4 text-rose-500" />
+                  }
+                </span>
+              )}
+              <button
+                type="button"
+                tabIndex={-1}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => setShowConfirmPassword(v => !v)}
+                aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+              >
+                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            {/* Live feedback */}
+            {confirmPassword.length > 0 && (
+              <span
+                className={`text-[10px] block mt-1 font-medium ${passwordsMatch ? 'text-emerald-500' : 'text-rose-500'}`}
+                aria-live="polite"
+              >
+                {passwordsMatch ? '✓ Passwords match' : '✗ Passwords do not match'}
+              </span>
+            )}
+            {formErrors.confirmPassword && confirmPassword.length === 0 && (
+              <span className="text-[10px] text-rose-500 block mt-1" aria-live="polite">{formErrors.confirmPassword}</span>
+            )}
+          </div>
+
+          {/* Submit — disabled until passwords match */}
           <button
             type="submit"
-            disabled={loading}
-            className="w-full bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-cyan-500/20 transition-all active:scale-95 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed text-sm mt-4"
+            disabled={loading || passwordsMismatch}
+            className="w-full bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-cyan-500/20 transition-all active:scale-95 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm mt-4"
           >
             {loading ? 'Setting up your workspace...' : 'Start Free Trial'}
           </button>
@@ -189,11 +280,13 @@ export default function Signup() {
 
         <div className="text-center mt-6 relative z-10 text-sm">
           <span className="text-muted-foreground">
-            Already have an account? <Link to="/login" className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors">Sign In</Link>
+            Already have an account?{' '}
+            <Link to="/login" className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors">
+              Sign In
+            </Link>
           </span>
         </div>
       </div>
     </div>
   );
 }
-

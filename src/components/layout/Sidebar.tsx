@@ -74,24 +74,6 @@ export function Sidebar() {
     })
     .filter(Boolean) as typeof menuConfig
 
-  // Debug visibility
-  const settingsItem = menuConfig.flatMap(s => s.items).find(i => i.id === 'settings');
-  const integrationsItem = menuConfig.flatMap(s => s.items).find(i => i.id === 'integrations');
-
-  if (settingsItem && canShowItem(settingsItem)) {
-    const matchedPerms = settingsItem.permissions?.filter(p => permission.can(p)) || [];
-    console.log("Settings is visible due to permissions:", matchedPerms);
-  }
-  if (integrationsItem && canShowItem(integrationsItem)) {
-    const matchedPerms = integrationsItem.permissions?.filter(p => permission.can(p)) || [];
-    console.log("Integrations is visible due to permissions:", matchedPerms);
-  }
-
-  console.log("SIDEBAR DEBUG", {
-    permissions: auth.permissions,
-    modules: auth.modules,
-    filteredMenu
-  });
 
   return (
     <aside

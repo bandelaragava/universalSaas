@@ -9,7 +9,7 @@ import JoditEditor from 'jodit-react';
 interface TemplateFormData {
   templateCode: string;
   templateName: string;
-  templateType: 'DOCUMENT' | 'CERTIFICATE';
+  templateType: 'DOCUMENT' | 'CERTIFICATE' | 'INVOICE';
   contentHtml: string;
   backgroundImageUrl: string;
   active: boolean;
@@ -52,6 +52,13 @@ const PLACEHOLDER_GROUPS = [
   {
     label: '✍️ Specimen Signatory',
     placeholders: ['SIGNATORY_NAME', 'SIGNATORY_DESIGNATION']
+  },
+  {
+    label: '💵 Invoices & Billing',
+    placeholders: [
+      'INVOICE_NUMBER', 'CUSTOMER_NAME', 'CUSTOMER_ADDRESS',
+      'INVOICE_ITEMS', 'SUBTOTAL', 'TAX_AMOUNT', 'TOTAL_AMOUNT'
+    ]
   },
   {
     label: '🔍 QR Verification',
@@ -108,6 +115,13 @@ const sampleData: Record<string, string> = {
   EVENT_DATE: '2026-05-15',
   SIGNATORY_NAME: 'Alice Director',
   SIGNATORY_DESIGNATION: 'Managing Director',
+  INVOICE_NUMBER: 'INV-2026-0001',
+  CUSTOMER_NAME: 'Acme Corporation',
+  CUSTOMER_ADDRESS: '456 Client Avenue, Business District',
+  INVOICE_ITEMS: '<tr><td style="padding: 10px; border-bottom: 1px solid #eee;">Consulting Services</td><td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">1</td><td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">$1000.00</td><td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">$1000.00</td></tr>',
+  SUBTOTAL: '$1000.00',
+  TAX_AMOUNT: '$100.00',
+  TOTAL_AMOUNT: '$1100.00',
   QR_CODE: '[QR-CODE]',
   VERIFICATION_URL: 'https://verify.example.com/abc123'
 };
@@ -293,6 +307,7 @@ export default function TemplateFormPage() {
                 >
                   <option value="DOCUMENT">DOCUMENT</option>
                   <option value="CERTIFICATE">CERTIFICATE</option>
+                  <option value="INVOICE">INVOICE</option>
                 </select>
               </div>
 
