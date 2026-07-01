@@ -38,6 +38,7 @@ export function BillingPage() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [installments, setInstallments] = useState<any[]>([]);
   const [loadingInstallments, setLoadingInstallments] = useState(false);
+  const [invoiceConfig, setInvoiceConfig] = useState<any>(null);
 
   useEffect(() => {
     if (viewInvoice && viewInvoice.id && user?.tenantId) {
@@ -52,12 +53,14 @@ export function BillingPage() {
   useEffect(() => {
     const fetchContextData = async () => {
       try {
-        const [compRes, tenRes] = await Promise.all([
+        const [compRes, tenRes, configRes] = await Promise.all([
           rolesApi.get('/company-profile').catch(() => null),
-          user?.tenantId ? rolesApi.get(`/tenants/${user.tenantId}`).catch(() => null) : Promise.resolve(null)
+          user?.tenantId ? rolesApi.get(`/tenants/${user.tenantId}`).catch(() => null) : Promise.resolve(null),
+          rolesApi.get('/api/invoice-configurations/active').catch(() => null)
         ]);
         if (compRes?.data) setCompany(compRes.data);
         if (tenRes?.data) setTenant(tenRes.data);
+        if (configRes?.data) setInvoiceConfig(configRes.data);
       } catch (err) {
         console.error('Error fetching context data', err);
       }
@@ -116,7 +119,7 @@ export function BillingPage() {
         durationDays,
         paymentReference: generatePaymentReference(),
       };
-
+      
       await rolesApi.post('/api/subscriptions', req);
       alert('Subscription upgraded successfully!');
       fetchHistory(true);
@@ -255,94 +258,95 @@ export function BillingPage() {
                 ) : (
                   history.map((invoice, i) => (
                     <React.Fragment key={i}>
-                      <tr className="hover:bg-muted/10 transition-colors cursor-pointer" onClick={() => toggleExpand(invoice.id!)}>
-                        <td className="p-4 text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-gray-400">{expandedId === invoice.id ? '▼' : '▶'}</span>
-                            {invoice.createdAt?.split(' ')[0] || invoice.startDate}
-                          </div>
-                        </td>
-                        <td className="p-4 text-foreground font-semibold">
-                          {invoice.planName}
-                        </td>
-                        <td className="p-4 text-foreground font-medium">
-                          ${invoice.amount.toFixed(2)}
-                        </td>
-                        <td className="p-4 text-muted-foreground">
-                          {invoice.startDate} to {invoice.endDate}
-                        </td>
-                        <td className="p-4 font-mono text-muted-foreground">
-                          {invoice.paymentReference}
-                        </td>
-                        <td className="p-4">
-                          <Badge variant="secondary" className={`font-semibold ${invoice.status === 'Paid'
-                              ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/10'
-                              : 'bg-amber-500/10 text-amber-500 border-amber-500/20 hover:bg-amber-500/10'
-                            }`}>
-                            {invoice.status}
-                          </Badge>
-                        </td>
-                        <td className="p-4 text-right">
-                          <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
-                            {invoice.status !== 'Paid' && (
-                              <Button size="sm" variant="outline" className="h-7 text-xs border-indigo-200 text-indigo-700 hover:bg-indigo-50" onClick={() => toggleExpand(invoice.id!)}>
-                                Pay Now
-                              </Button>
-                            )}
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              className="h-7 text-xs"
-                              onClick={() => setViewInvoice(invoice.rawInvoice)}
-                            >
-                              View Invoice
+                    <tr className="hover:bg-muted/10 transition-colors cursor-pointer" onClick={() => toggleExpand(invoice.id!)}>
+                      <td className="p-4 text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-gray-400">{expandedId === invoice.id ? '▼' : '▶'}</span>
+                          {invoice.createdAt?.split(' ')[0] || invoice.startDate}
+                        </div>
+                      </td>
+                      <td className="p-4 text-foreground font-semibold">
+                        {invoice.planName}
+                      </td>
+                      <td className="p-4 text-foreground font-medium">
+                        ${invoice.amount.toFixed(2)}
+                      </td>
+                      <td className="p-4 text-muted-foreground">
+                        {invoice.startDate} to {invoice.endDate}
+                      </td>
+                      <td className="p-4 font-mono text-muted-foreground">
+                        {invoice.paymentReference}
+                      </td>
+                      <td className="p-4">
+                        <Badge variant="secondary" className={`font-semibold ${
+                          invoice.status === 'Paid' 
+                            ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/10'
+                            : 'bg-amber-500/10 text-amber-500 border-amber-500/20 hover:bg-amber-500/10'
+                        }`}>
+                          {invoice.status}
+                        </Badge>
+                      </td>
+                      <td className="p-4 text-right">
+                        <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                          {invoice.status !== 'Paid' && (
+                            <Button size="sm" variant="outline" className="h-7 text-xs border-indigo-200 text-indigo-700 hover:bg-indigo-50" onClick={() => toggleExpand(invoice.id!)}>
+                              Pay Now
                             </Button>
+                          )}
+                          <Button 
+                            size="sm" 
+                            variant="secondary" 
+                            className="h-7 text-xs"
+                            onClick={() => setViewInvoice(invoice.rawInvoice)}
+                          >
+                            View Invoice
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                    {expandedId === invoice.id && (
+                      <tr>
+                        <td colSpan={7} className="px-0 py-0 bg-muted/5 border-b border-border">
+                          <div className="p-5 pl-10 border-l-4 border-indigo-200">
+                            <h4 className="text-xs uppercase font-bold text-muted-foreground mb-4 flex items-center gap-2">
+                              <Clock className="w-4 h-4" /> Installment Schedule
+                            </h4>
+                            {loadingInstallments ? (
+                              <div className="text-sm text-muted-foreground font-medium">Loading schedule...</div>
+                            ) : installments.length > 0 ? (
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {installments.map(inst => (
+                                  <div key={inst.id} className="bg-card border border-border rounded-lg p-4 shadow-sm flex flex-col justify-between">
+                                    <div className="flex justify-between items-start mb-3">
+                                      <div>
+                                        <div className="text-sm font-bold text-foreground">Installment #{inst.installmentNo}</div>
+                                        <div className="text-xs text-muted-foreground font-medium mt-0.5">Due: {inst.dueDate}</div>
+                                      </div>
+                                      <div className="text-lg font-black text-foreground">₹{inst.amount}</div>
+                                    </div>
+                                    <div className="pt-3 border-t border-border flex justify-end">
+                                      {inst.paid ? (
+                                        <span className="px-3 py-1 rounded-md text-xs font-bold uppercase bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 w-full text-center">Paid Successfully</span>
+                                      ) : (
+                                        <Button 
+                                          size="sm"
+                                          onClick={() => handlePayInstallment(invoice.id!, inst.id)}
+                                          className="w-full h-8 text-xs font-bold uppercase"
+                                        >
+                                          Pay Installment
+                                        </Button>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="text-sm text-muted-foreground bg-card p-4 rounded border border-border border-dashed">No installments found for this invoice.</div>
+                            )}
                           </div>
                         </td>
                       </tr>
-                      {expandedId === invoice.id && (
-                        <tr>
-                          <td colSpan={7} className="px-0 py-0 bg-muted/5 border-b border-border">
-                            <div className="p-5 pl-10 border-l-4 border-indigo-200">
-                              <h4 className="text-xs uppercase font-bold text-muted-foreground mb-4 flex items-center gap-2">
-                                <Clock className="w-4 h-4" /> Installment Schedule
-                              </h4>
-                              {loadingInstallments ? (
-                                <div className="text-sm text-muted-foreground font-medium">Loading schedule...</div>
-                              ) : installments.length > 0 ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                  {installments.map(inst => (
-                                    <div key={inst.id} className="bg-card border border-border rounded-lg p-4 shadow-sm flex flex-col justify-between">
-                                      <div className="flex justify-between items-start mb-3">
-                                        <div>
-                                          <div className="text-sm font-bold text-foreground">Installment #{inst.installmentNo}</div>
-                                          <div className="text-xs text-muted-foreground font-medium mt-0.5">Due: {inst.dueDate}</div>
-                                        </div>
-                                        <div className="text-lg font-black text-foreground">₹{inst.amount}</div>
-                                      </div>
-                                      <div className="pt-3 border-t border-border flex justify-end">
-                                        {inst.paid ? (
-                                          <span className="px-3 py-1 rounded-md text-xs font-bold uppercase bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 w-full text-center">Paid Successfully</span>
-                                        ) : (
-                                          <Button
-                                            size="sm"
-                                            onClick={() => handlePayInstallment(invoice.id!, inst.id)}
-                                            className="w-full h-8 text-xs font-bold uppercase"
-                                          >
-                                            Pay Installment
-                                          </Button>
-                                        )}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              ) : (
-                                <div className="text-sm text-muted-foreground bg-card p-4 rounded border border-border border-dashed">No installments found for this invoice.</div>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      )}
+                    )}
                     </React.Fragment>
                   ))
                 )}
@@ -364,7 +368,7 @@ export function BillingPage() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-
+            
             <div className="p-10 overflow-y-auto flex-1 font-sans relative bg-white" id="tenant-invoice-print">
               {viewInvoice.status === 'Paid' && (
                 <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden z-0">
@@ -378,11 +382,17 @@ export function BillingPage() {
                 {/* Header Section */}
                 <div className="flex justify-between items-start mb-8 pb-6 border-b-2 border-gray-900">
                   <div>
-                    {company?.logoUrl && <img src={company.logoUrl} alt="Logo" className="h-14 mb-4 object-contain" />}
-                    <h1 className="text-4xl font-black uppercase text-gray-900 tracking-widest mb-1">INVOICE</h1>
+                    {invoiceConfig?.companyLogo ? (
+                      <img src={invoiceConfig.companyLogo} alt="Logo" className="h-14 mb-4 object-contain" />
+                    ) : company?.logoUrl ? (
+                      <img src={company.logoUrl} alt="Logo" className="h-14 mb-4 object-contain" />
+                    ) : null}
+                    <h1 className="text-4xl font-black uppercase text-gray-900 tracking-widest mb-1">
+                      {invoiceConfig?.invoiceName || 'INVOICE'}
+                    </h1>
                     <div className="mt-4 grid grid-cols-[120px_1fr] gap-y-2 text-sm text-gray-700">
                       <span className="font-bold text-gray-500 uppercase">Invoice No</span>
-                      <span className="font-bold text-gray-900">: {viewInvoice.invoiceNumber}</span>
+                      <span className="font-bold text-gray-900">: {invoiceConfig?.invoicePrefix || ''}{viewInvoice.invoiceNumber}</span>
                       <span className="font-bold text-gray-500 uppercase">Invoice Date</span>
                       <span className="font-bold text-gray-900">: {viewInvoice.invoiceDate}</span>
                       <span className="font-bold text-gray-500 uppercase">Due Date</span>
@@ -390,8 +400,9 @@ export function BillingPage() {
                       <span className="font-bold text-gray-500 uppercase mt-2">Payment Status</span>
                       <div className="mt-2 flex items-center gap-2">
                         <span>:</span>
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-black uppercase ${viewInvoice.status === 'Paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                          }`}>
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-black uppercase ${
+                          viewInvoice.status === 'Paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                        }`}>
                           {viewInvoice.status === 'Paid' ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
                           {viewInvoice.status}
                         </span>
@@ -410,13 +421,22 @@ export function BillingPage() {
                 <div className="grid grid-cols-2 gap-10 mb-8">
                   <div>
                     <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2 border-b border-gray-200 pb-2">Billed From</h3>
-                    <h4 className="text-lg font-black text-gray-900 mb-2">{company?.companyName || 'SYSTEM ADMINISTRATION'}</h4>
-                    <div className="text-sm text-gray-600 grid grid-cols-[80px_1fr] gap-y-1">
-                      <span className="font-semibold text-gray-500">GSTIN</span>
-                      <span className="text-gray-900">: {company?.gstNumber || 'N/A'}</span>
-                      <span className="font-semibold text-gray-500">Email</span>
-                      <span className="text-gray-900">: {company?.email || 'billing@example.com'}</span>
-                    </div>
+                    
+                    {invoiceConfig?.companyDetails ? (
+                      <div className="text-sm text-gray-800 whitespace-pre-line leading-relaxed">
+                        {invoiceConfig.companyDetails}
+                      </div>
+                    ) : (
+                      <>
+                        <h4 className="text-lg font-black text-gray-900 mb-2">{company?.companyName || 'SYSTEM ADMINISTRATION'}</h4>
+                        <div className="text-sm text-gray-600 grid grid-cols-[80px_1fr] gap-y-1">
+                          <span className="font-semibold text-gray-500">GSTIN</span>
+                          <span className="text-gray-900">: {company?.gstNumber || 'N/A'}</span>
+                          <span className="font-semibold text-gray-500">Email</span>
+                          <span className="text-gray-900">: {company?.email || 'billing@example.com'}</span>
+                        </div>
+                      </>
+                    )}
                   </div>
                   <div>
                     <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2 border-b border-gray-200 pb-2">Billed To</h3>
@@ -489,14 +509,22 @@ export function BillingPage() {
 
                 {/* Summary & Payment Info */}
                 <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-10 pt-6 border-t-2 border-gray-900">
-                  <div className="w-full md:w-1/2">
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2 border-b border-gray-200 pb-2">Payment Details</h3>
-                    <div className="text-sm grid grid-cols-[120px_1fr] gap-y-2 mt-3">
-                      <span className="font-semibold text-gray-500">Payment Method</span>
-                      <span className="font-bold text-gray-900">: {viewInvoice.paymentType === 'INSTALLMENT' ? 'Instalment/Card' : 'UPI/Bank Transfer'}</span>
-                      <span className="font-semibold text-gray-500">Transaction ID</span>
-                      <span className="font-bold text-gray-900 font-mono">: {`TXN${Math.floor(Date.now() / 1000)}${viewInvoice.id}`}</span>
+                  <div className="w-full md:w-1/2 space-y-6">
+                    <div>
+                      <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2 border-b border-gray-200 pb-2">Payment Details</h3>
+                      <div className="text-sm grid grid-cols-[120px_1fr] gap-y-2 mt-3">
+                        <span className="font-semibold text-gray-500">Payment Method</span>
+                        <span className="font-bold text-gray-900">: {viewInvoice.paymentType === 'INSTALLMENT' ? 'Instalment/Card' : 'UPI/Bank Transfer'}</span>
+                        <span className="font-semibold text-gray-500">Transaction ID</span>
+                        <span className="font-bold text-gray-900 font-mono">: {`TXN${Math.floor(Date.now() / 1000)}${viewInvoice.id}`}</span>
+                      </div>
                     </div>
+                    {invoiceConfig?.termsConditions && (
+                      <div>
+                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2 border-b border-gray-200 pb-2">Terms & Conditions</h3>
+                        <p className="text-xs text-gray-600 whitespace-pre-line mt-3">{invoiceConfig.termsConditions}</p>
+                      </div>
+                    )}
                   </div>
 
                   <div className="w-full md:w-80">
@@ -538,4 +566,5 @@ export function BillingPage() {
 }
 
 export default BillingPage;
+
 
