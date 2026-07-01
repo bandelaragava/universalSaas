@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+HEAD
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Landmark, Layers, Users, ShieldAlert, BarChart3, Database, Mail, Phone, Calendar, Play, X, Printer, FileText, QrCode, CheckCircle2, AlertCircle } from 'lucide-react';
