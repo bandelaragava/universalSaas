@@ -10,6 +10,7 @@ interface InvoiceConfig {
   invoicePrefix: string;
   invoiceNumberFormat: string;
   active: boolean;
+  targetModule: string;
 }
 
 const PREDEFINED_TEMPLATES = [
@@ -146,6 +147,7 @@ export default function InvoiceConfigurationList() {
               <thead className="bg-gray-50 text-gray-600 font-semibold border-b border-gray-200">
                 <tr>
                   <th className="px-6 py-4">Configuration Name</th>
+                  <th className="px-6 py-4">Target Module</th>
                   <th className="px-6 py-4">Prefix</th>
                   <th className="px-6 py-4">Format</th>
                   <th className="px-6 py-4 text-center">Status</th>
@@ -163,6 +165,16 @@ export default function InvoiceConfigurationList() {
                   filteredConfigs.map((config) => (
                     <tr key={config.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 font-bold text-gray-900">{config.invoiceName}</td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                          config.targetModule === 'ALL' ? 'bg-indigo-50 text-indigo-700' :
+                          config.targetModule === 'VENDOR' ? 'bg-orange-50 text-orange-700' :
+                          config.targetModule === 'BILLING' ? 'bg-cyan-50 text-cyan-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {config.targetModule || 'ALL'}
+                        </span>
+                      </td>
                       <td className="px-6 py-4 text-gray-600 font-mono">{config.invoicePrefix || '-'}</td>
                       <td className="px-6 py-4 text-gray-600 font-mono">{config.invoiceNumberFormat || '-'}</td>
                       <td className="px-6 py-4 text-center">

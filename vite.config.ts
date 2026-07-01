@@ -13,8 +13,13 @@ export default defineConfig({
   server: {
     host: true,
     proxy: {
+<<<<<<< HEAD
       '/api/leads': {
         target: 'http://54.164.162.68',
+=======
+      '/api': {
+        target: 'http://32.199.180.3:8080',
+>>>>>>> 9251160 (updated)
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, ''),
@@ -24,8 +29,13 @@ export default defineConfig({
           });
         },
       },
+<<<<<<< HEAD
       '/api': {
         target: 'http://32.199.180.3:8080',
+=======
+      '/lap-api': {
+        target: 'http://54.164.162.68',
+>>>>>>> 9251160 (updated)
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, ''),

@@ -1563,7 +1563,7 @@ export function AttendancePage() {
         search: searchFilter || undefined,
         active: true,
       });
-      const freshEmployees = employeesRes.data || [];
+      const freshEmployees = Array.isArray(employeesRes.data) ? employeesRes.data : [];
       setEmployees(freshEmployees);
 
       // 1. Today status

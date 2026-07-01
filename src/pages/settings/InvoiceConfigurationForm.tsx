@@ -13,6 +13,7 @@ interface InvoiceConfigForm {
   gstTaxDetails: string;
   termsConditions: string;
   active: boolean;
+  targetModule: string;
 }
 
 export default function InvoiceConfigurationForm() {
@@ -32,7 +33,8 @@ export default function InvoiceConfigurationForm() {
     companyDetails: '',
     gstTaxDetails: '',
     termsConditions: prefill?.terms || '',
-    active: false
+    active: false,
+    targetModule: 'ALL'
   });
 
   useEffect(() => {
@@ -48,7 +50,8 @@ export default function InvoiceConfigurationForm() {
             companyDetails: res.data.companyDetails || '',
             gstTaxDetails: res.data.gstTaxDetails || '',
             termsConditions: res.data.termsConditions || '',
-            active: res.data.active || false
+            active: res.data.active || false,
+            targetModule: res.data.targetModule || 'ALL'
           });
         } catch (error) {
           console.error('Error fetching configuration:', error);
@@ -62,7 +65,7 @@ export default function InvoiceConfigurationForm() {
     }
   }, [id, navigate]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -124,6 +127,22 @@ export default function InvoiceConfigurationForm() {
                 placeholder="e.g. Standard SaaS Template"
                 className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-colors"
               />
+            </div>
+            
+            <div className="col-span-1 md:col-span-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Target Module Assignment</label>
+              <select
+                name="targetModule"
+                value={formData.targetModule}
+                onChange={handleChange}
+                className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-colors"
+              >
+                <option value="ALL">ALL (Universal Template)</option>
+                <option value="VENDOR">VENDOR (Procurement Receipts)</option>
+                <option value="BILLING">BILLING (Tenant Subscription Invoices)</option>
+                <option value="CUSTOMER">CUSTOMER (Customer Sales Invoices)</option>
+              </select>
+              <p className="text-xs text-gray-500 mt-1">If "ALL" is selected, this template will be used for any module that does not have its own specific active template.</p>
             </div>
             
             <div>
