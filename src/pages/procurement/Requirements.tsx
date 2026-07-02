@@ -56,7 +56,7 @@ export function Requirements() {
 
   const fetchRequirements = async () => {
     try {
-      const res = await rolesApi.get('/api/requirements');
+      const res = await rolesApi.get('/requirements');
       setRequirements(res.data || []);
     } catch (e) {
       console.error("Error fetching requirements", e);
@@ -65,7 +65,7 @@ export function Requirements() {
 
   const fetchVendors = async () => {
     try {
-      const response = await rolesApi.get('/api/vendors?size=100');
+      const response = await rolesApi.get('/vendors?size=100');
       const data = response.data?.data || response.data || {};
       const vendorList = data.content || data || [];
       if (Array.isArray(vendorList)) {
@@ -89,7 +89,7 @@ export function Requirements() {
     if (isSubmitting) return;
     setIsSubmitting(true);
     try {
-      await rolesApi.post('/api/requirements', newReq);
+      await rolesApi.post('/requirements', newReq);
       fetchRequirements();
       setNewReq({ description: '', vendorId: '', requiredDate: '', requirementType: 'BUY', items: [] });
       setIsAddReqOpen(false);

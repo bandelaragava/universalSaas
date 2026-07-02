@@ -42,7 +42,7 @@ export const AssignSubscriptionModal: React.FC<AssignSubscriptionModalProps> = (
     useEffect(() => {
         if (isOpen) {
             // Fetch default module pricing
-            rolesApi.get('/api/subscriptions/modules/pricing')
+            rolesApi.get('/subscriptions/modules/pricing')
                 .then(res => {
                     if (res.data && res.data.data) {
                         setModulePricing(res.data.data);

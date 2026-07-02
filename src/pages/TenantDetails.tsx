@@ -347,7 +347,7 @@ function InvoiceHistory({ tenantId, tenant }: { tenantId: number, tenant: any })
     rolesApi.get('/company-profile')
       .then(res => setCompany(res.data))
       .catch(err => console.error("Failed to fetch company profile", err));
-    rolesApi.get('/api/invoice-configurations/active?module=BILLING')
+    rolesApi.get('/invoice-configurations/active?module=BILLING')
       .then(res => setInvoiceConfig(res.data))
       .catch(err => console.warn("No active invoice config found", err));
   }, [tenantId]);

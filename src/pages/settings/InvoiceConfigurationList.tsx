@@ -33,7 +33,7 @@ export default function InvoiceConfigurationList() {
 
   const fetchConfigs = async () => {
     try {
-      const response = await rolesApi.get('/api/invoice-configurations');
+      const response = await rolesApi.get('/invoice-configurations');
       setConfigs(response.data);
     } catch (error) {
       console.error('Error fetching configurations:', error);

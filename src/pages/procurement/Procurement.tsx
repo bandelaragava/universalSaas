@@ -43,7 +43,7 @@ export default function Procurement() {
 
   const fetchAssets = async () => {
     try {
-      const res = await rolesApi.get('/api/purchase-orders');
+      const res = await rolesApi.get('/purchase-orders');
       if (res.data && res.data.data) {
         setAssets(res.data.data);
       }
@@ -52,7 +52,7 @@ export default function Procurement() {
 
   const fetchVendors = async () => {
     try {
-      const response = await rolesApi.get('/api/vendors');
+      const response = await rolesApi.get('/vendors');
       if (response.data && response.data.data) {
         setVendors(response.data.data.content || response.data.data);
       }
@@ -82,7 +82,7 @@ export default function Procurement() {
         notes: newAsset.notes || '',
         totalAmount: parseFloat(newAsset.cost)
       };
-      await rolesApi.post('/api/purchase-orders', payload);
+      await rolesApi.post('/purchase-orders', payload);
       fetchAssets();
       setNewAsset({ vendorId: '', name: '', cost: '', date: '', notes: '' });
       setIsAddAssetOpen(false);

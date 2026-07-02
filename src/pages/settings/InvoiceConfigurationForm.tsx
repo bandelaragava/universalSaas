@@ -79,7 +79,7 @@ export default function InvoiceConfigurationForm() {
         await rolesApi.put(`/api/invoice-configurations/${id}`, formData);
         toast.success('Configuration updated successfully');
       } else {
-        await rolesApi.post('/api/invoice-configurations', formData);
+        await rolesApi.post('/invoice-configurations', formData);
         toast.success('Configuration created successfully');
       }
       navigate('/settings/invoice-configurations');

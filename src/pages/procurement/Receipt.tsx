@@ -81,7 +81,7 @@ export function Receipt() {
         }
 
         try {
-          const resConf = await rolesApi.get('/api/invoice-configurations/active?module=VENDOR');
+          const resConf = await rolesApi.get('/invoice-configurations/active?module=VENDOR');
           if (resConf.data) setConfig(resConf.data);
         } catch (err) {
           console.warn('No active invoice configuration found, falling back to company profile.');

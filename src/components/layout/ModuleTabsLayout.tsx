@@ -182,14 +182,13 @@ interface TabItem {
 }
 
 const TABS: Record<string, TabItem[]> = {
-  'access-control': [
+  'access-control': [],
+  'settings': [
+    { label: 'My Profile', path: '/settings/profile' },
     { label: 'Users Directory', path: '/users', permissions: ['USER_VIEW', 'USER_CREATE', 'USER_UPDATE'] },
     { label: 'Roles List', path: '/roles', permissions: ['ROLE_VIEW'] },
-    { label: 'Role Mapping', path: '/roles/mapping', permissions: ['ROLE_UPDATE'] },
     { label: 'Role Hierarchy', path: '/role-hierarchy', permissions: ['ROLE_VIEW'] },
     { label: 'Permissions Registry', path: '/permissions', permissions: ['ROLE_VIEW', 'ROLE_UPDATE'] },
-  ],
-  'settings': [
     { label: 'Company Profile', path: '/settings/company', permissions: ['ROLE_VIEW', 'COMPANY_PROFILE_VIEW'] },
     { label: 'Billing & Plans', path: '/settings/billing', permissions: ['ROLE_VIEW', 'SUBSCRIPTION_MANAGE'] },
     { label: 'Business Entities', path: '/settings/entities', permissions: ['ROLE_VIEW', 'SETTINGS_MANAGE_SETTINGS'] },

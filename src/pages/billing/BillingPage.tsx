@@ -56,7 +56,7 @@ export function BillingPage() {
         const [compRes, tenRes, configRes] = await Promise.all([
           rolesApi.get('/company-profile').catch(() => null),
           user?.tenantId ? rolesApi.get(`/tenants/${user.tenantId}`).catch(() => null) : Promise.resolve(null),
-          rolesApi.get('/api/invoice-configurations/active?module=BILLING').catch(() => null)
+          rolesApi.get('/invoice-configurations/active?module=BILLING').catch(() => null)
         ]);
         if (compRes?.data) setCompany(compRes.data);
         if (tenRes?.data) setTenant(tenRes.data);
@@ -120,7 +120,7 @@ export function BillingPage() {
         paymentReference: generatePaymentReference(),
       };
       
-      await rolesApi.post('/api/subscriptions', req);
+      await rolesApi.post('/subscriptions', req);
       alert('Subscription upgraded successfully!');
       fetchHistory(true);
     } catch (err: unknown) {

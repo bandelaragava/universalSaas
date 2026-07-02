@@ -39,8 +39,8 @@ export default function VendorPortal() {
     try {
       setLoading(true);
       const [vendorsRes, poRes] = await Promise.all([
-        rolesApi.get('/api/vendors'),
-        rolesApi.get('/api/purchase-orders')
+        rolesApi.get('/vendors'),
+        rolesApi.get('/purchase-orders')
       ]);
       const vendors = vendorsRes.data.data.content || [];
       const allPOs = poRes.data.data || [];
@@ -106,7 +106,7 @@ export default function VendorPortal() {
       };
 
       try {
-        await rolesApi.post('/api/vendor-invoices', invoicePayload);
+        await rolesApi.post('/vendor-invoices', invoicePayload);
       } catch (invoiceErr) {
         console.error("Failed to auto-create invoice", invoiceErr);
       }

@@ -100,7 +100,7 @@ export default function Vendors() {
 
   const fetchCategories = async () => {
     try {
-      const response = await rolesApi.get('/api/vendor-categories');
+      const response = await rolesApi.get('/vendor-categories');
       if (response.data && response.data.data) {
         setCategories(response.data.data);
       }
@@ -112,7 +112,7 @@ export default function Vendors() {
   const fetchVendors = async () => {
     setIsLoading(true);
     try {
-      const endpoint = searchQuery ? '/api/vendors/search' : '/api/vendors';
+      const endpoint = searchQuery ? '/vendors/search' : '/vendors';
       const params: Record<string, string | number> = {
         page: currentPage - 1,
         size: itemsPerPage,
@@ -220,7 +220,7 @@ export default function Vendors() {
         status: 'Pending',
         active: false
       };
-      await rolesApi.post('/api/vendors', payload);
+      await rolesApi.post('/vendors', payload);
       fetchVendors();
       resetForm();
       setIsAddVendorOpen(false);
@@ -233,7 +233,7 @@ export default function Vendors() {
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await rolesApi.post('/api/vendor-categories', {
+      await rolesApi.post('/vendor-categories', {
         name: newCategoryName,
         active: true
       });

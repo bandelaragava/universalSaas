@@ -46,7 +46,7 @@ export default function Contracts() {
 
   const fetchContracts = async () => {
     try {
-      const res = await rolesApi.get('/api/vendor-contracts');
+      const res = await rolesApi.get('/vendor-contracts');
       if (res.data?.data !== undefined) setContracts(res.data.data);
       else if (res.data?.success) setContracts(res.data.data);
     } catch (e) { console.error("Error fetching contracts", e); }
@@ -54,7 +54,7 @@ export default function Contracts() {
 
   const fetchVendors = async () => {
     try {
-      const response = await rolesApi.get('/api/vendors?size=100');
+      const response = await rolesApi.get('/vendors?size=100');
       if (response.data && response.data.data) {
         const vendorList = response.data.data.content || response.data.data || [];
         setVendors(vendorList);
@@ -84,7 +84,7 @@ export default function Contracts() {
     e.preventDefault();
     try {
       const payload = { ...newContract, status: 'Active' };
-      const res = await rolesApi.post('/api/vendor-contracts', payload);
+      const res = await rolesApi.post('/vendor-contracts', payload);
 
       if (res.data?.data?.id && selectedFile) {
         const formData = new FormData();

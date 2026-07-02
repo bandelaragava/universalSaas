@@ -33,7 +33,7 @@ export default function Performance() {
   useEffect(() => {
     const fetchPerformanceData = async () => {
       try {
-        const response = await rolesApi.get('/api/vendor-performance');
+        const response = await rolesApi.get('/vendor-performance');
         if (response.data && response.data.data) {
           setData(response.data.data);
         }

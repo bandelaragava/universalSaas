@@ -93,7 +93,7 @@ export default function Invoices() {
 
   const fetchInvoices = async () => {
     try {
-      const res = await rolesApi.get('/api/vendor-invoices');
+      const res = await rolesApi.get('/vendor-invoices');
       if (res.data?.data !== undefined) setInvoices(res.data.data);
       else if (res.data.success) setInvoices(res.data.data);
     } catch (e) {
@@ -104,7 +104,7 @@ export default function Invoices() {
 
   const fetchVendors = async () => {
     try {
-      const response = await rolesApi.get('/api/vendors?size=100');
+      const response = await rolesApi.get('/vendors?size=100');
       const raw = response.data?.data;
       let vendorList = [];
       if (Array.isArray(raw)) {
@@ -123,7 +123,7 @@ export default function Invoices() {
 
   const fetchRequirements = async () => {
     try {
-      const res = await rolesApi.get('/api/requirements');
+      const res = await rolesApi.get('/requirements');
       if (res.data) setRequirements(res.data);
     } catch (error) { console.error("Error fetching requirements", error); }
   };
@@ -249,7 +249,7 @@ export default function Invoices() {
         discount: newInvoice.discount ? parseFloat(newInvoice.discount) : 0,
         items: newInvoice.items
       };
-      const res = await rolesApi.post('/api/vendor-invoices', payload);
+      const res = await rolesApi.post('/vendor-invoices', payload);
       if (res.data?.data?.id) createdId = res.data.data.id;
     } catch (e) {
       console.error("Error creating invoice", e);

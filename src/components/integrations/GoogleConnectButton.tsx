@@ -6,7 +6,7 @@ const GoogleConnectButton: React.FC = () => {
 
   const handleConnect = async () => {
     try {
-      const response = await fetch('/api/integrations/google/oauth/connect');
+      const response = await fetch('/integrations/google/oauth/connect');
       if (!response.ok) throw new Error('Failed to fetch auth URL');
       const data = await response.json();
 
@@ -20,7 +20,7 @@ const GoogleConnectButton: React.FC = () => {
 
   const handleDisconnect = async () => {
     try {
-      const response = await fetch('/api/integrations/google/disconnect', {
+      const response = await fetch('/integrations/google/disconnect', {
         method: 'POST'
       });
       if (!response.ok) throw new Error('Failed to disconnect');
@@ -43,7 +43,7 @@ const GoogleConnectButton: React.FC = () => {
         timeZone: "Asia/Kolkata"
       };
 
-      const response = await fetch('/api/integrations/google/calendar/events', {
+      const response = await fetch('/integrations/google/calendar/events', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

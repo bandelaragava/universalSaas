@@ -74,7 +74,6 @@ import RoleList from "@/pages/RoleList";
 import RoleForm from "@/pages/RoleForm";
 import CreateRole from "@/pages/CreateRole";
 import RoleHierarchy from "@/pages/RoleHierarchy";
-import RoleMapping from "@/pages/RoleMapping";
 import Permissions from "@/pages/Permissions";
 import CreatePermission from "@/pages/CreatePermission";
 import ProtectedRoute from "@/auth/ProtectedRoute";
@@ -155,8 +154,8 @@ export function AppRoutes() {
         <Route path="create-tenant" element={<ProtectedRoute element={<CreateTenant />} permission="TENANT_VIEW" />} />
         <Route path="tenants/:id" element={<ProtectedRoute element={<TenantDetails />} permission="TENANT_VIEW" />} />
 
-        {/* Access Control Module Routes (Wrapped in AccessControlLayout) */}
-        <Route element={<AccessControlLayout />}>
+        {/* Access Control Module Routes (Merged into SettingsLayout) */}
+        <Route element={<SettingsLayout />}>
           <Route path="users" element={<ProtectedRoute element={<UserList />} permission="USER_VIEW" />} />
           <Route path="users/create" element={<ProtectedRoute element={<UserForm />} permission="USER_CREATE" />} />
           <Route path="users/edit/:id" element={<ProtectedRoute element={<UserForm />} permission="USER_UPDATE" />} />
@@ -165,7 +164,6 @@ export function AppRoutes() {
           <Route path="roles/create" element={<ProtectedRoute element={<RoleForm />} permission="ROLE_CREATE" />} />
           <Route path="roles/edit/:id" element={<ProtectedRoute element={<RoleForm />} permission="ROLE_UPDATE" />} />
           <Route path="roles/wizard" element={<ProtectedRoute element={<CreateRole />} permission="ROLE_CREATE" />} />
-          <Route path="roles/mapping" element={<ProtectedRoute element={<RoleMapping />} permission="ROLE_UPDATE" />} />
           <Route path="role-hierarchy" element={<ProtectedRoute element={<RoleHierarchy />} permission="ROLE_VIEW" />} />
           <Route path="permissions" element={<ProtectedRoute element={<Permissions />} permissions={["PERMISSION_VIEW", "ROLE_VIEW"]} />} />
           <Route path="permissions/create" element={<ProtectedRoute element={<CreatePermission />} permission="ROLE_CREATE" />} />

@@ -42,14 +42,14 @@ export default function RiskCompliance() {
 
   const fetchAudits = async () => {
     try {
-      const response = await rolesApi.get('/api/vendor-audits');
+      const response = await rolesApi.get('/vendor-audits');
       if (response.data && response.data.data) setAudits(response.data.data);
     } catch (error) { console.error("Error fetching audits", error); }
   };
 
   const fetchVendors = async () => {
     try {
-      const response = await rolesApi.get('/api/vendors?size=100');
+      const response = await rolesApi.get('/vendors?size=100');
       if (response.data && response.data.data) {
         const vendorList = response.data.data.content || response.data.data || [];
         setVendors(vendorList);
@@ -78,7 +78,7 @@ export default function RiskCompliance() {
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await rolesApi.post('/api/vendor-audits', newAudit);
+      await rolesApi.post('/vendor-audits', newAudit);
       fetchAudits();
       setNewAudit({ vendorId: '', type: '', auditor: '', auditDate: '', nextAudit: '', findings: '', status: 'Pending' });
       setIsAddOpen(false);
