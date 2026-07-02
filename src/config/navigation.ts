@@ -186,6 +186,17 @@ export const menuConfig: MenuSection[] = [
                 ],
                 requiredModules: ['ADMIN'],
             },
+            {
+                id: 'access-control',
+                label: 'Access Control',
+                path: '/users',
+                icon: Shield,
+                permissions: [
+                    'USER_VIEW',
+                    'ROLE_VIEW',
+                    'PERMISSION_VIEW',
+                ],
+            },
         ],
     },
 ]
