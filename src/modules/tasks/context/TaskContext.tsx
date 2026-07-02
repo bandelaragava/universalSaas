@@ -193,7 +193,7 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
       setMembers(nextMembers);
 
       if (tasksRes.status === 'fulfilled') {
-        const data = tasksRes.value.data;
+        const data = (tasksRes.value as any).data;
         const tasksArray = Array.isArray(data) ? data : (data?.tasks || []);
         setTasks(tasksArray.map(normalizeTaskFromApi));
       }

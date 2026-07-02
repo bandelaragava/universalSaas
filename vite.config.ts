@@ -19,7 +19,7 @@ export default defineConfig({
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, ''),
         configure: (proxy) => {
-          proxy.on('proxyRes', (proxyRes, req, res) => {
+          proxy.on('proxyRes', (_proxyRes, _req, res) => {
             res.setHeader('Access-Control-Allow-Origin', '*');
           });
         },
@@ -30,7 +30,7 @@ export default defineConfig({
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, ''),
         configure: (proxy) => {
-          proxy.on('proxyRes', (proxyRes, req, res) => {
+          proxy.on('proxyRes', (_proxyRes, _req, res) => {
             res.setHeader('Access-Control-Allow-Origin', '*');
           });
         },
@@ -40,7 +40,7 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/lap-api/, '/api'),
         configure: (proxy) => {
-          proxy.on('proxyRes', (proxyRes, req, res) => {
+          proxy.on('proxyRes', (_proxyRes, _req, res) => {
             res.setHeader('Access-Control-Allow-Origin', '*');
           });
         },

@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-const actionPermissions: Record<QuickActionId, string[]> = {
+const actionPermissions: Record<string, string[]> = {
   'add-user': ['USER_CREATE', 'USER_CREATE'],
   'add-lead': ['LEADS_CREATE_LEAD', 'LEADS_CREATE_LEAD'],
   'create-task': ['TASKS_CREATE_TASK', 'TASKS_EDIT_TASK'],
