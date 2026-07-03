@@ -49,7 +49,7 @@ export default function InvoiceConfigurationList() {
 
   const handleActivate = async (id: number) => {
     try {
-      await rolesApi.put(`/api/invoice-configurations/${id}/activate`);
+      await rolesApi.put(`/invoice-configurations/${id}/activate`);
       toast.success('Configuration activated successfully');
       fetchConfigs();
     } catch (error) {

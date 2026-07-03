@@ -10,7 +10,11 @@ declare module 'axios' {
 const ROLES_API_BASE = import.meta.env.VITE_ROLES_API_BASE || import.meta.env.VITE_API_BASE || '/api';
 const LAP_API_BASE = import.meta.env.VITE_LAP_API_BASE || import.meta.env.VITE_API_BASE || '/api';
 
-const MUTATION_PERMISSIONS = [
+const MUTATION_PERMISSIONS: Array<{
+  pattern: RegExp;
+  methods: string[];
+  permission: string | string[];
+}> = [
   { pattern: /^\/users/, methods: ['POST'], permission: 'USER_CREATE' },
   { pattern: /^\/users\/\d+/, methods: ['PUT', 'PATCH'], permission: 'USER_UPDATE' },
   { pattern: /^\/users\/\d+/, methods: ['DELETE'], permission: 'USER_DELETE' },
@@ -24,14 +28,10 @@ const MUTATION_PERMISSIONS = [
   
   { pattern: /^\/payroll/, methods: ['POST', 'PUT', 'PATCH'], permission: 'PAYROLL_PROCESS_PAYROLL' },
   
-  { pattern: /^\/leave\/apply/, methods: ['POST'], permission: 'LEAVE_CREATE' },
-  { pattern: /^\/leave\/\d+\/action/, methods: ['POST'], permission: 'LEAVE_MANAGE' },
+  { pattern: /^\/leave\/\d+\/action/, methods: ['POST'], permission: ['LEAVE_MANAGE', 'APPROVE_LEAVE', 'LEAVE_APPROVE', 'HRMS_LEAVE_APPROVE'] },
   { pattern: /^\/leave\/\d+\/cancel/, methods: ['POST'], permission: 'LEAVE_CREATE' },
-  
-  { pattern: /^\/attendance\/checkin/, methods: ['POST'], permission: 'ATTENDANCE_CREATE' },
-  { pattern: /^\/attendance\/checkout/, methods: ['POST'], permission: 'ATTENDANCE_CREATE' },
-  { pattern: /^\/attendance\/regularize/, methods: ['POST'], permission: 'ATTENDANCE_CREATE' },
-  { pattern: /^\/attendance\/regularize\/\d+\/action/, methods: ['POST'], permission: 'ATTENDANCE_VIEW_ATTENDANCE' },
+
+  { pattern: /^\/attendance\/regularize\/\d+\/action/, methods: ['POST'], permission: ['ATTENDANCE_APPROVE_REGULARIZE', 'ATTENDANCE_APPROVE', 'APPROVE_REGULARIZE', 'APPROVE_REGULARIZATION'] },
   
   { pattern: /^\/leads/, methods: ['POST', 'PUT', 'PATCH'], permission: 'LEADS_CREATE_LEAD' },
   
@@ -75,8 +75,11 @@ rolesApi.interceptors.request.use(
             permissions = [];
           }
 
-          if (!hasPermission(permissions, rule.permission)) {
-            return Promise.reject(new Error(`Security Block: Outgoing request ${method} ${url} requires '${rule.permission}' permission.`));
+          const requiredPermissions = Array.isArray(rule.permission) ? rule.permission : [rule.permission];
+          const allowed = requiredPermissions.some(permission => hasPermission(permissions, permission));
+
+          if (!allowed) {
+            return Promise.reject(new Error(`Security Block: Outgoing request ${method} ${url} requires one of '${requiredPermissions.join(', ')}'.`));
           }
         }
       }
@@ -84,6 +87,12 @@ rolesApi.interceptors.request.use(
     // Determine the base URL dynamically based on the URL path
     let isLapRoute = 
       url.startsWith('/attendance') ||
+      url.startsWith('/users/supervisors') ||
+      url.startsWith('/users/hierarchy') ||
+      url.startsWith('/users/managers') ||
+      /^\/users\/manager\/[^/]+\/hrs\/?$/.test(url) ||
+      /^\/users\/hr\/[^/]+\/employees\/?$/.test(url) ||
+      /^\/users\/[^/]+\/team-members\/?$/.test(url) ||
       url.startsWith('/leave') ||
       url.startsWith('/payroll') ||
       url.startsWith('/reports') ||
@@ -107,7 +116,7 @@ rolesApi.interceptors.request.use(
       isLapRoute = false;
     }
 
-    config.baseURL = isLapRoute ? '/lap-api' : ROLES_API_BASE;
+    config.baseURL = isLapRoute ? LAP_API_BASE : ROLES_API_BASE;
 
     const token = localStorage.getItem('token');
     if (token && config.headers) {
@@ -146,4 +155,3 @@ rolesApi.interceptors.response.use(
 );
 
 export default rolesApi;
-

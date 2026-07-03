@@ -41,7 +41,7 @@ export default function InvoiceConfigurationForm() {
     if (id) {
       const fetchConfig = async () => {
         try {
-          const res = await rolesApi.get(`/api/invoice-configurations/${id}`);
+          const res = await rolesApi.get(`/invoice-configurations/${id}`);
           setFormData({
             invoiceName: res.data.invoiceName || '',
             invoicePrefix: res.data.invoicePrefix || '',
@@ -76,7 +76,7 @@ export default function InvoiceConfigurationForm() {
     
     try {
       if (id) {
-        await rolesApi.put(`/api/invoice-configurations/${id}`, formData);
+        await rolesApi.put(`/invoice-configurations/${id}`, formData);
         toast.success('Configuration updated successfully');
       } else {
         await rolesApi.post('/invoice-configurations', formData);

@@ -14,7 +14,7 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api/leads': {
-        target: 'http://54.164.162.68',
+        target: 'http://100.121.237.45:8000',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, ''),
@@ -25,7 +25,7 @@ export default defineConfig({
         },
       },
       '/api': {
-        target: 'http://32.199.180.3:8080',
+        target: 'http://localhost:8080',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, ''),
@@ -36,7 +36,7 @@ export default defineConfig({
         },
       },
       '/lap-api': {
-        target: 'http://54.164.162.68',
+        target: 'http://100.121.237.45:8000',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/lap-api/, '/api'),
         configure: (proxy) => {
@@ -48,4 +48,3 @@ export default defineConfig({
     },
   },
 })
-

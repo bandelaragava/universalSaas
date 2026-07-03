@@ -325,34 +325,30 @@
 
 //         setLoading(true);
 
-//         // Build payload using snake_case keys expected by backend API
-//         const payload: Record<string, any> = {};
-//         // Helper to assign if value is not null/undefined/empty string
-//         const assign = (key: string, value: any) => {
-//             if (value !== null && value !== undefined && value !== '') {
-//                 payload[key] = value;
-//             }
+//         const payload = {
+//             firstName,
+//             lastName,
+//             email,
+//             phoneNumber,
+//             gender,
+//             roleId: selectedRoleId ? Number(selectedRoleId) : null,
+//             supervisorUserId: supervisorUserId ? Number(supervisorUserId) : null,
+//             employeeId: employeeId || empCode || null,
+//             profileData: {
+//                 ...profileData,
+//                 emp_code: empCode || employeeId,
+//                 joining_date: joiningDate,
+//                 employee_type: employeeType,
+//                 designation,
+//                 work_mode: workMode,
+//                 date_of_birth: dateOfBirth,
+//                 address,
+//             },
+//             permissionIds: selectedPermissions,
+//             entityIds: selectedEntityIds,
+//             departmentIds: selectedDepartmentIds,
+//             ...(isEdit ? {} : { password }),
 //         };
-//         assign('first_name', firstName);
-//         assign('last_name', lastName);
-//         assign('email', email);
-//         assign('phone_number', phoneNumber);
-//         assign('gender', gender);
-//         assign('role_id', selectedRoleId ? parseInt(selectedRoleId, 10) : null);
-//         assign('supervisor_user_id', supervisorUserId ? parseInt(supervisorUserId, 10) : null);
-//         assign('employee_id', employeeId);
-//         assign('date_of_birth', dateOfBirth);
-//         assign('joining_date', joiningDate);
-//         assign('employee_type_id', employeeTypeId ? parseInt(employeeTypeId, 10) : null);
-//         assign('designation_id', designationId ? parseInt(designationId, 10) : null);
-//         assign('work_mode_id', workModeId ? parseInt(workModeId, 10) : null);
-//         // Permissions, entities, departments are arrays; include even if empty to satisfy API
-//         payload['permission_ids'] = selectedPermissions;
-//         payload['entity_ids'] = selectedEntityIds;
-//         payload['department_ids'] = selectedDepartmentIds;
-//         if (!isEdit) {
-//             assign('password', password);
-//         }
 
 //         const selectedPermissionKeys = availablePermissions
 //             .filter(p => selectedPermissions.includes(p.id))
@@ -1063,12 +1059,31 @@ interface Role {
     id: number;
     name: string;
     active: boolean;
+    base_role?: string;
+    display_name?: string;
     showInUserForm?: boolean;
 }
 
 interface Supervisor {
-    id: number;
+    id: number | string;
     name: string;
+    role?: string;
+    employeeId?: string;
+    empCode?: string;
+}
+
+interface LocalUser {
+    id: number | string;
+    firstName?: string;
+    lastName?: string;
+    username?: string;
+    email?: string;
+    active?: boolean;
+    role?: string;
+    roleName?: string;
+    employeeId?: string;
+    empCode?: string;
+    profileData?: Record<string, unknown>;
 }
 
 interface LookupEntity {
@@ -1146,6 +1161,130 @@ const selectedPermissionIdsFromUser = (user: Record<string, unknown>, permission
     return mappedIds;
 };
 
+const readableApiError = (data: unknown, fallback: string) => {
+    if (!data) return fallback;
+    if (typeof data === 'string') return data;
+    if (typeof data !== 'object') return fallback;
+
+    const record = data as Record<string, unknown>;
+    const direct = record.message || record.error || record.detail;
+    if (typeof direct === 'string' && direct.trim()) return direct;
+
+    const fieldMessages = Object.entries(record)
+        .map(([field, value]) => {
+            if (Array.isArray(value)) return `${field}: ${value.join(', ')}`;
+            if (typeof value === 'string') return `${field}: ${value}`;
+            return '';
+        })
+        .filter(Boolean);
+
+    return fieldMessages.length ? fieldMessages.join(' | ') : fallback;
+};
+
+const toApiId = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    return /^\d+$/.test(trimmed) ? Number(trimmed) : trimmed;
+};
+
+const supervisorLabel = (supervisor?: Supervisor) => {
+    if (!supervisor) return null;
+    return supervisor.name.replace(/\s*\[[^\]]+\]\s*$/, '').trim() || null;
+};
+
+const employeeCodeFromSupervisor = (supervisor?: Supervisor) => {
+    if (!supervisor) return '';
+    const explicitCode = supervisor.employeeId || supervisor.empCode;
+    if (explicitCode) return explicitCode;
+    const match = supervisor.name.match(/\(([^)]+)\)/);
+    return match?.[1]?.trim() || '';
+};
+
+const usernameFromSupervisor = (supervisor?: Supervisor) => {
+    if (!supervisor) return null;
+    const beforeCode = supervisor.name.split('(')[0]?.trim();
+    return beforeCode?.split(/\s+/)[0] || null;
+};
+
+const localUserToSupervisor = (user: LocalUser): Supervisor => {
+    const profile = user.profileData || {};
+    const displayName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username || user.email || 'User';
+    const empCode = String(user.employeeId || user.empCode || profile.emp_code || profile.employeeId || '').trim();
+
+    return {
+        id: user.id,
+        name: empCode ? `${displayName} (${empCode})` : displayName,
+        role: user.roleName || user.role || '',
+        employeeId: empCode,
+        empCode,
+    };
+};
+
+const normalizeRoleText = (value: unknown) =>
+    String(value || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '');
+
+const roleGroupFromText = (...values: unknown[]) => {
+    const normalized = values.map(normalizeRoleText).filter(Boolean).join('_');
+    if (!normalized) return 'employee';
+    if (normalized.includes('super') && normalized.includes('admin')) return 'superadmin';
+    if (normalized.includes('admin')) return 'admin';
+    if (normalized.includes('hr') || normalized.includes('human_resource')) return 'hr';
+    if (normalized.includes('manager') || normalized.includes('head') || normalized.includes('director')) return 'manager';
+    if (
+        normalized.includes('team_lead') ||
+        normalized.includes('teamlead') ||
+        normalized.includes('team_leader') ||
+        normalized.includes('teamleaders') ||
+        normalized.includes('team_leaders') ||
+        normalized.includes('leader') ||
+        normalized === 'tl'
+    ) {
+        return 'team_lead';
+    }
+    return 'employee';
+};
+
+const roleGroupForUser = (user: LocalUser) => {
+    const profile = user.profileData || {};
+    return roleGroupFromText(user.role, user.roleName, profile.designation);
+};
+
+const roleGroupForSelectedRole = (roleId: string, roles: Role[]) => {
+    const role = roles.find((item) => String(item.id) === roleId);
+    return roleGroupFromText(role?.base_role, role?.name, role?.display_name);
+};
+
+const allowedSupervisorGroupsForRole = (roleGroup: string) => {
+    switch (roleGroup) {
+        case 'superadmin':
+            return new Set<string>();
+        case 'admin':
+            return new Set(['superadmin']);
+        case 'manager':
+            return new Set(['superadmin', 'admin']);
+        case 'hr':
+            return new Set(['superadmin', 'admin', 'manager']);
+        case 'team_lead':
+            return new Set(['superadmin', 'admin', 'hr']);
+        default:
+            return new Set(['superadmin', 'admin', 'manager', 'hr', 'team_lead']);
+    }
+};
+
+const buildDbSupervisors = (users: LocalUser[], selectedRoleId: string, roles: Role[], excludeUserId?: number | null) => {
+    const allowedGroups = allowedSupervisorGroupsForRole(roleGroupForSelectedRole(selectedRoleId, roles));
+
+    return users
+        .filter((user) => user.active !== false)
+        .filter((user) => !excludeUserId || String(user.id) !== String(excludeUserId))
+        .filter((user) => allowedGroups.has(roleGroupForUser(user)))
+        .map(localUserToSupervisor)
+        .sort((a, b) => a.name.localeCompare(b.name));
+};
+
 interface UserFormProps {
     userId?: number | null;
     onClose?: () => void;
@@ -1177,6 +1316,7 @@ export default function UserForm({ userId, onClose }: UserFormProps = {}) {
 
     // Lookup fields list
     const [roles, setRoles] = useState<Role[]>([]);
+    const [dbUsers, setDbUsers] = useState<LocalUser[]>([]);
     const [supervisors, setSupervisors] = useState<Supervisor[]>([]);
     const [availableEmployeeTypes, setAvailableEmployeeTypes] = useState<LookupEntity[]>([]);
     const [availableDesignations, setAvailableDesignations] = useState<LookupEntity[]>([]);
@@ -1217,6 +1357,15 @@ export default function UserForm({ userId, onClose }: UserFormProps = {}) {
 
                 }
                 setRoles(fetchedRoles);
+
+                try {
+                    const usersRes = await rolesApi.get<LocalUser[]>('/users', { signal: ctrl.signal });
+                    setDbUsers(usersRes.data || []);
+                } catch (err: any) {
+                    if (err?.name === 'CanceledError') throw err;
+                    console.warn('Backend users endpoint failed while loading supervisors:', err);
+                    setDbUsers([]);
+                }
 
                 // Fetch permissions
                 let fetchedPerms: Permission[] = [];
@@ -1281,8 +1430,13 @@ export default function UserForm({ userId, onClose }: UserFormProps = {}) {
                         setPhoneNumber(u.phoneNumber || '');
                         setGender(u.gender || 'MALE');
                         setSelectedRoleId(u.roleId ? String(u.roleId) : '');
-                        setSupervisorUserId(u.supervisorUserId ? String(u.supervisorUserId) : '');
-                        setSupervisorUserId(u.supervisorUserId ? String(u.supervisorUserId) : '');
+                        const pd = u.profileData || {};
+                        setProfileData(pd);
+                        setSupervisorUserId(
+                            u.supervisorUserId
+                                ? String(u.supervisorUserId)
+                                : String(u.managerId || pd.reporting_supervisor_id || pd.reportingSupervisorId || '')
+                        );
 
                         setEmployeeId(u.employeeId || '');
                         setDateOfBirth(u.dateOfBirth ? String(u.dateOfBirth).split('T')[0] : '');
@@ -1290,7 +1444,6 @@ export default function UserForm({ userId, onClose }: UserFormProps = {}) {
                         setEmployeeTypeId(u.employeeTypeId ? String(u.employeeTypeId) : '');
                         setDesignationId(u.designationId ? String(u.designationId) : '');
                         setWorkModeId(u.workModeId ? String(u.workModeId) : '');
-
                         // Load only explicitly assigned user-level permissions.
                         setSelectedPermissions(selectedPermissionIdsFromUser(u, fetchedPerms));
                         setSelectedEntityIds(u.entityIds || []);
@@ -1314,61 +1467,91 @@ export default function UserForm({ userId, onClose }: UserFormProps = {}) {
         return () => ctrl.abort();
     }, [activeId, isEdit, showToast]);
 
-    // Load supervisors whenever selected Role ID changes
+    // Load supervisors from the same current-DB users list shown on the Users page.
     useEffect(() => {
         if (!selectedRoleId) {
             setSupervisors([]);
             return;
         }
 
-        const ctrl = new AbortController();
-
-        const loadRoleSpecificDetails = async () => {
-            try {
-                const supRes = await rolesApi.get<Supervisor[]>(`/users/supervisors?roleId=${selectedRoleId}`, { signal: ctrl.signal });
-                setSupervisors(supRes.data || []);
-            } catch (err: unknown) {
-                const axiosError = err as { name?: string };
-                if (axiosError.name === 'CanceledError') return;
-                setSupervisors([]);
-            }
-        };
-
-        loadRoleSpecificDetails();
-        return () => ctrl.abort();
-    }, [selectedRoleId]);
+        const nextSupervisors = buildDbSupervisors(dbUsers, selectedRoleId, roles, activeId);
+        setSupervisors(nextSupervisors);
+        if (supervisorUserId && !nextSupervisors.some((item) => String(item.id) === supervisorUserId)) {
+            setSupervisorUserId('');
+        }
+    }, [activeId, dbUsers, roles, selectedRoleId, supervisorUserId]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!isEdit && password.trim().length < 8) {
+            showToast('error', 'Password must be at least 8 characters.');
+            return;
+        }
+
         setLoading(true);
 
-        // Build payload using snake_case keys expected by backend API
-        const payload: Record<string, any> = {};
-        const assign = (key: string, value: any) => {
-            if (value !== null && value !== undefined && value !== '') {
-                payload[key] = value;
-            }
+        const generatedEmployeeId = employeeId || `USR-${Date.now().toString().slice(-6)}`;
+        const selectedEmployeeType = availableEmployeeTypes.find((item) => String(item.id) === employeeTypeId)?.name || '';
+        const selectedDesignation = availableDesignations.find((item) => String(item.id) === designationId)?.name || '';
+        const selectedWorkMode = availableWorkModes.find((item) => String(item.id) === workModeId)?.name || '';
+        const selectedSupervisor = supervisors.find((item) => String(item.id) === supervisorUserId);
+        const selectedSupervisorName = supervisorLabel(selectedSupervisor);
+        const supervisorEmployeeId = employeeCodeFromSupervisor(selectedSupervisor) || null;
+        const rawSupervisorApiId = supervisorUserId ? toApiId(supervisorUserId) : null;
+        const supervisorApiId = rawSupervisorApiId;
+        const supervisorUsername = usernameFromSupervisor(selectedSupervisor);
+        const payload = {
+            firstName,
+            lastName,
+            email,
+            phoneNumber: phoneNumber || null,
+            gender,
+            roleId: toApiId(selectedRoleId),
+            supervisorUserId: supervisorApiId,
+            supervisor_user_id: supervisorApiId,
+            supervisorId: supervisorApiId,
+            reportingToUserId: supervisorApiId,
+            managerId: supervisorApiId,
+            supervisorEmployeeId,
+            rawSupervisorUserId: rawSupervisorApiId,
+            supervisorUsername,
+            supervisorName: selectedSupervisorName,
+            managerName: selectedSupervisorName,
+            employeeId: generatedEmployeeId,
+            dateOfBirth: dateOfBirth || null,
+            joiningDate: joiningDate || null,
+            employeeTypeId: toApiId(employeeTypeId),
+            designationId: toApiId(designationId),
+            workModeId: toApiId(workModeId),
+            profileData: {
+                ...profileData,
+                emp_code: generatedEmployeeId,
+                employeeId: generatedEmployeeId,
+                joining_date: joiningDate || null,
+                joiningDate: joiningDate || null,
+                date_of_birth: dateOfBirth || null,
+                dateOfBirth: dateOfBirth || null,
+                employee_type: selectedEmployeeType || employeeTypeId || null,
+                employeeType: selectedEmployeeType || employeeTypeId || null,
+                designation: selectedDesignation || designationId || null,
+                work_mode: selectedWorkMode || workModeId || null,
+                workMode: selectedWorkMode || workModeId || null,
+                reporting_supervisor_id: supervisorApiId,
+                reporting_supervisor_name: selectedSupervisorName,
+                reportingSupervisorId: supervisorApiId,
+                reportingSupervisorName: selectedSupervisorName,
+                supervisorUserId: supervisorApiId,
+                supervisorEmployeeId,
+                rawSupervisorUserId: rawSupervisorApiId,
+                supervisorUsername,
+            },
+
+            permissionIds: selectedPermissions,
+            entityIds: selectedEntityIds,
+            departmentIds: selectedDepartmentIds,
+            ...(isEdit ? {} : { password: password.trim() }),
         };
-        assign('firstName', firstName);
-        assign('lastName', lastName);
-        assign('email', email);
-        assign('phoneNumber', phoneNumber);
-        assign('gender', gender);
-        assign('roleId', selectedRoleId ? parseInt(selectedRoleId, 10) : null);
-        assign('supervisorUserId', supervisorUserId ? parseInt(supervisorUserId, 10) : null);
-        assign('employeeId', employeeId);
-        assign('dateOfBirth', dateOfBirth);
-        assign('joiningDate', joiningDate);
-        assign('employeeTypeId', employeeTypeId ? parseInt(employeeTypeId, 10) : null);
-        assign('designationId', designationId ? parseInt(designationId, 10) : null);
-        assign('workModeId', workModeId ? parseInt(workModeId, 10) : null);
-        // Include arrays even if empty
-        payload['permissionIds'] = selectedPermissions;
-        payload['entityIds'] = selectedEntityIds;
-        payload['departmentIds'] = selectedDepartmentIds;
-        if (!isEdit) {
-            assign('password', password);
-        }
 
         try {
             if (isEdit) {
@@ -1383,17 +1566,10 @@ export default function UserForm({ userId, onClose }: UserFormProps = {}) {
                 setTimeout(() => navigate('/users'), 1000);
             }
         } catch (err: unknown) {
-            const axiosError = err as { response?: { data?: { message?: string } | string }; message?: string };
-            let errorMsg = 'Failed to save user.';
-            if (axiosError.response) {
-                if (typeof axiosError.response.data === 'object' && axiosError.response.data?.message) {
-                    errorMsg = axiosError.response.data.message;
-                } else if (typeof axiosError.response.data === 'string') {
-                    errorMsg = axiosError.response.data;
-                }
-            } else if (axiosError.message) {
-                errorMsg = axiosError.message;
-            }
+            const axiosError = err as { response?: { data?: unknown }; message?: string };
+            const errorMsg = axiosError.response
+                ? readableApiError(axiosError.response.data, 'Failed to save user.')
+                : axiosError.message || 'Failed to save user.';
             showToast('error', errorMsg);
         } finally {
             setLoading(false);
@@ -1697,7 +1873,7 @@ export default function UserForm({ userId, onClose }: UserFormProps = {}) {
                                         <option value="">No supervisor (reporting endpoint)</option>
                                         {supervisors.map((s) => (
                                             <option key={s.id} value={s.id}>
-                                                {s.name}
+                                                {s.name} {s.role ? `[${s.role}]` : ''}
                                             </option>
                                         ))}
                                     </select>

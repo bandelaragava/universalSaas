@@ -160,7 +160,8 @@ export const menuConfig: MenuSection[] = [
                     'SETTINGS_MANAGE_SETTINGS',
                     'SETTINGS_MANAGE_ID_FORMATS',
                     'SETTINGS_MANAGE_TEMPLATES',
-                    'SUBSCRIPTION_MANAGE'
+                    'SUBSCRIPTION_MANAGE',
+                    'COMPANY_PROFILE_VIEW'
                 ],
                 requiredModules: ['SETTINGS'],
             },

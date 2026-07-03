@@ -12,12 +12,13 @@ export function usePermissions() {
   const modules = auth?.modules || EMPTY_PERMISSIONS;
   const user = auth?.user || null;
   const normalizedRole = String(user?.role || '').toUpperCase().replace(/[^A-Z0-9]+/g, '_');
-  // Full access is granted explicitly or if the user is SUPER_ADMIN / Platform Admin
-  const hasFullAccess = rawPermissions.includes('*') || normalizedRole === 'SUPER_ADMIN' || user?.isPlatformAdmin;
+  // Full access is granted explicitly or if the user is SUPER_ADMIN or SYSTEM_SUPER_ADMIN
+  const hasFullAccess = rawPermissions.includes('*') || normalizedRole === 'SUPER_ADMIN' || normalizedRole === 'SYSTEM_SUPER_ADMIN';
   const permissions = rawPermissions; // keep actual permissions; do not replace with wildcard based on role
   const isSuperAdmin = hasFullAccess; // retain naming for downstream logic
 
-  const isPlatformAdminFlag = Boolean(user?.isPlatformAdmin);
+  // Only consider them a platform admin if they actually have the SYSTEM_SUPER_ADMIN role
+  const isPlatformAdminFlag = Boolean(user?.isPlatformAdmin) && normalizedRole === 'SYSTEM_SUPER_ADMIN';
 
   const can = useCallback((perm: string) => {
     if (perm.startsWith('TENANT_')) {
@@ -32,7 +33,8 @@ export function usePermissions() {
     }
     return isSuperAdmin || hasAnyPermission(permissions, perms);
   }, [isSuperAdmin, isPlatformAdminFlag, permissions]);
-  const isModuleEnabled = useCallback((mod: string) => isPlatformAdminFlag || checkModuleEnabled(modules, mod), [isPlatformAdminFlag, modules]);
+  
+  const isModuleEnabled = useCallback((mod: string) => checkModuleEnabled(modules, mod), [modules]);
 
   const canViewModule = useCallback((moduleName: string) => {
     if (isSuperAdmin) return true;

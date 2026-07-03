@@ -29,12 +29,13 @@ export function Sidebar() {
 
   const canShowItem = (item: MenuItem) => {
     if (item.id === 'dashboard') return true
-    if (userPermissions.includes('*') || auth.isPlatformAdmin) return true
 
     if (item.requiredModules && item.requiredModules.length > 0) {
       const hasRequiredModule = item.requiredModules.some(mod => permission.isModuleEnabled(mod));
       if (!hasRequiredModule) return false;
     }
+
+    if (userPermissions.includes('*') || auth.isPlatformAdmin) return true
 
     const permissionPassed = item.permission
       ? permission.can(item.permission)

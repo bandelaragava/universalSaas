@@ -1289,7 +1289,7 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { usePermissions } from '@/auth/usePermissions';
 import { attendanceService, AttendanceRecord, AttendancePolicy, OfficeLocation, RegularizationRequest, Holiday } from '@/services/attendance';
-import { employeeService, EmployeeOption } from '../../services/employees';
+import { employeeService, EmployeeOption } from '@/services/employees';
 import { leaveService } from '@/services/leave';
 import { payrollService } from '@/services/payroll';
 import toast from 'react-hot-toast';
@@ -1563,7 +1563,7 @@ export function AttendancePage() {
         search: searchFilter || undefined,
         active: true,
       });
-      const freshEmployees = Array.isArray(employeesRes.data) ? employeesRes.data : [];
+      const freshEmployees = employeesRes.data || [];
       setEmployees(freshEmployees);
 
       // 1. Today status
@@ -1893,15 +1893,17 @@ export function AttendancePage() {
 
   // Dynamic role groups & permissions mapping from backend
   const userRole = (user?.role || '').toLowerCase();
-
+  
   const getRoleGroup = (employeeOrRole: EmployeeOption | string) => {
     const r = typeof employeeOrRole === 'string'
       ? String(employeeOrRole || '').toLowerCase()
       : [
-        employeeOrRole.base_role,
-        employeeOrRole.role,
-        employeeOrRole.designation,
-      ].filter(Boolean).join(' ').toLowerCase();
+          employeeOrRole.base_role,
+          employeeOrRole.role,
+          employeeOrRole.designation,
+          (employeeOrRole as any).email,
+          (employeeOrRole as any).username,
+        ].filter(Boolean).join(' ').toLowerCase();
     if (r.includes('super') || r.includes('admin')) return 'admin';
     if (r.includes('hr') || r.includes('human')) return 'hr';
     if (r.includes('leader') || r.includes('lead') || r.includes('tl') || r.includes('teamleader')) return 'tl';
@@ -2068,8 +2070,7 @@ export function AttendancePage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    const name = empName || 'Employee';
-    link.setAttribute('download', `${name.replace(/\s+/g, '_')}_HRMS_Report.txt`);
+    link.setAttribute('download', `${empName.replace(/\s+/g, '_')}_HRMS_Report.txt`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -2100,8 +2101,8 @@ export function AttendancePage() {
   }, [filteredEmployees]);
 
   // Helper to recursively find all subordinate IDs
-  const getAllSubordinateIds = (managerId: number | string, employeesList: EmployeeOption[]): (number | string)[] => {
-    const directReports = employeesList.filter(emp => Number(emp.manager) === Number(managerId)).map(emp => emp.user_id);
+  const getAllSubordinateIds = (managerId: number, employeesList: EmployeeOption[]): number[] => {
+    const directReports = employeesList.filter(emp => Number(emp.manager) === managerId).map(emp => emp.user_id);
     let allReports = [...directReports];
     for (const reportId of directReports) {
       allReports = [...allReports, ...getAllSubordinateIds(reportId, employeesList)];
@@ -2113,10 +2114,19 @@ export function AttendancePage() {
     let list = filteredEmployees.filter((emp) => getRoleGroup(emp) === 'tl');
     if (selectedManagerUserId) {
       const subIds = getAllSubordinateIds(selectedManagerUserId, filteredEmployees);
-      list = list.filter((emp) => Number(emp.manager) === Number(selectedManagerUserId) || subIds.includes(emp.user_id));
+      list = list.filter((emp) => Number(emp.manager) === selectedManagerUserId || subIds.includes(emp.user_id));
+    } else if (isSuperAdmin || isHr) {
+      const myId = Number(user?.id);
+      if (myId) {
+        const subIds = getAllSubordinateIds(myId, filteredEmployees);
+        list = list.filter((emp) => {
+          const mgr = Number(emp.manager);
+          return mgr === myId || subIds.includes(emp.user_id);
+        });
+      }
     }
     return list;
-  }, [filteredEmployees, selectedManagerUserId]);
+  }, [filteredEmployees, selectedManagerUserId, isSuperAdmin, isHr, user?.id]);
 
   const visibleEmployees = useMemo(() => {
     let list = filteredEmployees.filter((emp) => {
@@ -2126,13 +2136,23 @@ export function AttendancePage() {
 
     if (selectedTlUserId) {
       const subIds = getAllSubordinateIds(selectedTlUserId, filteredEmployees);
-      list = list.filter((emp) => Number(emp.manager) === Number(selectedTlUserId) || subIds.includes(emp.user_id));
+      list = list.filter((emp) => Number(emp.manager) === selectedTlUserId || subIds.includes(emp.user_id));
     } else if (selectedManagerUserId) {
       const subIds = getAllSubordinateIds(selectedManagerUserId, filteredEmployees);
-      list = list.filter((emp) => Number(emp.manager) === Number(selectedManagerUserId) || subIds.includes(emp.user_id));
+      list = list.filter((emp) => Number(emp.manager) === selectedManagerUserId || subIds.includes(emp.user_id));
+    } else if (isSuperAdmin || isHr || isManager) {
+      // If no manager is selected, only show direct reports to the logged-in user to enforce hierarchy
+      const myId = Number(user?.id);
+      if (myId) {
+        const subIds = getAllSubordinateIds(myId, filteredEmployees);
+        list = list.filter((emp) => {
+          const mgr = Number(emp.manager);
+          return mgr === myId || subIds.includes(emp.user_id);
+        });
+      }
     }
     return list;
-  }, [filteredEmployees, selectedTlUserId, selectedManagerUserId]);
+  }, [filteredEmployees, selectedTlUserId, selectedManagerUserId, isSuperAdmin, isHr, isManager, user?.id]);
 
   return (
     <div className="space-y-6">
@@ -2188,7 +2208,7 @@ export function AttendancePage() {
             )}
 
             {/* Team Leaders select */}
-            {(isSuperAdmin || isHr || isManager) && (
+            {(isSuperAdmin || isHr || isManager || isTl) && (
               <select
                 value={selectedTlId}
                 onChange={(e) => {
@@ -2286,8 +2306,8 @@ export function AttendancePage() {
               <RefreshCw className={cn('h-3.5 w-3.5', loading && 'animate-spin')} />
               Update
             </Button>
-          </CardContent>
-        </Card>
+        </CardContent>
+      </Card>
       )}
 
       <div className="min-w-0 space-y-6">

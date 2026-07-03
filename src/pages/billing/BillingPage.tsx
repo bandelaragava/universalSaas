@@ -533,6 +533,12 @@ export function BillingPage() {
                         <span className="font-bold uppercase tracking-wider text-xs">Subtotal</span>
                         <span className="font-black text-gray-900">₹{viewInvoice.subtotal || viewInvoice.totalAmount}</span>
                       </div>
+                      {(viewInvoice.discount !== undefined && viewInvoice.discount > 0) && (
+                        <div className="flex justify-between text-emerald-600 px-2">
+                          <span className="font-bold uppercase tracking-wider text-xs">Discount</span>
+                          <span className="font-black">-₹{viewInvoice.discount}</span>
+                        </div>
+                      )}
                       {(viewInvoice.gstAmount !== undefined && viewInvoice.gstAmount !== null) && (
                         <div className="flex justify-between text-gray-600 px-2">
                           <span className="font-bold uppercase tracking-wider text-xs">GST (18%)</span>

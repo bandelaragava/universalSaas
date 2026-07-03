@@ -171,37 +171,37 @@ export function AppRoutes() {
 
         {/* Settings Module Routes (Wrapped in SettingsLayout) */}
         <Route element={<SettingsLayout />}>
-          <Route path="settings" element={<ProtectedRoute element={<SettingsPage />} permissions={["COMPANY_PROFILE_VIEW", "COMPANY_PROFILE_VIEW", "COMPANY_PROFILE_VIEW"]} />} />
+          <Route path="settings" element={<ProtectedRoute element={<SettingsPage />} permissions={["SETTINGS_MANAGE_SETTINGS", "SETTINGS_MANAGE_ID_FORMATS", "SETTINGS_MANAGE_TEMPLATES", "SUBSCRIPTION_MANAGE", "COMPANY_PROFILE_VIEW"]} />} />
           <Route path="settings/profile" element={<ProtectedRoute element={<UserProfilePage />} />} />
           <Route path="settings/crm" element={<ProtectedRoute element={<CrmSettingsPage />} permissions={["LEADS_MANAGE_LEAD_FORMS", "COMPANY_PROFILE_VIEW"]} />} />
           <Route path="settings/company" element={<ProtectedRoute element={<CompanyProfilePage />} permissions={["COMPANY_PROFILE_VIEW", "COMPANY_PROFILE_VIEW", "COMPANY_PROFILE_VIEW"]} />} />
-          <Route path="settings/billing" element={<ProtectedRoute element={<BillingPage />} permission="COMPANY_PROFILE_VIEW" />} />
-          <Route path="settings/entities" element={<ProtectedRoute element={<BusinessEntityList />} permission="COMPANY_PROFILE_VIEW" />} />
+          <Route path="settings/billing" element={<ProtectedRoute element={<BillingPage />} permissions={["COMPANY_PROFILE_VIEW", "SUBSCRIPTION_MANAGE"]} />} />
+          <Route path="settings/entities" element={<ProtectedRoute element={<BusinessEntityList />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_SETTINGS"]} />} />
           <Route path="settings/entities/create" element={<ProtectedRoute element={<BusinessEntityForm />} permission="ROLE_CREATE" />} />
           <Route path="settings/entities/edit/:id" element={<ProtectedRoute element={<BusinessEntityForm />} permission="ROLE_UPDATE" />} />
-          <Route path="settings/departments" element={<ProtectedRoute element={<DepartmentList />} permission="COMPANY_PROFILE_VIEW" />} />
+          <Route path="settings/departments" element={<ProtectedRoute element={<DepartmentList />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_SETTINGS"]} />} />
           <Route path="settings/departments/create" element={<ProtectedRoute element={<DepartmentForm />} permission="ROLE_CREATE" />} />
           <Route path="settings/departments/edit/:id" element={<ProtectedRoute element={<DepartmentForm />} permission="ROLE_UPDATE" />} />
-          <Route path="settings/employee-types" element={<ProtectedRoute element={<EmployeeTypeList />} permission="COMPANY_PROFILE_VIEW" />} />
+          <Route path="settings/employee-types" element={<ProtectedRoute element={<EmployeeTypeList />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_SETTINGS"]} />} />
           <Route path="settings/employee-types/create" element={<ProtectedRoute element={<EmployeeTypeForm />} permission="ROLE_CREATE" />} />
           <Route path="settings/employee-types/edit/:id" element={<ProtectedRoute element={<EmployeeTypeForm />} permission="ROLE_UPDATE" />} />
-          <Route path="settings/designations" element={<ProtectedRoute element={<DesignationList />} permission="COMPANY_PROFILE_VIEW" />} />
+          <Route path="settings/designations" element={<ProtectedRoute element={<DesignationList />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_SETTINGS"]} />} />
           <Route path="settings/designations/create" element={<ProtectedRoute element={<DesignationForm />} permission="ROLE_CREATE" />} />
           <Route path="settings/designations/edit/:id" element={<ProtectedRoute element={<DesignationForm />} permission="ROLE_UPDATE" />} />
-          <Route path="settings/work-modes" element={<ProtectedRoute element={<WorkModeList />} permission="COMPANY_PROFILE_VIEW" />} />
+          <Route path="settings/work-modes" element={<ProtectedRoute element={<WorkModeList />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_SETTINGS"]} />} />
           <Route path="settings/work-modes/create" element={<ProtectedRoute element={<WorkModeForm />} permission="ROLE_CREATE" />} />
           <Route path="settings/work-modes/edit/:id" element={<ProtectedRoute element={<WorkModeForm />} permission="ROLE_UPDATE" />} />
-          <Route path="settings/id-generation" element={<ProtectedRoute element={<IdGenerationSettings />} permission="COMPANY_PROFILE_VIEW" />} />
-          <Route path="settings/templates" element={<ProtectedRoute element={<TemplatesPage />} permission="COMPANY_PROFILE_VIEW" />} />
+          <Route path="settings/id-generation" element={<ProtectedRoute element={<IdGenerationSettings />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_ID_FORMATS"]} />} />
+          <Route path="settings/templates" element={<ProtectedRoute element={<TemplatesPage />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_TEMPLATES"]} />} />
           <Route path="settings/templates/create" element={<ProtectedRoute element={<TemplateFormPage />} permission="ROLE_CREATE" />} />
           <Route path="settings/templates/edit/:id" element={<ProtectedRoute element={<TemplateFormPage />} permission="ROLE_UPDATE" />} />
-          <Route path="settings/certificates" element={<ProtectedRoute element={<CertificatesList />} permission="COMPANY_PROFILE_VIEW" />} />
-          <Route path="settings/onboarding-rules" element={<ProtectedRoute element={<OnboardingRulesPage />} permission="COMPANY_PROFILE_VIEW" />} />
-          <Route path="settings/dynamic-role-fields" element={<ProtectedRoute element={<DynamicRoleFieldsPage />} permission="COMPANY_PROFILE_VIEW" />} />
-          <Route path="settings/system" element={<ProtectedRoute element={<SystemSettingsPage />} permission="COMPANY_PROFILE_VIEW" />} />
-          <Route path="settings/invoice-configurations" element={<ProtectedRoute element={<InvoiceConfigurationList />} permission="COMPANY_PROFILE_VIEW" />} />
-          <Route path="settings/invoice-configurations/create" element={<ProtectedRoute element={<InvoiceConfigurationForm />} permission="COMPANY_PROFILE_VIEW" />} />
-          <Route path="settings/invoice-configurations/edit/:id" element={<ProtectedRoute element={<InvoiceConfigurationForm />} permission="COMPANY_PROFILE_VIEW" />} />
+          <Route path="settings/certificates" element={<ProtectedRoute element={<CertificatesList />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_TEMPLATES"]} />} />
+          <Route path="settings/onboarding-rules" element={<ProtectedRoute element={<OnboardingRulesPage />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_SETTINGS"]} />} />
+          <Route path="settings/dynamic-role-fields" element={<ProtectedRoute element={<DynamicRoleFieldsPage />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_SETTINGS"]} />} />
+          <Route path="settings/system" element={<ProtectedRoute element={<SystemSettingsPage />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_SETTINGS"]} />} />
+          <Route path="settings/invoice-configurations" element={<ProtectedRoute element={<InvoiceConfigurationList />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_SETTINGS"]} />} />
+          <Route path="settings/invoice-configurations/create" element={<ProtectedRoute element={<InvoiceConfigurationForm />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_SETTINGS"]} />} />
+          <Route path="settings/invoice-configurations/edit/:id" element={<ProtectedRoute element={<InvoiceConfigurationForm />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_SETTINGS"]} />} />
           <Route path="leads/form-builder" element={<ProtectedRoute element={<FormBuilder />} module="crm" permissions={["LEADS_MANAGE_LEAD_FORMS", "LEADS_MANAGE_LEAD_FORMS", "LEADS_MANAGE_LEAD_FORMS"]} />} />
           <Route path="leads/options" element={<ProtectedRoute element={<LeadOptions />} module="crm" permissions={["LEADS_MANAGE_LEAD_FORMS", "LEADS_MANAGE_LEAD_FORMS", "LEADS_MANAGE_LEAD_FORMS"]} />} />
           <Route path="crm/stages" element={<ProtectedRoute element={<LeadStageList />} module="crm" permissions={["LEADS_VIEW_LEADS", "LEADS_MANAGE_LEAD_FORMS"]} />} />

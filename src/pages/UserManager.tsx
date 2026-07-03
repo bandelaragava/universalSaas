@@ -15,8 +15,10 @@ interface User {
   active: boolean;
   roleId?: number;
   roleName?: string;
-  supervisorUserId?: number;
+  supervisorUserId?: number | string;
+  managerId?: number | string;
   supervisorName?: string;
+  managerName?: string;
   employeeId?: string;
   leadId?: string;
   profileData?: Record<string, unknown>;
@@ -29,9 +31,74 @@ interface Role {
 }
 
 interface Supervisor {
-  id: number;
+  id: number | string;
   name: string;
+  role?: string;
+  employeeId?: string;
+  empCode?: string;
 }
+
+const toApiId = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  return /^\d+$/.test(trimmed) ? Number(trimmed) : trimmed;
+};
+
+const supervisorLabel = (supervisor?: Supervisor) => {
+  if (!supervisor) return null;
+  return supervisor.name.replace(/\s*\[[^\]]+\]\s*$/, '').trim() || null;
+};
+
+const employeeCodeFromSupervisor = (supervisor?: Supervisor) => {
+  if (!supervisor) return '';
+  const explicitCode = supervisor.employeeId || supervisor.empCode;
+  if (explicitCode) return explicitCode;
+  const match = supervisor.name.match(/\(([^)]+)\)/);
+  return match?.[1]?.trim() || '';
+};
+
+const numericIdFromEmployeeCode = (code: string | null) => {
+  const match = String(code || '').match(/(\d+)\s*$/);
+  return match ? Number(match[1]) : null;
+};
+
+const usernameFromSupervisor = (supervisor?: Supervisor) => {
+  if (!supervisor) return null;
+  const beforeCode = supervisor.name.split('(')[0]?.trim();
+  return beforeCode?.split(/\s+/)[0] || null;
+};
+
+const supervisorUrl = (roleId: string, roles: Role[], excludeUserId?: number | null) => {
+  const params = new URLSearchParams({ roleId });
+  const selectedRole = roles.find((role) => String(role.id) === roleId);
+  if (selectedRole?.name) params.set('roleName', selectedRole.name);
+  if (excludeUserId) params.set('excludeUserId', String(excludeUserId));
+  return `/users/supervisors?${params.toString()}`;
+};
+
+const reportsToName = (user: User, users: User[] = []) => {
+  const profile = user.profileData || {};
+  const directName = (
+    user.supervisorName ||
+    user.managerName ||
+    profile.reporting_supervisor_name ||
+    profile.reportingSupervisorName ||
+    profile.supervisorName ||
+    profile.managerName ||
+    ''
+  );
+  if (directName) return String(directName);
+
+  const supervisorId =
+    user.supervisorUserId ||
+    user.managerId ||
+    profile.reporting_supervisor_id ||
+    profile.reportingSupervisorId;
+  if (!supervisorId) return '';
+
+  const supervisor = users.find((item) => String(item.id) === String(supervisorId));
+  return supervisor ? `${supervisor.firstName || ''} ${supervisor.lastName || ''}`.trim() : '';
+};
 
 interface ExtraField {
   id: number;
@@ -139,7 +206,7 @@ export default function UserManager() {
 
     const fetchSupervisors = async () => {
       try {
-        const response = await rolesApi.get<Supervisor[]>(`/users/supervisors?roleId=${selectedRoleId}`, {
+        const response = await rolesApi.get<Supervisor[]>(supervisorUrl(selectedRoleId, roles, editingId), {
           signal: controller.signal,
         });
         setSupervisors(response.data || []);
@@ -156,27 +223,17 @@ export default function UserManager() {
     return () => {
       controller.abort();
     };
-  }, [selectedRoleId]);
+  }, [editingId, roles, selectedRoleId]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!firstName.trim() || !lastName.trim() || !email.trim()) {
-      showToast('error', 'First name, last name, and email are required');
-      return;
-    }
-    if (!/^[a-zA-Z0-9.\-_]+@gmail\.com$/.test(email)) {
-      showToast('error', 'Email must be a valid Gmail address');
-      return;
-    }
-    if (!editingId && !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/.test(password)) {
-      showToast('error', 'Password must include one uppercase, one lowercase, one digit, and one special char');
-      return;
-    }
-    if (!/^\d{10}$/.test(phoneNumber)) {
-      showToast('error', 'Phone number must be exactly 10 digits');
-      return;
-    }
+    const selectedSupervisor = supervisors.find((item) => String(item.id) === supervisorUserId);
+    const selectedSupervisorName = supervisorLabel(selectedSupervisor);
+    const supervisorEmployeeId = employeeCodeFromSupervisor(selectedSupervisor) || null;
+    const rawSupervisorApiId = supervisorUserId ? toApiId(supervisorUserId) : null;
+    const supervisorApiId = numericIdFromEmployeeCode(supervisorEmployeeId) || rawSupervisorApiId;
+    const supervisorUsername = usernameFromSupervisor(selectedSupervisor);
 
     const payload = {
       firstName,
@@ -185,8 +242,17 @@ export default function UserManager() {
       password: editingId ? undefined : password,
       phoneNumber,
       gender,
-      roleId: selectedRoleId ? parseInt(selectedRoleId, 10) : null,
-      supervisorUserId: supervisorUserId ? parseInt(supervisorUserId, 10) : null,
+      roleId: toApiId(selectedRoleId),
+      supervisorUserId: supervisorApiId,
+      supervisor_user_id: supervisorApiId,
+      supervisorId: supervisorApiId,
+      reportingToUserId: supervisorApiId,
+      managerId: supervisorApiId,
+      supervisorEmployeeId,
+      rawSupervisorUserId: rawSupervisorApiId,
+      supervisorUsername,
+      supervisorName: selectedSupervisorName,
+      managerName: selectedSupervisorName,
       employeeId: employeeId || null,
       profileData: {
         ...profileData,
@@ -197,6 +263,14 @@ export default function UserManager() {
         work_mode: workMode,
         date_of_birth: dateOfBirth,
         address: address,
+        reporting_supervisor_id: supervisorApiId,
+        reporting_supervisor_name: selectedSupervisorName,
+        reportingSupervisorId: supervisorApiId,
+        reportingSupervisorName: selectedSupervisorName,
+        supervisorUserId: supervisorApiId,
+        supervisorEmployeeId,
+        rawSupervisorUserId: rawSupervisorApiId,
+        supervisorUsername,
       },
     };
 
@@ -234,15 +308,11 @@ export default function UserManager() {
 
       fetchUsers();
     } catch (err: unknown) {
-      const axiosError = err as { response?: { data?: any }; message?: string };
+      const axiosError = err as { response?: { data?: { message?: string } | string }; message?: string };
       let errorMsg = 'Save failed.';
       if (axiosError.response) {
-        if (typeof axiosError.response.data === 'object') {
-          if (axiosError.response.data.errors) {
-            errorMsg = Object.values(axiosError.response.data.errors).join(' | ');
-          } else if (axiosError.response.data.message) {
-            errorMsg = axiosError.response.data.message;
-          }
+        if (typeof axiosError.response.data === 'object' && axiosError.response.data?.message) {
+          errorMsg = axiosError.response.data.message;
         } else if (typeof axiosError.response.data === 'string') {
           errorMsg = axiosError.response.data;
         }
@@ -261,12 +331,16 @@ export default function UserManager() {
     setPassword('');
     setPhoneNumber(user.phoneNumber || '');
     setSelectedRoleId(user.roleId ? String(user.roleId) : '');
-    setSupervisorUserId(user.supervisorUserId ? String(user.supervisorUserId) : '');
     setGender(user.gender || 'MALE');
     setEmployeeId(user.employeeId || '');
 
     const pd = user.profileData || {};
     setProfileData(pd);
+    setSupervisorUserId(
+      user.supervisorUserId
+        ? String(user.supervisorUserId)
+        : String(user.managerId || pd.reporting_supervisor_id || pd.reportingSupervisorId || '')
+    );
     setEmpCode(String(pd.emp_code || user.employeeId || ''));
     setJoiningDate(String(pd.joining_date || new Date().toISOString().split('T')[0]));
     setEmployeeType(String(pd.employee_type || 'regular'));
@@ -447,9 +521,9 @@ export default function UserManager() {
                         {user.profileData?.joining_date ? String(user.profileData.joining_date) : <span className="text-muted-foreground/40">—</span>}
                       </td>
                       <td className="py-3.5 px-4">
-                        {user.supervisorName ? (
+                        {reportsToName(user, users) ? (
                           <span className="text-foreground text-xs font-medium">
-                            {user.supervisorName}
+                            {reportsToName(user, users)}
                           </span>
                         ) : (
                           <span className="text-muted-foreground/40">—</span>
@@ -633,7 +707,7 @@ export default function UserManager() {
                       value={supervisorUserId}
                       onChange={(e) => setSupervisorUserId(e.target.value)}
                     >
-                      <option value="">No supervisor</option>
+                      <option value="">No supervisor (reporting endpoint)</option>
                       {supervisors.map((s) => (
                         <option key={s.id} value={s.id}>
                           {s.name}
@@ -838,4 +912,5 @@ export default function UserManager() {
     </div>
   );
 }
+
 

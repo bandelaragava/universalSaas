@@ -43,7 +43,7 @@ export default function Unauthorized() {
           </button>
         </div>
 
-        {debugLog !== null && (
+        {debugLog !== null && import.meta.env.DEV && (
           <div className="mt-8 text-left bg-background border border-border rounded-xl p-4 relative z-10 text-xs">
             <p className="font-bold text-rose-400 mb-2 border-b border-border pb-1.5">[AUTH DEBUG LOG]</p>
             <pre className="overflow-x-auto text-muted-foreground whitespace-pre-wrap">

@@ -33,7 +33,13 @@ interface AssignSubscriptionModalProps {
 }
 
 export const AssignSubscriptionModal: React.FC<AssignSubscriptionModalProps> = ({ isOpen, onClose, tenantId, tenantName, onSuccess }) => {
-    const [modulePricing, setModulePricing] = useState<ModulePricing>({});
+    // Initialize with fallback immediately so they always show instantly
+    const [modulePricing, setModulePricing] = useState<ModulePricing>({
+        CRM: 0, HRMS: 0, VENDOR: 0, MARKETING: 0, LEADS: 0, 
+        EMPLOYEE: 0, PAYROLL: 0, ATTENDANCE: 0, PERFORMANCE: 0, 
+        SETTINGS: 0, LEAVE: 0, REPORTS: 0, SUPPORT_TICKETS: 0, 
+        TASKS: 0, REVENUE: 0, ADMIN: 0
+    });
     const [moduleConfigs, setModuleConfigs] = useState<Record<string, ModuleAssignment>>({});
     const [toggledModules, setToggledModules] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(false);
@@ -41,18 +47,17 @@ export const AssignSubscriptionModal: React.FC<AssignSubscriptionModalProps> = (
 
     useEffect(() => {
         if (isOpen) {
-            // Fetch default module pricing
             rolesApi.get('/subscriptions/modules/pricing')
                 .then(res => {
-                    if (res.data && res.data.data) {
-                        setModulePricing(res.data.data);
-                    } else {
-                        setModulePricing(res.data || {});
+                    // Handle both res.data and res.data.data formats
+                    const data = res.data?.data ? res.data.data : res.data;
+                    if (data && typeof data === 'object' && Object.keys(data).length > 0) {
+                        setModulePricing(data);
                     }
                 })
-                .catch(err => console.error("Error fetching pricing", err));
-
-
+                .catch(err => {
+                    console.error("Error fetching pricing, using initial state", err);
+                });
         }
     }, [isOpen]);
 
@@ -100,6 +105,20 @@ export const AssignSubscriptionModal: React.FC<AssignSubscriptionModalProps> = (
     const [gstPercentage, setGstPercentage] = useState<number>(18);
     const [discountType, setDiscountType] = useState<string>('FLAT');
     const [discountValue, setDiscountValue] = useState<number | ''>('');
+    const [installmentDates, setInstallmentDates] = useState<string[]>([]);
+
+    useEffect(() => {
+        setInstallmentDates(prev => {
+            const newDates = [...prev];
+            while (newDates.length < noOfInstallments) {
+                const i = newDates.length;
+                const d = new Date();
+                d.setMonth(d.getMonth() + i);
+                newDates.push(d.toISOString().split('T')[0]);
+            }
+            return newDates.slice(0, noOfInstallments);
+        });
+    }, [noOfInstallments]);
 
     const getFinancials = () => {
         let subtotal = 0;
@@ -147,6 +166,7 @@ export const AssignSubscriptionModal: React.FC<AssignSubscriptionModalProps> = (
             invoiceType,
             noOfInstallments: paymentType === 'INSTALLMENT' ? noOfInstallments : 1,
             installmentAmount: paymentType === 'INSTALLMENT' && installmentAmount ? Number(installmentAmount) : null,
+            installmentDates: paymentType === 'INSTALLMENT' ? installmentDates : undefined,
             gstPercentage,
             discountType,
             discountValue: discountValue ? Number(discountValue) : 0
@@ -366,6 +386,25 @@ export const AssignSubscriptionModal: React.FC<AssignSubscriptionModalProps> = (
                                             className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-cyan-500 focus:ring-cyan-500 px-3 py-2 border"
                                             placeholder={`Auto-calculated: ₹${financials.calculatedInstallment.toFixed(2)}`}
                                         />
+                                    </div>
+                                    <div className="md:col-span-2 mt-2">
+                                        <label className="block text-xs font-medium text-gray-700 mb-2">Installment Due Dates</label>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                            {installmentDates.map((dateStr, index) => (
+                                                <div key={index} className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg border border-gray-200">
+                                                    <span className="text-xs font-bold text-gray-500 w-6">#{index + 1}</span>
+                                                    <input 
+                                                        type="date"
+                                                        value={dateStr}
+                                                        onChange={e => {
+                                                            const val = e.target.value;
+                                                            setInstallmentDates(prev => prev.map((d, i) => i === index ? val : d));
+                                                        }}
+                                                        className="w-full text-xs border-gray-300 rounded-md shadow-sm focus:border-cyan-500 focus:ring-cyan-500 px-2 py-1.5 border"
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 </>
                             )}

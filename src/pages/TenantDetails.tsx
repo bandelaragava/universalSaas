@@ -230,18 +230,49 @@ export default function TenantDetails({ tenantId, onClose }: TenantDetailsProps 
                       </span>
                     </div>
 
-                    {m.active && (
-                      <div className="flex items-center gap-4 text-xs text-gray-500">
-                        {m.amount !== null && (
+                    <div className="flex items-center gap-4">
+                      {m.active && (
+                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                          {m.amount !== null && (
+                            <span>
+                              License Fee: <strong className="text-gray-900">₹{m.amount}</strong>
+                            </span>
+                          )}
                           <span>
-                            License Fee: <strong className="text-gray-900">₹{m.amount}</strong>
+                            Method: <strong className="text-gray-700">{m.paymentMethod}</strong>
                           </span>
-                        )}
-                        <span>
-                          Method: <strong className="text-gray-700">{m.paymentMethod}</strong>
-                        </span>
-                      </div>
-                    )}
+                        </div>
+                      )}
+                      
+                      {/* Edit / Toggle Action */}
+                      <button
+                        onClick={async () => {
+                          const action = m.active ? 'disable' : 'enable';
+                          if (confirm(`Are you sure you want to ${action} the ${m.moduleName} module?`)) {
+                            try {
+                              if (action === 'enable') {
+                                await rolesApi.put(`/tenants/${activeId}/modules/${m.moduleName}/enable`, {});
+                              } else {
+                                await rolesApi.put(`/tenants/${activeId}/modules/${m.moduleName}/disable`);
+                              }
+                              // Refresh modules
+                              const res = await rolesApi.get(`/tenants/${activeId}/modules`);
+                              setModules(res.data);
+                            } catch (err) {
+                              console.error(`Failed to ${action} module`, err);
+                              alert(`Failed to ${action} module. Check console for details.`);
+                            }
+                          }
+                        }}
+                        className={`text-xs px-3 py-1 rounded font-bold border transition-colors ${
+                          m.active 
+                            ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100' 
+                            : 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100'
+                        }`}
+                      >
+                        {m.active ? 'Disable' : 'Enable'}
+                      </button>
+                    </div>
                   </div>
                 ))
               ) : (
@@ -331,6 +362,7 @@ function InvoiceHistory({ tenantId, tenant }: { tenantId: number, tenant: any })
   const [installments, setInstallments] = useState<any[]>([]);
   const [loadingInstallments, setLoadingInstallments] = useState(false);
   const [viewInvoice, setViewInvoice] = useState<any>(null);
+  const [invoiceInstallments, setInvoiceInstallments] = useState<any[]>([]);
   const [company, setCompany] = useState<any>(null);
   const [invoiceItems, setInvoiceItems] = useState<any[]>([]);
   const [invoiceConfig, setInvoiceConfig] = useState<any>(null);
@@ -438,8 +470,14 @@ function InvoiceHistory({ tenantId, tenant }: { tenantId: number, tenant: any })
                       try {
                         const res = await rolesApi.get(`/tenants/${tenantId}/invoices/${inv.id}/items`);
                         setInvoiceItems(res.data);
+                        if (inv.paymentType === 'INSTALLMENT') {
+                            const instRes = await rolesApi.get(`/tenants/${tenantId}/invoices/${inv.id}/installments`);
+                            setInvoiceInstallments(instRes.data);
+                        } else {
+                            setInvoiceInstallments([]);
+                        }
                       } catch(err) {
-                        console.error("Failed to fetch items", err);
+                        console.error("Failed to fetch details", err);
                       }
                     }}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-md text-xs font-bold transition-colors"
@@ -497,8 +535,8 @@ function InvoiceHistory({ tenantId, tenant }: { tenantId: number, tenant: any })
 
       {/* INVOICE MODAL */}
       {viewInvoice && (
-        <div className="fixed inset-0 z-[100] flex flex-col bg-gray-100 overflow-y-auto">
-          <div className="max-w-4xl w-full mx-auto my-8 bg-white text-black rounded-xl shadow-2xl flex flex-col min-h-full border border-gray-200">
+        <div className="fixed inset-0 z-[100] flex flex-col bg-gray-100 overflow-y-auto p-4">
+          <div className="max-w-4xl w-full mx-auto bg-white text-black rounded-xl shadow-2xl flex flex-col border border-gray-200 my-auto">
             <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-white sticky top-0 z-10 rounded-t-xl shadow-sm">
               <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2"><FileText className="w-5 h-5 text-indigo-600" /> Invoice Document</h2>
               <button onClick={() => setViewInvoice(null)} className="text-gray-500 hover:text-gray-900 transition-colors bg-gray-100 hover:bg-gray-200 rounded-full p-2">
@@ -506,7 +544,7 @@ function InvoiceHistory({ tenantId, tenant }: { tenantId: number, tenant: any })
               </button>
             </div>
             
-            <div className="p-10 overflow-y-auto flex-1 font-sans relative bg-white" id="tenant-invoice-print">
+            <div className="p-10 flex-1 font-sans relative bg-white" id="tenant-invoice-print">
               {/* WATERMARK */}
               {viewInvoice.status === 'Paid' && (
                 <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden z-0">
@@ -567,16 +605,16 @@ function InvoiceHistory({ tenantId, tenant }: { tenantId: number, tenant: any })
                       </div>
                     ) : (
                       <>
-                        <h4 className="text-lg font-black text-gray-900 mb-2">{company?.companyName || 'GYANTRIX TECHNOLOGIES PRIVATE LIMITED'}</h4>
+                        <h4 className="text-lg font-black text-gray-900 mb-2">{company?.companyName || 'Company Name Not Set'}</h4>
                         <div className="text-sm text-gray-600 grid grid-cols-[80px_1fr] gap-y-1">
                           <span className="font-semibold text-gray-500">GSTIN</span>
-                          <span className="text-gray-900">: {company?.gstNumber || '36ABCDE1234F1Z5'}</span>
+                          <span className="text-gray-900">: {company?.gstNumber || 'N/A'}</span>
                           <span className="font-semibold text-gray-500">Email</span>
-                          <span className="text-gray-900">: {company?.email || 'billing@gyantrix.com'}</span>
+                          <span className="text-gray-900">: {company?.email || 'N/A'}</span>
                           <span className="font-semibold text-gray-500">Phone</span>
-                          <span className="text-gray-900">: {company?.phone || '+91 9876543210'}</span>
+                          <span className="text-gray-900">: {company?.phone || 'N/A'}</span>
                           <span className="font-semibold text-gray-500">Address</span>
-                          <span className="text-gray-900">: {company?.addressLine1 || 'Hyderabad, Telangana, India'}</span>
+                          <span className="text-gray-900">: {company?.addressLine1 || 'N/A'}</span>
                         </div>
                       </>
                     )}
@@ -677,6 +715,12 @@ function InvoiceHistory({ tenantId, tenant }: { tenantId: number, tenant: any })
                         <span className="font-bold uppercase tracking-wider text-xs">Subtotal</span>
                         <span className="font-black text-gray-900">₹{viewInvoice.subtotal || viewInvoice.totalAmount}</span>
                       </div>
+                      {(viewInvoice.discount !== undefined && viewInvoice.discount > 0) && (
+                        <div className="flex justify-between text-emerald-600 px-2">
+                          <span className="font-bold uppercase tracking-wider text-xs">Discount</span>
+                          <span className="font-black">-₹{viewInvoice.discount.toFixed(2)}</span>
+                        </div>
+                      )}
                       {(viewInvoice.gstAmount !== undefined && viewInvoice.gstAmount !== null) && (
                         <div className="flex justify-between text-gray-600 px-2">
                           <span className="font-bold uppercase tracking-wider text-xs">GST (18%)</span>
@@ -685,11 +729,46 @@ function InvoiceHistory({ tenantId, tenant }: { tenantId: number, tenant: any })
                       )}
                       <div className="flex justify-between items-center text-gray-900 pt-3 border-t-2 border-gray-900 mt-3 px-2">
                         <span className="font-black uppercase tracking-wider">Total Amount</span>
-                        <span className="font-black text-xl">₹{viewInvoice.totalAmount}</span>
+                        <span className="font-black text-xl">₹{viewInvoice.totalAmount.toFixed(2)}</span>
                       </div>
                     </div>
                   </div>
                 </div>
+
+                {/* Installment Schedule */}
+                {invoiceInstallments && invoiceInstallments.length > 0 && (
+                    <div className="mb-10 px-4">
+                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 border-b border-gray-200 pb-2">Installment Schedule</h3>
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
+                            <table className="min-w-full text-sm">
+                                <thead className="bg-gray-100 text-gray-600 border-b border-gray-200 text-left">
+                                    <tr>
+                                        <th className="px-4 py-3 font-bold uppercase tracking-wider text-xs">Inst #</th>
+                                        <th className="px-4 py-3 font-bold uppercase tracking-wider text-xs">Due Date</th>
+                                        <th className="px-4 py-3 font-bold uppercase tracking-wider text-xs">Status</th>
+                                        <th className="px-4 py-3 text-right font-bold uppercase tracking-wider text-xs">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    {invoiceInstallments.map((inst, idx) => (
+                                        <tr key={idx} className="bg-white">
+                                            <td className="px-4 py-3 font-medium text-gray-900">{inst.installmentNo}</td>
+                                            <td className="px-4 py-3 text-gray-600">{inst.dueDate}</td>
+                                            <td className="px-4 py-3">
+                                                {inst.paid ? (
+                                                    <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">Paid</span>
+                                                ) : (
+                                                    <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">Pending</span>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-3 text-right font-black text-gray-900">₹{inst.amount.toFixed(2)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
 
                 {/* Notes & Footer */}
                 <div className="border-t-2 border-gray-900 pt-6 flex justify-between items-end">

@@ -112,10 +112,23 @@ export default function RoleHierarchy() {
 
     const getChildren = (roleId: number) => hierarchy.filter((h) => h.reportsToRoleId === roleId);
 
-    const renderNode = (role: Role, depth = 0): React.ReactNode => {
+    const renderNode = (role: Role, depth = 0, path = new Set<number>()): React.ReactNode => {
+      if (path.has(role.id)) {
+        return (
+          <div key={`cycle-${role.id}-${depth}`} style={{ marginLeft: depth * 24 }} className="mt-1">
+            <span className="text-rose-500 text-xs font-semibold px-2 py-1 bg-rose-500/10 rounded-md border border-rose-500/20">
+              ⚠️ Circular Reference: {role.name}
+            </span>
+          </div>
+        );
+      }
+      
+      const currentPath = new Set(path);
+      currentPath.add(role.id);
+
       const children = getChildren(role.id);
       return (
-        <div key={role.id} style={{ marginLeft: depth * 24 }} className="mt-1">
+        <div key={`${role.id}-${depth}`} style={{ marginLeft: depth * 24 }} className="mt-1">
           <div
             className={`inline-flex items-center gap-2 py-1.5 px-3 rounded-lg border text-sm font-medium ${
               depth === 0
@@ -139,7 +152,7 @@ export default function RoleHierarchy() {
           {children.map((link) => {
             const childRole = roles.find((r) => r.id === link.roleId);
             if (!childRole) return null;
-            return renderNode(childRole, depth + 1);
+            return <React.Fragment key={link.id}>{renderNode(childRole, depth + 1, currentPath)}</React.Fragment>;
           })}
         </div>
       );

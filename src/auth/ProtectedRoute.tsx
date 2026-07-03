@@ -22,7 +22,7 @@ export default function ProtectedRoute({ element, permission, permissions, modul
   const normalizedModule = module ? module.toUpperCase() : undefined;
   const moduleAliasMap: Record<string, string[]> = {
     CRM: ['LEADS'], // legacy "crm" maps to leads module
-    HRMS: ['ATTENDANCE', 'LEAVE', 'PAYROLL'], // legacy "hrms" maps to its sub‑modules
+    HRMS: ['ATTENDANCE', 'LEAVE', 'PAYROLL'], // legacy "hrms" maps to its sub-modules
   };
   const moduleCandidates = normalizedModule ? (moduleAliasMap[normalizedModule] || [normalizedModule]) : [];
 
@@ -32,7 +32,7 @@ export default function ProtectedRoute({ element, permission, permissions, modul
   // Module check: pass if there is no module requirement or any candidate module is enabled for the user
   const modulePassed = moduleCandidates.length === 0 || moduleCandidates.some((m) => isModuleEnabled(m));
 
-  // Platform‑admin bypass (if required)
+  // Platform-admin bypass (if required)
   const platformPassed = isPlatformAdminRequired ? isPlatformAdmin : true;
 
   const finalAllowed = platformPassed && permissionPassed && modulePassed;
@@ -70,27 +70,35 @@ export default function ProtectedRoute({ element, permission, permissions, modul
   }
 
   if (!finalAllowed) {
-    const debugLog = {
-      currentPath: window.location.pathname,
-      requiredPermission: permission,
-      requiredPermissions,
-      requiredModule: module,
-      normalizedModule,
-      moduleCandidates,
-      userPermissions: auth.permissions,
-      userModules: auth.modules,
-      isPlatformAdmin,
-      reason: 'Access denied by ProtectedRoute logic'
-    };
-    console.warn('[AUTH DEBUG]', debugLog);
-    try {
-      localStorage.setItem('last_auth_debug_log', JSON.stringify(debugLog));
-    } catch (error) {
-      console.warn('Auth debug log storage failed:', error);
+    if (import.meta.env.DEV) {
+      const debugLog = {
+        currentPath: window.location.pathname,
+        requiredPermission: permission,
+        requiredPermissions,
+        requiredModule: module,
+        normalizedModule,
+        moduleCandidates,
+        userPermissions: auth.permissions,
+        userModules: auth.modules,
+        isPlatformAdmin,
+        reason: 'Access denied by ProtectedRoute logic'
+      };
+      console.warn('[AUTH DEBUG]', debugLog);
+      try {
+        localStorage.setItem('last_auth_debug_log', JSON.stringify(debugLog));
+      } catch (error) {
+        console.warn('Auth debug log storage failed:', error);
+      }
+      return <Navigate to="/unauthorized" replace />;
     }
-    return <Navigate to="/unauthorized" replace />;
+
+    // Production routing: Redirect to dashboard safely
+    if (window.location.pathname === '/' || window.location.pathname === '/dashboard') {
+      return <Navigate to="/unauthorized" replace />;
+    }
+    return <Navigate to="/" replace />;
   }
 
-  // All checks passed – render the protected element
+  // All checks passed - render the protected element
   return element;
 }
