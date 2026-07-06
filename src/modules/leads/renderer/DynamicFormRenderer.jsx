@@ -281,9 +281,12 @@ export default function DynamicFormRenderer({ onClose }) {
       email: getByLabel('Email Address') || null,
       phone: getByLabel('Phone Number') || null,
       status: getByLabel('Status') || 'New',
-      counselor_id: values.counselor_id ? Number(values.counselor_id) : null,
+      counselor_id: values.counselor_id ? values.counselor_id : null,
       dynamic_fields: dynamicFields,
     };
+
+    console.log('[Create Lead] Form Values:', values);
+    console.log('[Create Lead] Request Payload to backend:', payload);
 
     try {
       await createLead(payload).unwrap();

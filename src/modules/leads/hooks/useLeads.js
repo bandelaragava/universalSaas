@@ -8,30 +8,50 @@ const getDynamicValue = (lead, acceptedLabels) => {
   )?.value;
 };
 
-export const normalizeLead = (lead) => ({
-  ...lead,
-  name: lead.full_name || lead.name || '',
-  course: lead.course || getDynamicValue(lead, ['course', 'course of interest', 'program']) || 'N/A',
-  source: lead.source || getDynamicValue(lead, ['source', 'lead source']) || 'N/A',
-  internal_notes: lead.internal_notes || getDynamicValue(lead, ['internal notes', 'notes']) || '',
-  company: lead.company || getDynamicValue(lead, ['company', 'company name', 'organization']) || '',
-  priority: lead.priority || getDynamicValue(lead, ['priority', 'lead priority']) || 'Medium',
-  assigned_to: lead.assigned_to || (
-    lead.counselor
-      ? {
+export const normalizeLead = (lead, leadUsers = []) => {
+  let assigned_to = lead.assigned_to;
+  
+  if (!assigned_to) {
+    if (lead.counselor) {
+      assigned_to = {
         id: lead.counselor.id,
         name: lead.counselor.full_name || lead.counselor.email,
+      };
+    } else if (lead.counselor_id || lead.counselorId) {
+      const cId = String(lead.counselor_id || lead.counselorId);
+      const user = leadUsers.find((u) => String(u.id) === cId);
+      if (user) {
+        assigned_to = {
+          id: user.id,
+          name: user.full_name || user.email,
+        };
+      } else {
+        assigned_to = { id: cId, name: 'Unknown Counselor' };
       }
-      : null
-  ),
-  followup_date: lead.followup_date || getDynamicValue(lead, ['follow-up date', 'followup date', 'next follow up']) || null,
-});
+    } else {
+      assigned_to = null;
+    }
+  }
+
+  return {
+    ...lead,
+    name: lead.full_name || lead.name || '',
+    course: lead.course || getDynamicValue(lead, ['course', 'course of interest', 'program']) || 'N/A',
+    source: lead.source || getDynamicValue(lead, ['source', 'lead source']) || 'N/A',
+    internal_notes: lead.internal_notes || getDynamicValue(lead, ['internal notes', 'notes']) || '',
+    company: lead.company || getDynamicValue(lead, ['company', 'company name', 'organization']) || '',
+    priority: lead.priority || getDynamicValue(lead, ['priority', 'lead priority']) || 'Medium',
+    assigned_to,
+    followup_date: lead.followup_date || getDynamicValue(lead, ['follow-up date', 'followup date', 'next follow up']) || null,
+  };
+};
 
 export const useLeads = () => {
   const query = useGetLeadsQuery();
   const { data: leadUsers = [], isLoading: isUsersLoading } = useGetLeadUsersQuery();
 
-  const leads = Array.isArray(query.data) ? query.data.map(normalizeLead) : [];
+  const rawData = Array.isArray(query.data) ? query.data : (query.data?.results || query.data?.content || query.data?.data || []);
+  const leads = Array.isArray(rawData) ? rawData.map(lead => normalizeLead(lead, leadUsers)) : [];
   
   const allowedUserIds = new Set(leadUsers.map(u => String(u.id)));
   

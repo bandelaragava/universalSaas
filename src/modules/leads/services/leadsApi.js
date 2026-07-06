@@ -62,13 +62,18 @@ export const leadsApi = createApi({
           const meRes = await rolesApi.get('/users/me', { ignore403: true }).catch(() => ({ data: null }));
           const me = meRes.data;
 
+          console.log('[getLeadUsers] Raw users data:', users);
+          console.log('[getLeadUsers] Current logged-in user (me):', me);
+
           let mappedUsers = users.map(u => ({
-            id: u.id,
+            id: u.id || u.userId || u.user_id,
             email: u.email,
             full_name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.username || u.email,
             role: u.roleName || u.role,
             managerId: u.supervisorUserId || u.managerId || u.reportingToUserId || (u.profileData || {}).reporting_supervisor_id || (u.profileData || {}).supervisorUserId
           }));
+
+          console.log('[getLeadUsers] Mapped users array before filtering:', mappedUsers);
 
           // Strict scoping for non-admins
           const isSuper = me && (String(me.roleName).includes('SUPER_ADMIN') || String(me.roleName).includes('HR'));
@@ -98,8 +103,11 @@ export const leadsApi = createApi({
             });
           }
 
+          console.log('[getLeadUsers] Final users list returned to UI:', mappedUsers);
+
           return { data: mappedUsers };
         } catch (error) {
+          console.error('[getLeadUsers] Error fetching users:', error);
           return { error: { status: 500, data: error.message } };
         }
       },

@@ -208,7 +208,7 @@ export default function LeadDetailsPage() {
 
   const handleAssignCounselor = async () => {
     if (!selectedCounselorId) return;
-    await assignLead(lead.id, Number(selectedCounselorId));
+    await assignLead(lead.id, selectedCounselorId);
     setSelectedCounselorId('');
   };
 
