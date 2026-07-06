@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { getLeads } from '@/services/marketing';
 import { usePermissions } from '@/auth/usePermissions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -136,3 +136,5 @@ export default function LeadDashboard() {
     </Card>
   );
 }
+
+

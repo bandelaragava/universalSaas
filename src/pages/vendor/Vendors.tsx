@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Filter, Plus, Edit2, Eye, Trash2, ShieldCheck, AlertCircle } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
@@ -248,7 +248,7 @@ export default function Vendors() {
 
   const handleToggleCategoryStatus = async (cat: any) => {
     try {
-      await rolesApi.put(`/api/vendor-categories/${cat.id}`, {
+      await rolesApi.put(`/vendor-categories/${cat.id}`, {
         ...cat,
         active: !cat.active
       });
@@ -261,7 +261,7 @@ export default function Vendors() {
   const handleDeleteCategory = async (id: number | string) => {
     if (window.confirm('Are you sure you want to delete this category?')) {
       try {
-        await rolesApi.delete(`/api/vendor-categories/${id}`);
+        await rolesApi.delete(`/vendor-categories/${id}`);
         fetchCategories();
       } catch (error) {
         console.error("Failed to delete category", error);
@@ -273,7 +273,7 @@ export default function Vendors() {
     const newName = window.prompt("Enter new category name:", cat.name);
     if (newName && newName.trim() !== "" && newName !== cat.name) {
       try {
-        await rolesApi.put(`/api/vendor-categories/${cat.id}`, {
+        await rolesApi.put(`/vendor-categories/${cat.id}`, {
           ...cat,
           name: newName.trim()
         });
@@ -308,7 +308,7 @@ export default function Vendors() {
         status: newVendor.status,
         active: newVendor.status === 'Active'
       };
-      await rolesApi.put(`/api/vendors/${newVendor.id}`, payload);
+      await rolesApi.put(`/vendors/${newVendor.id}`, payload);
       fetchVendors();
       resetForm();
       setIsEditModalOpen(false);
@@ -321,7 +321,7 @@ export default function Vendors() {
   const handleDeleteVendor = async (id: number | string) => {
     if (window.confirm('Are you sure you want to delete this vendor?')) {
       try {
-        await rolesApi.delete(`/api/vendors/${id}`);
+        await rolesApi.delete(`/vendors/${id}`);
         fetchVendors();
       } catch (error) {
         console.error("Failed to delete vendor", error);
@@ -934,3 +934,6 @@ export default function Vendors() {
     </motion.div>
   );
 }
+
+
+

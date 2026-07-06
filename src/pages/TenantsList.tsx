@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+﻿import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Layers, RefreshCw, Sliders, ToggleLeft, ToggleRight, Building, X, ShieldAlert, FileText } from 'lucide-react';
 import rolesApi from '@/services/rolesApi';
 import EntityListPage from '@/components/shared/EntityListPage';
@@ -174,7 +174,7 @@ export default function TenantsList() {
                     {tenant.name}
                   </td>
                   <td className="py-3.5 px-4 font-mono text-xs text-muted-foreground">{tenant.dbName}</td>
-                  <td className="py-3.5 px-4 text-muted-foreground">{tenant.adminEmail || <span className="text-muted-foreground/60">—</span>}</td>
+                  <td className="py-3.5 px-4 text-muted-foreground">{tenant.adminEmail || <span className="text-muted-foreground/60">-</span>}</td>
                   <td className="py-3.5 px-4">
                     <span
                       className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-semibold border ${tenant.active
@@ -318,4 +318,6 @@ export default function TenantsList() {
     </div>
   );
 }
+
+
 

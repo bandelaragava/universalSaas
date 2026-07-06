@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { 
   DollarSign, Percent, TrendingUp, RefreshCw, Layers,
   Wallet, MousePointer, Megaphone, Users
@@ -322,5 +322,7 @@ export const AffiliateDashboard: React.FC = () => {
 };
 
 export default AffiliateDashboard;
+
+
 
 

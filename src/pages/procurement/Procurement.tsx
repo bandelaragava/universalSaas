@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+﻿/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from 'react';
 import rolesApi from '@/services/rolesApi';
 import { motion } from 'framer-motion';
@@ -92,7 +92,7 @@ export default function Procurement() {
   const handleDeleteAsset = async (id: number | string) => {
     if (window.confirm('Are you sure you want to delete this Asset?')) {
       try {
-        await rolesApi.delete(`/api/purchase-orders/${id}`);
+        await rolesApi.delete(`/purchase-orders/${id}`);
         fetchAssets();
         setIsViewAssetOpen(false);
       } catch (e) { console.error("Error deleting asset", e); }
@@ -126,7 +126,7 @@ export default function Procurement() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filteredAssets.map((asset) => {
           const assetName = asset.item || (asset.items && asset.items[0]?.itemDescription) || 'Unknown Asset';
-          const cost = asset.amountFormatted || `$${asset.totalAmount || 0}`;
+          const cost = asset.amountFormatted || `₹${asset.totalAmount || 0}`;
 
           return (
             <div
@@ -252,7 +252,7 @@ export default function Procurement() {
                 <div className="p-2 bg-slate-800 rounded-lg shrink-0"><DollarSign size={14} className="text-emerald-400" /></div>
                 <div>
                   <p className="text-slate-500 text-xs mb-0.5">Cost</p>
-                  <p className="text-slate-200 font-semibold">{selectedAsset.amountFormatted || `$${selectedAsset.totalAmount || 0}`}</p>
+                  <p className="text-slate-200 font-semibold">{selectedAsset.amountFormatted || `₹${selectedAsset.totalAmount || 0}`}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -286,3 +286,8 @@ export default function Procurement() {
     </motion.div>
   );
 }
+
+
+
+
+

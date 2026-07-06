@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+﻿/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useState, useEffect } from 'react';
 import rolesApi from '@/services/rolesApi';
 import Modal from '@/components/ui/Modal';
@@ -316,7 +316,7 @@ export default function CreateRole() {
                     >
                       <td className="py-3 px-4 font-mono text-xs">{role.id}</td>
                       <td className="py-3 px-4 font-semibold text-slate-200">{role.name}</td>
-                      <td className="py-3 px-4 text-slate-400 text-xs">{role.description || '—'}</td>
+                      <td className="py-3 px-4 text-slate-400 text-xs">{role.description || '-'}</td>
                       <td className="py-3 px-4">
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold border ${
@@ -509,7 +509,7 @@ export default function CreateRole() {
                             {field.required ? 'Yes' : 'No'}
                           </span>
                         </td>
-                        <td className="py-2 px-3 text-slate-400">{field.options?.join(', ') || '—'}</td>
+                        <td className="py-2 px-3 text-slate-400">{field.options?.join(', ') || '-'}</td>
                         <td className="py-2 px-3 text-right">
                           <div className="flex justify-end gap-2.5">
                             <button
@@ -550,5 +550,7 @@ export default function CreateRole() {
     </div>
   );
 }
+
+
 
 

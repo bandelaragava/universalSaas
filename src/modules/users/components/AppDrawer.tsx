@@ -1,4 +1,4 @@
-// src/modules/users/components/AppDrawer.tsx
+﻿// src/modules/users/components/AppDrawer.tsx
 import React, { ReactNode } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
@@ -46,5 +46,7 @@ export default function AppDrawer({ isOpen, onClose, title, children }: AppDrawe
     </div>
   );
 }
+
+
 
 

@@ -1,4 +1,4 @@
-// /* eslint-disable @typescript-eslint/no-explicit-any */
+﻿// /* eslint-disable @typescript-eslint/no-explicit-any */
 // import React, { useState, useEffect } from 'react';
 // import { useNavigate, useParams } from 'react-router-dom';
 // import { Settings, Sliders } from 'lucide-react';
@@ -562,3 +562,4 @@ export default function LeadStageForm() {
     </EntityFormPage>
   );
 }
+

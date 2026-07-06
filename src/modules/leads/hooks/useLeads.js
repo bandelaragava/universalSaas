@@ -1,5 +1,5 @@
 // // src/modules/leads/hooks/useLeads.js
-import { useGetLeadsQuery } from '@/modules/leads/services/leadsApi';
+import { useGetLeadsQuery, useGetLeadUsersQuery } from '@/modules/leads/services/leadsApi';
 
 const getDynamicValue = (lead, acceptedLabels) => {
   const labels = acceptedLabels.map((label) => label.toLowerCase());
@@ -29,9 +29,20 @@ export const normalizeLead = (lead) => ({
 
 export const useLeads = () => {
   const query = useGetLeadsQuery();
+  const { data: leadUsers = [], isLoading: isUsersLoading } = useGetLeadUsersQuery();
+
+  const leads = Array.isArray(query.data) ? query.data.map(normalizeLead) : [];
+  
+  const allowedUserIds = new Set(leadUsers.map(u => String(u.id)));
+  
+  const filteredLeads = leads.filter(lead => {
+    // If users are still loading, it's safer to hide assigned leads rather than showing unauthorized ones.
+    if (!lead.assigned_to || !lead.assigned_to.id) return true;
+    return allowedUserIds.has(String(lead.assigned_to.id));
+  });
 
   return {
     ...query,
-    data: Array.isArray(query.data) ? query.data.map(normalizeLead) : [],
+    data: filteredLeads,
   };
 };

@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+﻿/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useState, useEffect, useCallback } from 'react';
 import { Shield, Key, Trash2, Edit2, UserPlus, Users } from 'lucide-react';
 import rolesApi from '@/services/rolesApi';
@@ -492,7 +492,7 @@ export default function UserManager() {
                               {user.roleName}
                             </span>
                           ) : (
-                            <span className="text-muted-foreground/40">—</span>
+                            <span className="text-muted-foreground/40">-</span>
                           )}
                           {!!user.profileData?.designation && (
                             <span className="text-[9px] text-cyan-600 dark:text-cyan-400 font-medium block mt-1 uppercase tracking-wider">
@@ -513,12 +513,12 @@ export default function UserManager() {
                             {user.profileData.work_mode === 'work_from_home' ? 'WFH' : 'Office'}
                           </span>
                         ) : (
-                          <span className="text-muted-foreground/40">—</span>
+                          <span className="text-muted-foreground/40">-</span>
                         )}
                       </td>
                       {/* Joining Date */}
                       <td className="py-3.5 px-4 text-muted-foreground text-[11px] font-mono">
-                        {user.profileData?.joining_date ? String(user.profileData.joining_date) : <span className="text-muted-foreground/40">—</span>}
+                        {user.profileData?.joining_date ? String(user.profileData.joining_date) : <span className="text-muted-foreground/40">-</span>}
                       </td>
                       <td className="py-3.5 px-4">
                         {reportsToName(user, users) ? (
@@ -526,7 +526,7 @@ export default function UserManager() {
                             {reportsToName(user, users)}
                           </span>
                         ) : (
-                          <span className="text-muted-foreground/40">—</span>
+                          <span className="text-muted-foreground/40">-</span>
                         )}
                       </td>
                       <td className="py-3.5 px-4 text-right">
@@ -912,5 +912,8 @@ export default function UserManager() {
     </div>
   );
 }
+
+
+
 
 

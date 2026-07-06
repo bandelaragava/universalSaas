@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from 'react';
-import { getLandingPages, createLandingPage, updateLandingPage, deleteLandingPage, getTrackedLinks } from '@/services/marketing';
+import { getLandingPages, createLandingPage, updateLandingPage, deleteLandingPage, getTrackedLinks, getCoupons } from '@/services/marketing';
 import { Plus, Eye, Search, Pencil, Trash2, Link as LinkIcon, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
 import { usePermissions } from '@/auth/usePermissions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +15,8 @@ interface LandingPageType {
   ctaText?: string;
   status: string;
   adBudget?: number;
+  campaignName?: string;
+  couponCode?: string;
 }
 
 interface TrackedLinkType {
@@ -36,24 +38,31 @@ export default function LandingPageManager() {
   const [saving, setSaving] = useState(false);
   const [editingPage, setEditingPage] = useState<LandingPageType | null>(null);
   const [expandedPages, setExpandedPages] = useState<Set<string | number>>(new Set());
+  const [activeCoupons, setActiveCoupons] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
     description: '',
     ctaText: '',
-    status: 'DRAFT'
+    status: 'DRAFT',
+    adBudget: 0,
+    campaignName: '',
+    couponCode: ''
   });
 
   const fetchPages = async () => {
     setLoading(true);
     try {
-      const [lpRes, tlRes] = await Promise.all([
+      const [lpRes, tlRes, couponsRes] = await Promise.all([
         getLandingPages(),
-        getTrackedLinks()
+        getTrackedLinks(),
+        getCoupons()
       ]);
       setPages((lpRes?.data || lpRes || []) as LandingPageType[]);
       setTrackedLinks((tlRes?.data || tlRes || []) as TrackedLinkType[]);
+      const allCoupons = (couponsRes?.data || couponsRes || []);
+      setActiveCoupons(allCoupons.filter((c: any) => c.status === 'ACTIVE'));
     } catch (err) {
       console.error('Fetch error:', err);
     } finally {
@@ -89,7 +98,10 @@ export default function LandingPageManager() {
       slug: page.slug || '',
       description: page.description || '',
       ctaText: page.ctaText || '',
-      status: page.status || 'ACTIVE'
+      status: page.status || 'ACTIVE',
+      adBudget: page.adBudget || 0,
+      campaignName: page.campaignName || '',
+      couponCode: page.couponCode || ''
     });
     setShowForm(true);
   };
@@ -110,6 +122,7 @@ export default function LandingPageManager() {
     e.preventDefault();
     setSaving(true);
     try {
+      const slugToRedirect = formData.slug;
       if (editingPage) {
         await updateLandingPage(editingPage.id, formData);
       } else {
@@ -117,6 +130,7 @@ export default function LandingPageManager() {
       }
       resetForm();
       fetchPages();
+      window.location.href = `/marketing?tab=social&slug=${slugToRedirect}`;
     } catch (err) {
       alert('Save failed');
     } finally {
@@ -127,7 +141,8 @@ export default function LandingPageManager() {
   const resetForm = () => {
     setFormData({
       title: '', slug: '',
-      description: '', ctaText: '', status: 'DRAFT'
+      description: '', ctaText: '', status: 'DRAFT', adBudget: 0,
+      campaignName: '', couponCode: ''
     });
     setEditingPage(null);
     setShowForm(false);
@@ -197,8 +212,33 @@ export default function LandingPageManager() {
 
               <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                 <div>
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Campaign Name *</label>
+                  <Input type="text" name="campaignName" value={formData.campaignName} onChange={handleFormChange} required placeholder="e.g. Summer Promo" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Coupon Code (Optional)</label>
+                  <select
+                    className="input-field w-full text-sm bg-background border-border text-foreground px-3 py-2.5 rounded-md"
+                    name="couponCode"
+                    value={formData.couponCode}
+                    onChange={handleFormChange}
+                  >
+                    <option value="">No Coupon</option>
+                    {activeCoupons.map(c => (
+                      <option key={c.id} value={c.code}>{c.code}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
+                <div>
                   <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">CTA Button Text</label>
                   <Input type="text" name="ctaText" value={formData.ctaText} onChange={handleFormChange} placeholder="e.g., Register Now" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Ad Budget</label>
+                  <Input type="number" name="adBudget" value={formData.adBudget || ''} onChange={handleFormChange} placeholder="e.g., 5000" />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Publish Status</label>
@@ -342,3 +382,5 @@ export default function LandingPageManager() {
     </div>
   );
 }
+
+

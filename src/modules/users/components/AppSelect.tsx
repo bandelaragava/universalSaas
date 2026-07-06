@@ -1,4 +1,4 @@
-// src/modules/users/components/AppSelect.tsx
+﻿// src/modules/users/components/AppSelect.tsx
 import React from "react";
 import type { UseFormRegister, FieldValues, Path, FieldError } from "react-hook-form";
 
@@ -57,5 +57,7 @@ export default function AppSelect<T extends FieldValues>({
     </div>
   );
 }
+
+
 
 

@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+﻿/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useState, useEffect, useCallback } from 'react';
 import { Landmark, Globe, Briefcase, MapPin, Settings, Upload, AlertCircle } from 'lucide-react';
 import rolesApi from '@/services/rolesApi';
@@ -516,7 +516,7 @@ export default function CompanyProfilePage() {
                 >
                   <option value="">Select Currency...</option>
                   <option value="INR">INR (₹)</option>
-                  <option value="USD">USD ($)</option>
+                  <option value="USD">USD (₹)</option>
                   <option value="EUR">EUR (€)</option>
                   <option value="GBP">GBP (£)</option>
                 </select>
@@ -528,3 +528,7 @@ export default function CompanyProfilePage() {
     </div>
   );
 }
+
+
+
+

@@ -1,5 +1,6 @@
-import React from 'react';
+﻿import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/auth/AuthContext';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Landmark, Fingerprint, FileText, Award, Workflow, Grid, ArrowRight, Blocks, Users } from 'lucide-react';
 
@@ -10,7 +11,8 @@ const settingsCards = [
     description: 'Manage users, roles, permissions, and organizational access control.',
     path: '/users',
     icon: Users,
-    color: 'text-primary border-primary/20 bg-primary/5'
+    color: 'text-primary border-primary/20 bg-primary/5',
+    permissions: ['USER_VIEW', 'ROLE_VIEW', 'PERMISSION_VIEW']
   },
   {
     id: 'company',
@@ -18,7 +20,8 @@ const settingsCards = [
     description: 'Manage branding materials, seal specimen, official signatures, and locale settings.',
     path: '/settings/company',
     icon: Landmark,
-    color: 'text-primary border-primary/20 bg-primary/5'
+    color: 'text-primary border-primary/20 bg-primary/5',
+    permissions: ['COMPANY_PROFILE_VIEW']
   },
   {
     id: 'employee-types',
@@ -26,7 +29,8 @@ const settingsCards = [
     description: 'Manage employee types (e.g., Regular, Contractor).',
     path: '/settings/employee-types',
     icon: Grid,
-    color: 'text-primary border-primary/20 bg-primary/5'
+    color: 'text-primary border-primary/20 bg-primary/5',
+    permissions: ['SETTINGS_MANAGE_EMPLOYEE_TYPES', 'SETTINGS_MANAGE_SETTINGS']
   },
   {
     id: 'designations',
@@ -34,7 +38,8 @@ const settingsCards = [
     description: 'Manage job titles and designations.',
     path: '/settings/designations',
     icon: Award,
-    color: 'text-primary border-primary/20 bg-primary/5'
+    color: 'text-primary border-primary/20 bg-primary/5',
+    permissions: ['SETTINGS_MANAGE_DESIGNATIONS', 'SETTINGS_MANAGE_SETTINGS']
   },
   {
     id: 'work-modes',
@@ -42,7 +47,8 @@ const settingsCards = [
     description: 'Manage work arrangements (e.g., Office, Remote).',
     path: '/settings/work-modes',
     icon: Workflow,
-    color: 'text-primary border-primary/20 bg-primary/5'
+    color: 'text-primary border-primary/20 bg-primary/5',
+    permissions: ['SETTINGS_MANAGE_WORK_MODES', 'SETTINGS_MANAGE_SETTINGS']
   },
   {
     id: 'idformat',
@@ -50,7 +56,8 @@ const settingsCards = [
     description: 'Customize auto-numbering formula prefixes, padding, and date tags.',
     path: '/settings/id-generation',
     icon: Fingerprint,
-    color: 'text-primary border-primary/20 bg-primary/5'
+    color: 'text-primary border-primary/20 bg-primary/5',
+    permissions: ['SETTINGS_MANAGE_ID_FORMATS', 'SETTINGS_MANAGE_SETTINGS']
   },
   {
     id: 'templates',
@@ -58,7 +65,8 @@ const settingsCards = [
     description: 'Design HTML structures and layouts for joining packages, contracts, and letters.',
     path: '/settings/templates',
     icon: FileText,
-    color: 'text-primary border-primary/20 bg-primary/5'
+    color: 'text-primary border-primary/20 bg-primary/5',
+    permissions: ['SETTINGS_MANAGE_TEMPLATES', 'SETTINGS_MANAGE_SETTINGS']
   },
   {
     id: 'certificates',
@@ -66,7 +74,8 @@ const settingsCards = [
     description: 'Issue experience letters, generate verification tokens, and review active credentials.',
     path: '/settings/certificates',
     icon: Award,
-    color: 'text-primary border-primary/20 bg-primary/5'
+    color: 'text-primary border-primary/20 bg-primary/5',
+    permissions: ['SETTINGS_MANAGE_CERTIFICATES', 'SETTINGS_MANAGE_TEMPLATES', 'SETTINGS_MANAGE_SETTINGS']
   },
   {
     id: 'crm',
@@ -74,7 +83,8 @@ const settingsCards = [
     description: 'Configure lead statuses, pipelines, and lead capture forms.',
     path: '/settings/crm',
     icon: Users,
-    color: 'text-primary border-primary/20 bg-primary/5'
+    color: 'text-primary border-primary/20 bg-primary/5',
+    permissions: ['LEADS_MANAGE_LEAD_FORMS', 'SETTINGS_MANAGE_SETTINGS']
   },
   {
     id: 'integrations',
@@ -82,7 +92,8 @@ const settingsCards = [
     description: 'Manage third-party connections, webhooks, and external APIs.',
     path: '/integrations',
     icon: Blocks,
-    color: 'text-primary border-primary/20 bg-primary/5'
+    color: 'text-primary border-primary/20 bg-primary/5',
+    permissions: ['SETTINGS_MANAGE_SETTINGS']
   },
   {
     id: 'invoice-configurations',
@@ -90,12 +101,20 @@ const settingsCards = [
     description: 'Create and manage custom invoice templates and billing formats.',
     path: '/settings/invoice-configurations',
     icon: FileText,
-    color: 'text-primary border-primary/20 bg-primary/5'
+    color: 'text-primary border-primary/20 bg-primary/5',
+    permissions: ['SETTINGS_MANAGE_INVOICES', 'SETTINGS_MANAGE_SETTINGS']
   },
 ];
 
 export function SettingsPage() {
   const navigate = useNavigate();
+  const { permissions: userPermissions, isPlatformAdmin } = useAuth();
+  
+  const filteredCards = settingsCards.filter(card => {
+      if (isPlatformAdmin) return true;
+      if (!card.permissions || card.permissions.length === 0) return true;
+      return card.permissions.some(p => userPermissions.includes(p));
+  });
 
   return (
     <div className="space-y-6">
@@ -105,7 +124,7 @@ export function SettingsPage() {
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {settingsCards.map((card) => {
+        {filteredCards.map((card) => {
           const Icon = card.icon;
           return (
             <div
@@ -137,3 +156,4 @@ export function SettingsPage() {
     </div>
   );
 }
+

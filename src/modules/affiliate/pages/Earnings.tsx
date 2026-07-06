@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { DollarSign, Wallet, Calendar, AlertCircle, Search, FileText } from 'lucide-react';
 import { useAffiliate } from '../context/AffiliateContext';
 
@@ -250,5 +250,7 @@ export const Earnings: React.FC = () => {
 };
 
 export default Earnings;
+
+
 
 

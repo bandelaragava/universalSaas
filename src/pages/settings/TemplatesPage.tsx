@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+﻿/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, FileText, Download, ToggleLeft, ToggleRight, Trash2, Edit3, X, Copy } from 'lucide-react';
@@ -594,3 +594,5 @@ export default function TemplatesPage() {
     </div>
   );
 }
+
+

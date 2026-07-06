@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+﻿/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
@@ -259,7 +259,7 @@ export default function RoleMapping() {
             onChange={(e) => handleMappingRoleChange(e.target.value, roles, permissions)}
             required
           >
-            <option value="">— Choose a Role —</option>
+            <option value="">- Choose a Role -</option>
             {roles.map((r) => (
               <option key={r.id} value={r.id} disabled={!r.active}>
                 {r.name} {!r.active ? '(Disabled)' : ''}
@@ -308,5 +308,7 @@ export default function RoleMapping() {
     </div>
   );
 }
+
+
 
 

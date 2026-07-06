@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import {
   RefreshCw,
   Link2,
@@ -302,5 +302,7 @@ export function IntegrationDetailPanel({
 function cnIcon(spin: boolean) {
   return spin ? 'h-4 w-4 animate-spin' : 'h-4 w-4'
 }
+
+
 
 

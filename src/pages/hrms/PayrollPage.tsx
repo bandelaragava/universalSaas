@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+﻿/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
@@ -1186,18 +1186,18 @@ export function PayrollPage() {
                     <p className="font-bold text-slate-200">
                       Month: {selectedPayslip.payroll_run?.month ? MONTH_NAMES[selectedPayslip.payroll_run.month] : 'Monthly'}
                     </p>
-                    <p className="text-[9px] text-slate-400">Year: {selectedPayslip.payroll_run?.year || '—'}</p>
+                    <p className="text-[9px] text-slate-400">Year: {selectedPayslip.payroll_run?.year || '-'}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-slate-900 border border-slate-800 rounded-lg">
                   <div>
                     <span className="text-[9px] text-slate-400 uppercase">Employee</span>
-                    <p className="font-bold text-slate-200">{selectedPayslip.employee_name || '—'}</p>
+                    <p className="font-bold text-slate-200">{selectedPayslip.employee_name || '-'}</p>
                   </div>
                   <div>
                     <span className="text-[9px] text-slate-400 uppercase">Emp Code</span>
-                    <p className="font-bold text-slate-200">{selectedPayslip.emp_code || '—'}</p>
+                    <p className="font-bold text-slate-200">{selectedPayslip.emp_code || '-'}</p>
                   </div>
                   <div>
                     <span className="text-[9px] text-slate-400 uppercase">Working days</span>
@@ -1596,3 +1596,5 @@ export function PayrollPage() {
 }
 
 export default PayrollPage;
+
+

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { AffiliateProvider, useAffiliate } from './context/AffiliateContext';
 import AffiliateDashboard from './pages/AffiliateDashboard';
 import Referrals from './pages/Referrals';
@@ -134,3 +134,5 @@ export default function AffiliateShell() {
     </AffiliateProvider>
   );
 }
+
+

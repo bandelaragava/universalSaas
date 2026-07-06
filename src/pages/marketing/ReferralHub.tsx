@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { getReferralCode, getReferralStats } from '@/services/marketing';
 import { Link, Users, Info } from 'lucide-react';
 import { usePermissions } from '@/auth/usePermissions';
@@ -159,3 +159,5 @@ export default function ReferralHub() {
     </div>
   );
 }
+
+

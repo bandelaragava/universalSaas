@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+﻿/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Download, Ban, Search, CheckCircle, RefreshCw, X, ShieldAlert, Award } from 'lucide-react';
@@ -549,3 +549,4 @@ export default function CertificatesList() {
     </div>
   );
 }
+

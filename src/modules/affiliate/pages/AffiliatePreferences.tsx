@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Save, BellRing, ShieldCheck, MailWarning } from 'lucide-react';
 
 export const AffiliatePreferences: React.FC = () => {
@@ -154,5 +154,7 @@ export const AffiliatePreferences: React.FC = () => {
 };
 
 export default AffiliatePreferences;
+
+
 
 

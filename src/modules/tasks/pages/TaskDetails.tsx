@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/purity */
+﻿/* eslint-disable react-hooks/purity */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState } from 'react';
 import { useTasks } from '../context/TaskContext';
@@ -521,5 +521,7 @@ export default function TaskDetails() {
     </div>
   );
 }
+
+
 
 

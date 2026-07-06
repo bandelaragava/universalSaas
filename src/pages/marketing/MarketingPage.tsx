@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { usePermissions } from '@/auth/usePermissions';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -22,7 +22,18 @@ export function MarketingPage({ variant = 'marketing' }: MarketingPageProps) {
     referrals: 'Referral Hub',
   };
 
-  const defaultTab = hasPermission('MARKETING_ANALYTICS_VIEW') ? 'analytics' : 'social';
+  const queryParams = new URLSearchParams(window.location.search);
+  const tabParam = queryParams.get('tab');
+  
+  const [activeTab, setActiveTab] = useState(tabParam || (hasPermission('MARKETING_ANALYTICS_VIEW') ? 'analytics' : 'social'));
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', value);
+    window.history.pushState({}, '', url.toString());
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       <PageHeader
@@ -30,7 +41,7 @@ export function MarketingPage({ variant = 'marketing' }: MarketingPageProps) {
         description="Launch campaigns, generate social trackable links, configure promo codes, and manage incoming leads."
       />
 
-      <Tabs defaultValue={defaultTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <div className="overflow-x-auto pb-2 border-b border-border mb-4">
           <TabsList className="flex w-max bg-transparent p-0 gap-2">
             {hasPermission('MARKETING_ANALYTICS_VIEW') && (

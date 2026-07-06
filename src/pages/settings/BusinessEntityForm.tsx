@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import rolesApi from '@/services/rolesApi';
 import EntityFormPage from '@/components/shared/EntityFormPage';
@@ -192,3 +192,5 @@ export function BusinessEntityForm() {
 }
 
 export default BusinessEntityForm;
+
+

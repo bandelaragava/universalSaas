@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Landmark, Layers, Users, ShieldAlert, BarChart3, Database, Mail, Phone, Calendar, Play, X, Printer, FileText, QrCode, CheckCircle2, AlertCircle } from 'lucide-react';
 import rolesApi from '@/services/rolesApi';
@@ -293,28 +293,28 @@ export default function TenantDetails({ tenantId, onClose }: TenantDetailsProps 
               <div className="p-4 bg-gray-50 border border-gray-100 rounded-xl text-center">
                 <Users className="w-6 h-6 mx-auto mb-2 text-gray-400" />
                 <span className="block text-[10px] text-gray-500 uppercase tracking-wider font-bold">User Seats</span>
-                <span className="text-sm font-black text-gray-900 mt-1 block">—</span>
+                <span className="text-sm font-black text-gray-900 mt-1 block">-</span>
               </div>
 
               <div className="p-4 bg-gray-50 border border-gray-100 rounded-xl text-center">
                 <Database className="w-6 h-6 mx-auto mb-2 text-gray-400" />
                 <span className="block text-[10px] text-gray-500 uppercase tracking-wider font-bold">DB Usage</span>
-                <span className="text-sm font-black text-gray-900 mt-1 block">—</span>
+                <span className="text-sm font-black text-gray-900 mt-1 block">-</span>
               </div>
             </div>
 
             <div className="bg-gray-50 border border-gray-100 p-5 rounded-xl space-y-3 text-xs text-gray-600 mt-4">
               <div className="flex justify-between items-center">
                 <span className="font-medium">Billing Status:</span>
-                <span className="text-gray-900 font-bold px-2 py-0.5 bg-gray-200 rounded text-[10px] uppercase">—</span>
+                <span className="text-gray-900 font-bold px-2 py-0.5 bg-gray-200 rounded text-[10px] uppercase">-</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="font-medium">API Calls:</span>
-                <span className="text-gray-900 font-bold">—</span>
+                <span className="text-gray-900 font-bold">-</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="font-medium">Data Logs:</span>
-                <span className="text-gray-900 font-bold">—</span>
+                <span className="text-gray-900 font-bold">-</span>
               </div>
             </div>
           </div>
@@ -824,3 +824,4 @@ function InvoiceHistory({ tenantId, tenant }: { tenantId: number, tenant: any })
     </div>
   );
 }
+

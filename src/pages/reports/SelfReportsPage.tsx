@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+﻿/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react';
@@ -232,7 +232,7 @@ export default function SelfReportsPage({ forcedScope = 'self' }: SelfReportsPag
                       <td className="p-3 text-muted-foreground">{r.holiday}</td>
                       <td className="p-3 text-muted-foreground font-semibold">{r.total_hours?.toFixed(1)}h</td>
                       <td className={`p-3 ${r.ot_hours > 0 ? 'text-purple-400 font-bold' : 'text-muted-foreground'}`}>
-                        {r.ot_hours > 0 ? `${r.ot_hours.toFixed(1)}h` : '—'}
+                        {r.ot_hours > 0 ? `${r.ot_hours.toFixed(1)}h` : '-'}
                       </td>
                     </tr>
                   ))
@@ -311,7 +311,7 @@ export default function SelfReportsPage({ forcedScope = 'self' }: SelfReportsPag
                             {r.status}
                           </span>
                         </td>
-                        <td className="p-3 text-muted-foreground">{r.approved_by || '—'}</td>
+                        <td className="p-3 text-muted-foreground">{r.approved_by || '-'}</td>
                       </tr>
                     );
                   })
@@ -384,13 +384,13 @@ export default function SelfReportsPage({ forcedScope = 'self' }: SelfReportsPag
                         <td className="p-3 text-muted-foreground">{r.department}</td>
                         <td className="p-3 text-muted-foreground">{r.present_days}/{r.working_days}</td>
                         <td className={`p-3 font-bold ${r.lop_days > 0 ? 'text-rose-455' : 'text-muted-foreground'}`}>
-                          {r.lop_days > 0 ? `${r.lop_days}d` : '—'}
+                          {r.lop_days > 0 ? `${r.lop_days}d` : '-'}
                         </td>
-                        <td className="p-3 text-purple-400">{r.ot_hours > 0 ? `${r.ot_hours}h` : '—'}</td>
+                        <td className="p-3 text-purple-400">{r.ot_hours > 0 ? `${r.ot_hours}h` : '-'}</td>
                         <td className="p-3 text-muted-foreground font-semibold">{fmt(r.gross)}</td>
                         <td className="p-3 text-purple-400">{fmt(r.pf_employee)}</td>
-                        <td className="p-3 text-rose-455">{r.tds > 0 ? fmt(r.tds) : '—'}</td>
-                        <td className="p-3 text-yellow-500">{r.lop_deduction > 0 ? fmt(r.lop_deduction) : '—'}</td>
+                        <td className="p-3 text-rose-455">{r.tds > 0 ? fmt(r.tds) : '-'}</td>
+                        <td className="p-3 text-yellow-500">{r.lop_deduction > 0 ? fmt(r.lop_deduction) : '-'}</td>
                         <td className="p-3 text-emerald-400 font-extrabold text-sm">{fmt(r.net_pay)}</td>
                       </tr>
                     ))
@@ -726,5 +726,7 @@ export default function SelfReportsPage({ forcedScope = 'self' }: SelfReportsPag
     </div>
   );
 }
+
+
 
 

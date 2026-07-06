@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import rolesApi from '@/services/rolesApi';
 import EntityFormPage from '@/components/shared/EntityFormPage';
@@ -172,7 +172,7 @@ export function DepartmentForm() {
               onChange={(e) => setForm({ ...form, entityId: e.target.value })}
               className="flex h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-xs ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <option value="">— None / General Department —</option>
+              <option value="">- None / General Department -</option>
               {entities.map((en) => (
                 <option key={en.id} value={en.id}>
                   {en.entityCode} – {en.companyName}
@@ -239,3 +239,5 @@ export function DepartmentForm() {
 }
 
 export default DepartmentForm;
+
+

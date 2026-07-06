@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+﻿import { motion } from 'framer-motion';
 import rolesApi from '@/services/rolesApi';
 import {
   Users,
@@ -85,7 +85,7 @@ export default function VendorAnalyticsDashboard() {
   const { searchQuery } = useAppStore();
 
   const [data, setData] = useState<DashboardData>({
-    stats: { activeVendors: 0, activeContracts: 0, procurementSpend: '$0', pendingApprovals: 0 },
+    stats: { activeVendors: 0, activeContracts: 0, procurementSpend: '₹0', pendingApprovals: 0 },
     spendData: [],
     vendorData: [],
     alerts: [],
@@ -98,7 +98,7 @@ export default function VendorAnalyticsDashboard() {
     const fetchDashboardData = async () => {
       try {
         setIsLoading(true);
-        const response = await rolesApi.get(`/api/vendor-dashboard?filter=${encodeURIComponent(spendFilter)}`);
+        const response = await rolesApi.get(`/vendor-dashboard?filter=${encodeURIComponent(spendFilter)}`);
         if (response.data && response.data.data) {
           setData(response.data.data);
         } else if (response.data && !response.data.data && Object.keys(response.data).length > 0) {
@@ -186,7 +186,7 @@ export default function VendorAnalyticsDashboard() {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                 <XAxis dataKey="name" stroke="#64748b" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} dy={10} />
-                <YAxis stroke="#64748b" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} tickFormatter={(val) => `$${val / 1000}k`} />
+                <YAxis stroke="#64748b" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} tickFormatter={(val) => `₹${val / 1000}k`} />
                 <Tooltip
                   contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', color: '#f8fafc' }}
                   itemStyle={{ color: '#06b6d4' }}
@@ -292,3 +292,9 @@ export default function VendorAnalyticsDashboard() {
     </div>
   );
 }
+
+
+
+
+
+

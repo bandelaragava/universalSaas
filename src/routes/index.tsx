@@ -147,7 +147,7 @@ export function AppRoutes() {
 
       {/* Main App Layout Routes */}
       <Route element={<AppLayout />}>
-        <Route index element={<ProtectedRoute element={<DashboardPage />} permissions={["DASHBOARD_VIEW", "ATTENDANCE_VIEW_ATTENDANCE", "LEAVE_VIEW_LEAVE", "TASKS_VIEW_TASKS", "LEADS_VIEW_LEADS", "SUPPORT_TICKETS_VIEW_SUPPORT_TICKETS", "REPORTS_VIEW_REPORTS", "REVENUE_VIEW_REVENUE", "VENDOR_VIEW"]} />} />
+        <Route index element={<ProtectedRoute element={<DashboardPage />} permissions={["DASHBOARD_VIEW", "ATTENDANCE_VIEW_ATTENDANCE", "LEAVE_VIEW_LEAVE", "TASKS_VIEW_TASKS", "LEADS_VIEW_LEADS", "SUPPORT_TICKETS_VIEW_SUPPORT_TICKETS", "REPORTS_VIEW_REPORTS", "REVENUE_VIEW_REVENUE", "VENDOR_VIEW", "USER_VIEW", "SETTINGS_MANAGE_SETTINGS", "COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_DEPARTMENTS", "SETTINGS_MANAGE_BUSINESS_ENTITIES", "SETTINGS_MANAGE_WORK_MODES", "SETTINGS_MANAGE_EMPLOYEE_TYPES", "SETTINGS_MANAGE_DESIGNATIONS", "SETTINGS_MANAGE_CERTIFICATES", "SETTINGS_MANAGE_INVOICES", "SETTINGS_MANAGE_ID_FORMATS", "SETTINGS_MANAGE_TEMPLATES"]} />} />
 
         {/* Tenants routes */}
         <Route path="tenants" element={<ProtectedRoute element={<TenantsList />} permission="TENANT_VIEW" />} />
@@ -171,37 +171,37 @@ export function AppRoutes() {
 
         {/* Settings Module Routes (Wrapped in SettingsLayout) */}
         <Route element={<SettingsLayout />}>
-          <Route path="settings" element={<ProtectedRoute element={<SettingsPage />} permissions={["SETTINGS_MANAGE_SETTINGS", "SETTINGS_MANAGE_ID_FORMATS", "SETTINGS_MANAGE_TEMPLATES", "SUBSCRIPTION_MANAGE", "COMPANY_PROFILE_VIEW"]} />} />
+          <Route path="settings" element={<ProtectedRoute element={<SettingsPage />} permissions={["SETTINGS_MANAGE_SETTINGS", "SETTINGS_MANAGE_ID_FORMATS", "SETTINGS_MANAGE_TEMPLATES", "SETTINGS_MANAGE_DEPARTMENTS", "SETTINGS_MANAGE_BUSINESS_ENTITIES", "SETTINGS_MANAGE_WORK_MODES", "SETTINGS_MANAGE_EMPLOYEE_TYPES", "SETTINGS_MANAGE_DESIGNATIONS", "SETTINGS_MANAGE_CERTIFICATES", "SETTINGS_MANAGE_INVOICES", "SUBSCRIPTION_MANAGE", "COMPANY_PROFILE_VIEW"]} />} />
           <Route path="settings/profile" element={<ProtectedRoute element={<UserProfilePage />} />} />
           <Route path="settings/crm" element={<ProtectedRoute element={<CrmSettingsPage />} permissions={["LEADS_MANAGE_LEAD_FORMS", "COMPANY_PROFILE_VIEW"]} />} />
           <Route path="settings/company" element={<ProtectedRoute element={<CompanyProfilePage />} permissions={["COMPANY_PROFILE_VIEW", "COMPANY_PROFILE_VIEW", "COMPANY_PROFILE_VIEW"]} />} />
           <Route path="settings/billing" element={<ProtectedRoute element={<BillingPage />} permissions={["COMPANY_PROFILE_VIEW", "SUBSCRIPTION_MANAGE"]} />} />
-          <Route path="settings/entities" element={<ProtectedRoute element={<BusinessEntityList />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_SETTINGS"]} />} />
+          <Route path="settings/entities" element={<ProtectedRoute element={<BusinessEntityList />} permissions={["SETTINGS_MANAGE_BUSINESS_ENTITIES", "SETTINGS_MANAGE_SETTINGS"]} />} />
           <Route path="settings/entities/create" element={<ProtectedRoute element={<BusinessEntityForm />} permission="ROLE_CREATE" />} />
           <Route path="settings/entities/edit/:id" element={<ProtectedRoute element={<BusinessEntityForm />} permission="ROLE_UPDATE" />} />
-          <Route path="settings/departments" element={<ProtectedRoute element={<DepartmentList />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_SETTINGS"]} />} />
+          <Route path="settings/departments" element={<ProtectedRoute element={<DepartmentList />} permissions={["SETTINGS_MANAGE_DEPARTMENTS", "SETTINGS_MANAGE_SETTINGS"]} />} />
           <Route path="settings/departments/create" element={<ProtectedRoute element={<DepartmentForm />} permission="ROLE_CREATE" />} />
           <Route path="settings/departments/edit/:id" element={<ProtectedRoute element={<DepartmentForm />} permission="ROLE_UPDATE" />} />
-          <Route path="settings/employee-types" element={<ProtectedRoute element={<EmployeeTypeList />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_SETTINGS"]} />} />
+          <Route path="settings/employee-types" element={<ProtectedRoute element={<EmployeeTypeList />} permissions={["SETTINGS_MANAGE_EMPLOYEE_TYPES", "SETTINGS_MANAGE_SETTINGS"]} />} />
           <Route path="settings/employee-types/create" element={<ProtectedRoute element={<EmployeeTypeForm />} permission="ROLE_CREATE" />} />
           <Route path="settings/employee-types/edit/:id" element={<ProtectedRoute element={<EmployeeTypeForm />} permission="ROLE_UPDATE" />} />
-          <Route path="settings/designations" element={<ProtectedRoute element={<DesignationList />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_SETTINGS"]} />} />
+          <Route path="settings/designations" element={<ProtectedRoute element={<DesignationList />} permissions={["SETTINGS_MANAGE_DESIGNATIONS", "SETTINGS_MANAGE_SETTINGS"]} />} />
           <Route path="settings/designations/create" element={<ProtectedRoute element={<DesignationForm />} permission="ROLE_CREATE" />} />
           <Route path="settings/designations/edit/:id" element={<ProtectedRoute element={<DesignationForm />} permission="ROLE_UPDATE" />} />
-          <Route path="settings/work-modes" element={<ProtectedRoute element={<WorkModeList />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_SETTINGS"]} />} />
+          <Route path="settings/work-modes" element={<ProtectedRoute element={<WorkModeList />} permissions={["SETTINGS_MANAGE_WORK_MODES", "SETTINGS_MANAGE_SETTINGS"]} />} />
           <Route path="settings/work-modes/create" element={<ProtectedRoute element={<WorkModeForm />} permission="ROLE_CREATE" />} />
           <Route path="settings/work-modes/edit/:id" element={<ProtectedRoute element={<WorkModeForm />} permission="ROLE_UPDATE" />} />
           <Route path="settings/id-generation" element={<ProtectedRoute element={<IdGenerationSettings />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_ID_FORMATS"]} />} />
           <Route path="settings/templates" element={<ProtectedRoute element={<TemplatesPage />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_TEMPLATES"]} />} />
           <Route path="settings/templates/create" element={<ProtectedRoute element={<TemplateFormPage />} permission="ROLE_CREATE" />} />
           <Route path="settings/templates/edit/:id" element={<ProtectedRoute element={<TemplateFormPage />} permission="ROLE_UPDATE" />} />
-          <Route path="settings/certificates" element={<ProtectedRoute element={<CertificatesList />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_TEMPLATES"]} />} />
+          <Route path="settings/certificates" element={<ProtectedRoute element={<CertificatesList />} permissions={["SETTINGS_MANAGE_CERTIFICATES", "SETTINGS_MANAGE_TEMPLATES", "SETTINGS_MANAGE_SETTINGS"]} />} />
           <Route path="settings/onboarding-rules" element={<ProtectedRoute element={<OnboardingRulesPage />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_SETTINGS"]} />} />
           <Route path="settings/dynamic-role-fields" element={<ProtectedRoute element={<DynamicRoleFieldsPage />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_SETTINGS"]} />} />
           <Route path="settings/system" element={<ProtectedRoute element={<SystemSettingsPage />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_SETTINGS"]} />} />
-          <Route path="settings/invoice-configurations" element={<ProtectedRoute element={<InvoiceConfigurationList />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_SETTINGS"]} />} />
-          <Route path="settings/invoice-configurations/create" element={<ProtectedRoute element={<InvoiceConfigurationForm />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_SETTINGS"]} />} />
-          <Route path="settings/invoice-configurations/edit/:id" element={<ProtectedRoute element={<InvoiceConfigurationForm />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_SETTINGS"]} />} />
+          <Route path="settings/invoice-configurations" element={<ProtectedRoute element={<InvoiceConfigurationList />} permissions={["SETTINGS_MANAGE_INVOICES", "SETTINGS_MANAGE_SETTINGS"]} />} />
+          <Route path="settings/invoice-configurations/create" element={<ProtectedRoute element={<InvoiceConfigurationForm />} permissions={["SETTINGS_MANAGE_INVOICES", "SETTINGS_MANAGE_SETTINGS"]} />} />
+          <Route path="settings/invoice-configurations/edit/:id" element={<ProtectedRoute element={<InvoiceConfigurationForm />} permissions={["SETTINGS_MANAGE_INVOICES", "SETTINGS_MANAGE_SETTINGS"]} />} />
           <Route path="leads/form-builder" element={<ProtectedRoute element={<FormBuilder />} module="crm" permissions={["LEADS_MANAGE_LEAD_FORMS", "LEADS_MANAGE_LEAD_FORMS", "LEADS_MANAGE_LEAD_FORMS"]} />} />
           <Route path="leads/options" element={<ProtectedRoute element={<LeadOptions />} module="crm" permissions={["LEADS_MANAGE_LEAD_FORMS", "LEADS_MANAGE_LEAD_FORMS", "LEADS_MANAGE_LEAD_FORMS"]} />} />
           <Route path="crm/stages" element={<ProtectedRoute element={<LeadStageList />} module="crm" permissions={["LEADS_VIEW_LEADS", "LEADS_MANAGE_LEAD_FORMS"]} />} />

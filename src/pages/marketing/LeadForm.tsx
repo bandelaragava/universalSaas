@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { trackEvent, captureLead } from '@/services/marketing';
 import { getStoredMarketingData, generateSessionId } from './trackingUtils';
@@ -200,3 +200,5 @@ export default function LeadForm({ courseTitle = "the course", buttonText = "Get
     </Card>
   );
 }
+
+

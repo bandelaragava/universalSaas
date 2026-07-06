@@ -1,5 +1,6 @@
 // src/modules/leads/services/leadsApi.js
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import rolesApi from '@/services/rolesApi';
 
 export const leadsApi = createApi({
   reducerPath: 'leadsApi',
@@ -53,7 +54,55 @@ export const leadsApi = createApi({
       invalidatesTags: ['LeadOptions', 'Leads'],
     }),
     getLeadUsers: builder.query({
-      query: () => 'leads/users/',
+      async queryFn() {
+        try {
+          const response = await rolesApi.get('/users', { ignore403: true });
+          const users = Array.isArray(response.data) ? response.data : (response.data?.results || response.data?.content || []);
+          
+          const meRes = await rolesApi.get('/users/me', { ignore403: true }).catch(() => ({ data: null }));
+          const me = meRes.data;
+
+          let mappedUsers = users.map(u => ({
+            id: u.id,
+            email: u.email,
+            full_name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.username || u.email,
+            role: u.roleName || u.role,
+            managerId: u.supervisorUserId || u.managerId || u.reportingToUserId || (u.profileData || {}).reporting_supervisor_id || (u.profileData || {}).supervisorUserId
+          }));
+
+          // Strict scoping for non-admins
+          const isSuper = me && (String(me.roleName).includes('SUPER_ADMIN') || String(me.roleName).includes('HR'));
+          
+          if (me && !isSuper) {
+              const myId = String(me.id || me.userId);
+              const allowed = new Set([myId]);
+              let added = true;
+              while (added) {
+                  added = false;
+                  mappedUsers.forEach(u => {
+                      if (allowed.has(String(u.managerId)) && !allowed.has(String(u.id))) {
+                          allowed.add(String(u.id));
+                          added = true;
+                      }
+                  });
+              }
+              mappedUsers = mappedUsers.filter(u => allowed.has(String(u.id)));
+          }
+
+          if (me && !mappedUsers.some(u => String(u.id) === String(me.id || me.userId))) {
+            mappedUsers.unshift({
+              id: me.id || me.userId,
+              email: me.email,
+              full_name: `${me.firstName || ''} ${me.lastName || ''}`.trim() || me.username || me.email,
+              role: me.roleName || me.role,
+            });
+          }
+
+          return { data: mappedUsers };
+        } catch (error) {
+          return { error: { status: 500, data: error.message } };
+        }
+      },
       providesTags: ['LeadUsers'],
     }),
     getLeadSchema: builder.query({

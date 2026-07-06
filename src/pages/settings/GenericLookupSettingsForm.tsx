@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import rolesApi from '@/services/rolesApi';
 import { PageHeader } from '@/components/shared/PageHeader';
@@ -139,3 +139,5 @@ export function GenericLookupSettingsForm({ titleCreate, titleEdit, description,
 }
 
 export default GenericLookupSettingsForm;
+
+

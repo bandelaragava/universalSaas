@@ -160,6 +160,13 @@ export const menuConfig: MenuSection[] = [
                     'SETTINGS_MANAGE_SETTINGS',
                     'SETTINGS_MANAGE_ID_FORMATS',
                     'SETTINGS_MANAGE_TEMPLATES',
+                    'SETTINGS_MANAGE_DEPARTMENTS',
+                    'SETTINGS_MANAGE_BUSINESS_ENTITIES',
+                    'SETTINGS_MANAGE_WORK_MODES',
+                    'SETTINGS_MANAGE_EMPLOYEE_TYPES',
+                    'SETTINGS_MANAGE_DESIGNATIONS',
+                    'SETTINGS_MANAGE_CERTIFICATES',
+                    'SETTINGS_MANAGE_INVOICES',
                     'SUBSCRIPTION_MANAGE',
                     'COMPANY_PROFILE_VIEW'
                 ],

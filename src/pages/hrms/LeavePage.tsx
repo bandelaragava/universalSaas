@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+﻿/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import toast from 'react-hot-toast';
@@ -113,7 +113,7 @@ function BalanceDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h3 className="text-lg font-bold text-slate-200 flex items-center gap-2">
-            <Wallet className="w-5 h-5 text-cyan-400" /> Leave Balances — {year}
+            <Wallet className="w-5 h-5 text-cyan-400" /> Leave Balances - {year}
           </h3>
           <p className="text-xs text-slate-400 mt-1">
             {totalRemaining.toFixed(1)} days remaining · {totalUsed.toFixed(1)} used
@@ -465,10 +465,10 @@ function ApplyLeave({ onApplied }: { onApplied: () => void }) {
               className={SELECT_CLASS}
               required
             >
-              <option value="">— Select leave type —</option>
+              <option value="">- Select leave type -</option>
               {types.map(t => (
                 <option key={t.id} value={t.id}>
-                  {t.name} ({t.code}){!t.is_paid ? ' — Unpaid' : ''}
+                  {t.name} ({t.code}){!t.is_paid ? ' - Unpaid' : ''}
                 </option>
               ))}
             </select>
@@ -879,7 +879,7 @@ function PriorUsageModal({ data, note, onNoteChange, onConfirm, onCancel, loadin
                 {(data.comp_off.worked_dates || []).slice(0, 6).map((d) => (
                   <div key={d.date} className="flex justify-between text-[11px] text-blue-300 font-mono bg-blue-950/20 px-2 py-1 rounded">
                     <span>{d.date} ({d.type})</span>
-                    <span>{d.check_in || '—'} → {d.check_out || '—'}</span>
+                    <span>{d.check_in || '-'} → {d.check_out || '-'}</span>
                   </div>
                 ))}
               </div>
@@ -1923,3 +1923,5 @@ export function LeavePage() {
     </div>
   );
 }
+
+

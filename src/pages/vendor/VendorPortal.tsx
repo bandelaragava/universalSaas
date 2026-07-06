@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+﻿/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react';
@@ -72,7 +72,7 @@ export default function VendorPortal() {
   const handleReject = async (po: PurchaseOrder) => {
     if (!window.confirm("Are you sure you want to reject this request?")) return;
     try {
-      await rolesApi.put(`/api/purchase-orders/${po.id}`, { ...po, status: 'Rejected' });
+      await rolesApi.put(`/purchase-orders/${po.id}`, { ...po, status: 'Rejected' });
       fetchMyPOs();
     } catch (e) {
       console.error(e);
@@ -91,7 +91,7 @@ export default function VendorPortal() {
           unitPrice: parseFloat(item.unitPrice?.toString() || '0')
         }))
       };
-      await rolesApi.put(`/api/purchase-orders/${selectedPO.id}`, payload);
+      await rolesApi.put(`/purchase-orders/${selectedPO.id}`, payload);
 
       const totalAmount = payload.items.reduce((sum, item) => sum + (parseFloat(item.unitPrice?.toString() || '0') * (item.quantity || 1)), 0);
 
@@ -123,7 +123,7 @@ export default function VendorPortal() {
     const date = window.prompt("Enter expected delivery date (YYYY-MM-DD):", po.deliveryDate);
     if (!date) return;
     try {
-      await rolesApi.put(`/api/purchase-orders/${po.id}`, { ...po, status: 'In Transit', deliveryDate: date });
+      await rolesApi.put(`/purchase-orders/${po.id}`, { ...po, status: 'In Transit', deliveryDate: date });
       fetchMyPOs();
     } catch (e) {
       console.error(e);
@@ -132,7 +132,7 @@ export default function VendorPortal() {
 
   const handleDelivered = async (po: PurchaseOrder) => {
     try {
-      await rolesApi.put(`/api/purchase-orders/${po.id}`, { ...po, status: 'Delivered' });
+      await rolesApi.put(`/purchase-orders/${po.id}`, { ...po, status: 'Delivered' });
       fetchMyPOs();
     } catch (e) {
       console.error(e);
@@ -320,7 +320,7 @@ export default function VendorPortal() {
                       <p className="text-muted-foreground text-sm">Brand: {item.brand || 'Any'} | Qty: {item.quantity}</p>
                     </div>
                     <div>
-                      <label className="block text-xs text-muted-foreground mb-1">Unit Price ($)</label>
+                      <label className="block text-xs text-muted-foreground mb-1">Unit Price (₹)</label>
                       <input
                         type="number"
                         step="0.01"
@@ -353,3 +353,7 @@ export default function VendorPortal() {
     </div>
   );
 }
+
+
+
+

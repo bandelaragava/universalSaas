@@ -1,4 +1,4 @@
-// /* eslint-disable react-hooks/set-state-in-effect */
+﻿// /* eslint-disable react-hooks/set-state-in-effect */
 // import React, { useState, useEffect, useCallback } from 'react';
 // import { useNavigate, useParams } from 'react-router-dom';
 // import { Shield, Users, Sparkles, UserPlus } from 'lucide-react';
@@ -1467,18 +1467,42 @@ export default function UserForm({ userId, onClose }: UserFormProps = {}) {
         return () => ctrl.abort();
     }, [activeId, isEdit, showToast]);
 
-    // Load supervisors from the same current-DB users list shown on the Users page.
+    // Load supervisors dynamically from the backend based on actual Role Hierarchy connections
     useEffect(() => {
         if (!selectedRoleId) {
             setSupervisors([]);
             return;
         }
 
-        const nextSupervisors = buildDbSupervisors(dbUsers, selectedRoleId, roles, activeId);
-        setSupervisors(nextSupervisors);
-        if (supervisorUserId && !nextSupervisors.some((item) => String(item.id) === supervisorUserId)) {
-            setSupervisorUserId('');
-        }
+        const controller = new AbortController();
+        rolesApi.get<{id: number, name: string}[]>(`/users/supervisors?roleId=${selectedRoleId}`, { signal: controller.signal })
+            .then(res => {
+                const fetched = res.data || [];
+                const allowedIds = new Set(fetched.map(s => String(s.id)));
+                
+                const nextSupervisors = dbUsers
+                    .filter(u => allowedIds.has(String(u.id)) && (!activeId || String(u.id) !== String(activeId)))
+                    .map(localUserToSupervisor)
+                    .sort((a, b) => a.name.localeCompare(b.name));
+                
+                setSupervisors(nextSupervisors);
+                if (supervisorUserId && !nextSupervisors.some((item) => String(item.id) === supervisorUserId)) {
+                    setSupervisorUserId('');
+                }
+            })
+            .catch(err => {
+                if (err?.name !== 'CanceledError') {
+                    console.error('Failed to fetch dynamic supervisors, falling back to local defaults:', err);
+                    // Fallback to static mapping if the backend call fails
+                    const nextSupervisors = buildDbSupervisors(dbUsers, selectedRoleId, roles, activeId);
+                    setSupervisors(nextSupervisors);
+                    if (supervisorUserId && !nextSupervisors.some((item) => String(item.id) === supervisorUserId)) {
+                        setSupervisorUserId('');
+                    }
+                }
+            });
+
+        return () => controller.abort();
     }, [activeId, dbUsers, roles, selectedRoleId, supervisorUserId]);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -2028,3 +2052,6 @@ export default function UserForm({ userId, onClose }: UserFormProps = {}) {
         </div>
     );
 }
+
+
+

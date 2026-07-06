@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { Hash, Megaphone, Send, Users } from 'lucide-react'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { Card, CardContent } from '@/components/ui/card'
@@ -17,7 +17,7 @@ const channels = [
 ]
 
 const messages = [
-  { id: '1', user: 'Sarah Chen', text: 'Q2 targets updated in CRM — please review.', time: '10:32 AM' },
+  { id: '1', user: 'Sarah Chen', text: 'Q2 targets updated in CRM - please review.', time: '10:32 AM' },
   { id: '2', user: 'Mike Johnson', text: 'New lead from Meta campaign assigned to sales.', time: '10:45 AM' },
   { id: '3', user: 'Alex Morgan', text: 'All hands meeting at 3 PM today.', time: '11:02 AM' },
 ]
@@ -119,7 +119,7 @@ export function MessagesPage() {
           <CardContent className="p-4">
             <div className="flex items-center gap-2 text-sm font-semibold">
               <Users className="h-4 w-4" />
-              Online — {onlineUsers.filter((u) => u.status === 'online').length}
+              Online - {onlineUsers.filter((u) => u.status === 'online').length}
             </div>
             <ul className="mt-4 space-y-2">
               {onlineUsers.map((u) => (
@@ -136,7 +136,7 @@ export function MessagesPage() {
             </ul>
             <div className="mt-6 rounded-lg border border-dashed border-border p-4">
               <p className="text-xs font-semibold uppercase text-muted-foreground">Announcements</p>
-              <p className="mt-2 text-sm">Company-wide policy update — May 2026</p>
+              <p className="mt-2 text-sm">Company-wide policy update - May 2026</p>
             </div>
           </CardContent>
         </Card>
@@ -144,5 +144,7 @@ export function MessagesPage() {
     </div>
   )
 }
+
+
 
 

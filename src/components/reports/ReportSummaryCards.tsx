@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+﻿import { motion } from 'framer-motion'
 import { TrendingDown, TrendingUp, Users, IndianRupee, UserPlus, Wallet } from 'lucide-react'
 import type { ReportSummary } from '@/types/reports'
 import { formatCurrency } from '@/lib/utils'
@@ -90,5 +90,7 @@ export function ReportSummaryCards({ summary, showUsers, showRevenue }: ReportSu
     </div>
   )
 }
+
+
 
 

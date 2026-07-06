@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { getLandingPages, getTrackedLinks, createTrackedLink, deleteTrackedLink } from '@/services/marketing';
+import { getLandingPages, getTrackedLinks, createTrackedLink, deleteTrackedLink, getCoupons } from '@/services/marketing';
 import { usePermissions } from '@/auth/usePermissions';
 import {
   MessageCircle,
@@ -45,6 +45,8 @@ interface LandingPageType {
   title: string;
   slug: string;
   adBudget?: number;
+  campaignName?: string;
+  couponCode?: string;
 }
 
 interface TrackedLinkType {
@@ -76,8 +78,6 @@ export default function SocialLinkGenerator() {
   const [loading, setLoading] = useState(true);
   const [linkHistory, setLinkHistory] = useState<TrackedLinkType[]>([]);
   const [copiedHistoryItemId, setCopiedHistoryItemId] = useState<string | number | null>(null);
-  const [showModal, setShowModal] = useState(false);
-  const [previewLinks, setPreviewLinks] = useState<{ source: string; url: string }[]>([]);
 
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
@@ -171,40 +171,19 @@ export default function SocialLinkGenerator() {
     }
   };
 
-  const openModal = () => {
-    if (!config.landingSlug || selectedSources.size === 0) return;
-    updatePreviews(config);
-    setShowModal(true);
-  };
-
-  const updatePreviews = (currentConfig: typeof config) => {
-    const baseUrl = window.location.origin;
-    const previews = [];
-    const finalCampaign = currentConfig.campaignName ? currentConfig.campaignName.toLowerCase().replace(/[^a-z0-9]+/g, '_') : 'promo';
-    for (const sourceId of selectedSources) {
-      let link = `${baseUrl}/landing/${currentConfig.landingSlug}?utm_source=${sourceId}&utm_medium=social&utm_campaign=${finalCampaign}`;
-      if (currentConfig.couponCode) link += `&coupon=${encodeURIComponent(currentConfig.couponCode)}`;
-      previews.push({ source: sourceId, url: link });
-    }
-    setPreviewLinks(previews);
-  };
-
-  const handleConfigChange = (field: keyof typeof config, value: string | number) => {
-    const newConfig = { ...config, [field]: value };
-    setConfig(newConfig);
-    updatePreviews(newConfig);
-  };
-
   const generateLinks = async () => {
     const selectedPage = landingPages.find(p => p.slug === config.landingSlug);
+    if (!selectedPage) return;
+
     const baseUrl = window.location.origin;
     const results: TrackedLinkType[] = [];
-    const finalCampaign = config.campaignName ? config.campaignName.toLowerCase().replace(/[^a-z0-9]+/g, '_') : 'promo';
+    const finalCampaign = selectedPage.campaignName ? selectedPage.campaignName.toLowerCase().replace(/[^a-z0-9]+/g, '_') : 'promo';
+    
     try {
       setLoading(true);
       for (const sourceId of selectedSources) {
         let link = `${baseUrl}/landing/${config.landingSlug}?utm_source=${sourceId}&utm_medium=social&utm_campaign=${finalCampaign}`;
-        if (config.couponCode) link += `&coupon=${encodeURIComponent(config.couponCode)}`;
+        if (selectedPage.couponCode) link += `&coupon=${encodeURIComponent(selectedPage.couponCode)}`;
 
         const payload = {
           landingSlug: config.landingSlug,
@@ -212,14 +191,13 @@ export default function SocialLinkGenerator() {
           medium: 'social',
           campaign: finalCampaign,
           generatedLink: link,
-          adBudget: config.adBudget ? Number(config.adBudget) : (selectedPage ? selectedPage.adBudget : 0)
+          adBudget: selectedPage.adBudget || 0
         };
         const saved = await createTrackedLink(payload);
         results.push(saved?.data || saved);
       }
       setGeneratedLinks(results);
       setLinkHistory(prev => [...results, ...prev]);
-      setShowModal(false);
       setCopied(false);
     } catch (err) {
       console.error(err);
@@ -314,11 +292,11 @@ export default function SocialLinkGenerator() {
 
             {hasPermission('MARKETING_CREATE') && (
               <Button
-                onClick={openModal}
+                onClick={generateLinks}
                 disabled={loading || !config.landingSlug || selectedSources.size === 0}
                 className="w-full mt-4"
               >
-                Configure Campaign Tracking <Rocket className="ml-2 h-4 w-4" />
+                Generate Links <Rocket className="ml-2 h-4 w-4" />
               </Button>
             )}
           </CardContent>
@@ -444,48 +422,9 @@ export default function SocialLinkGenerator() {
         </CardContent>
       </Card>
 
-      {/* Modal for Link Configurations */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-lg rounded-lg border border-border bg-card p-6 shadow-xl space-y-4">
-            <h3 className="text-sm font-semibold flex items-center gap-2 text-foreground">
-              <Rocket size={16} /> Configure Campaign Link Tracking
-            </h3>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1">Campaign Name *</label>
-                <Input type="text" placeholder="e.g. Summer Promo" value={config.campaignName} onChange={(e) => handleConfigChange('campaignName', e.target.value)} required />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-muted-foreground mb-1">Coupon Code (Optional)</label>
-                  <Input type="text" placeholder="e.g. SAVE20" value={config.couponCode} onChange={(e) => handleConfigChange('couponCode', e.target.value)} />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-muted-foreground mb-1">Ad Budget (Optional)</label>
-                  <Input type="number" placeholder="5000" value={config.adBudget || ''} onChange={(e) => handleConfigChange('adBudget', e.target.value)} />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1">URL Previews</label>
-                <div className="max-h-24 overflow-y-auto space-y-1.5 p-2 bg-slate-900 rounded border border-slate-800 text-[10px] font-mono text-muted-foreground">
-                  {previewLinks.map((p, idx) => (
-                    <div key={idx} className="truncate">
-                      <span className="font-bold text-foreground mr-1">[{p.source}]</span> {p.url}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="flex justify-end gap-3 pt-2">
-              <Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
-              <Button onClick={generateLinks} disabled={loading || !config.campaignName}>
-                {loading ? 'Generating...' : 'Generate Links'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }
+
+

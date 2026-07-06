@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+﻿/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from 'react';
 import rolesApi from '@/services/rolesApi';
 import { motion } from 'framer-motion';
@@ -68,7 +68,7 @@ export default function RiskCompliance() {
   const handleDelete = async (id: number | string) => {
     if (window.confirm('Delete this audit record?')) {
       try {
-        await rolesApi.delete(`/api/vendor-audits/${id}`);
+        await rolesApi.delete(`/vendor-audits/${id}`);
         fetchAudits();
         setIsViewOpen(false);
       } catch (error) { console.error("Error deleting audit", error); }
@@ -89,7 +89,7 @@ export default function RiskCompliance() {
     e.preventDefault();
     if (!editAudit) return;
     try {
-      await rolesApi.put(`/api/vendor-audits/${editAudit.id}`, editAudit);
+      await rolesApi.put(`/vendor-audits/${editAudit.id}`, editAudit);
       fetchAudits();
       setIsEditOpen(false);
       setEditAudit(null);
@@ -280,7 +280,7 @@ export default function RiskCompliance() {
             </div>
             <div className="col-span-2">
               <label className="block text-sm font-medium text-muted-foreground mb-1">Auditor / Firm</label>
-              <input type="text" className="input-field w-full" placeholder="e.g. External — CyberAssure Ltd" value={newAudit.auditor} onChange={(e) => setNewAudit({ ...newAudit, auditor: e.target.value })} />
+              <input type="text" className="input-field w-full" placeholder="e.g. External - CyberAssure Ltd" value={newAudit.auditor} onChange={(e) => setNewAudit({ ...newAudit, auditor: e.target.value })} />
             </div>
             <div className="col-span-2">
               <label className="block text-sm font-medium text-muted-foreground mb-1">Findings &amp; Notes</label>
@@ -297,3 +297,6 @@ export default function RiskCompliance() {
     </motion.div>
   );
 }
+
+
+

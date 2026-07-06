@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import rolesApi from '@/services/rolesApi';
 import EntityListPage from '@/components/shared/EntityListPage';
@@ -125,7 +125,7 @@ export function GenericLookupSettingsList({ title, description, endpoint, create
                 filteredEntities.map((e) => (
                   <tr key={e.id} className="hover:bg-muted/10 transition-colors" style={{ opacity: e.active ? 1 : 0.6 }}>
                     <td className="p-4 font-medium text-foreground">{e.name}</td>
-                    <td className="p-4 text-muted-foreground truncate max-w-xs" title={e.description}>{e.description || '—'}</td>
+                    <td className="p-4 text-muted-foreground truncate max-w-xs" title={e.description}>{e.description || '-'}</td>
                     <td className="p-4 text-center">
                       <Badge variant="outline" className={e.showInUserForm ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' : 'bg-muted text-muted-foreground'}>
                         {e.showInUserForm ? 'Yes' : 'No'}
@@ -157,3 +157,5 @@ export function GenericLookupSettingsList({ title, description, endpoint, create
 }
 
 export default GenericLookupSettingsList;
+
+

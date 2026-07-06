@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 import { User, Award, Save, Phone, MapPin, Camera, Landmark, Check } from 'lucide-react';
 import { useAffiliate } from '../context/AffiliateContext';
 
@@ -415,5 +415,7 @@ export const AffiliateProfile: React.FC = () => {
 };
 
 export default AffiliateProfile;
+
+
 
 

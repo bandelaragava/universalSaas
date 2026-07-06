@@ -1,4 +1,4 @@
-// /* eslint-disable react-hooks/set-state-in-effect */
+﻿// /* eslint-disable react-hooks/set-state-in-effect */
 // /* eslint-disable react-hooks/exhaustive-deps */
 // import { useEffect, useState, useMemo, useCallback } from 'react';
 // import { createPortal } from 'react-dom';
@@ -1083,7 +1083,7 @@
 //                               </Badge>
 //                             </div>
 //                             <p className="text-muted-foreground">
-//                               Requested Corrections: <strong className="text-foreground">{req.requested_check_in || '—'} → {req.requested_check_out || '—'}</strong>
+//                               Requested Corrections: <strong className="text-foreground">{req.requested_check_in || '-'} → {req.requested_check_out || '-'}</strong>
 //                             </p>
 //                             <p className="text-muted-foreground">
 //                               Reason: <span className="text-foreground">{req.reason}</span>
@@ -1147,7 +1147,7 @@
 
 //                             <div className="space-y-1.5 p-3 bg-background border rounded-lg">
 //                               <p className="text-muted-foreground">
-//                                 Correction Request: <strong className="text-foreground">{req.requested_check_in || '—'} → {req.requested_check_out || '—'}</strong>
+//                                 Correction Request: <strong className="text-foreground">{req.requested_check_in || '-'} → {req.requested_check_out || '-'}</strong>
 //                               </p>
 //                               <p className="text-muted-foreground">
 //                                 Employee Justification: <span className="text-foreground">{req.reason}</span>
@@ -2095,20 +2095,31 @@ export function AttendancePage() {
     return selected?.user_id;
   }, [filteredEmployees, selectedTlId]);
 
-  // Hierarchical lists matching active selections & role limits
-  const visibleManagers = useMemo(() => {
-    return filteredEmployees.filter((emp) => ['manager', 'hr'].includes(getRoleGroup(emp)));
-  }, [filteredEmployees]);
-
   // Helper to recursively find all subordinate IDs
-  const getAllSubordinateIds = (managerId: number, employeesList: EmployeeOption[]): number[] => {
+  const getAllSubordinateIds = useCallback((managerId: number, employeesList: EmployeeOption[]): number[] => {
     const directReports = employeesList.filter(emp => Number(emp.manager) === managerId).map(emp => emp.user_id);
     let allReports = [...directReports];
     for (const reportId of directReports) {
       allReports = [...allReports, ...getAllSubordinateIds(reportId, employeesList)];
     }
     return allReports;
-  };
+  }, []);
+
+  // Hierarchical lists matching active selections & role limits
+  const visibleManagers = useMemo(() => {
+    let list = filteredEmployees.filter((emp) => ['manager', 'hr'].includes(getRoleGroup(emp)));
+    if (isSuperAdmin || isHr) {
+      const myId = Number(user?.id);
+      if (myId) {
+        const subIds = getAllSubordinateIds(myId, filteredEmployees);
+        list = list.filter((emp) => {
+          const mgr = Number(emp.manager);
+          return mgr === myId || subIds.includes(emp.user_id);
+        });
+      }
+    }
+    return list;
+  }, [filteredEmployees, isSuperAdmin, isHr, user?.id, getAllSubordinateIds]);
 
   const visibleTls = useMemo(() => {
     let list = filteredEmployees.filter((emp) => getRoleGroup(emp) === 'tl');
@@ -2126,7 +2137,7 @@ export function AttendancePage() {
       }
     }
     return list;
-  }, [filteredEmployees, selectedManagerUserId, isSuperAdmin, isHr, user?.id]);
+  }, [filteredEmployees, selectedManagerUserId, isSuperAdmin, isHr, user?.id, getAllSubordinateIds]);
 
   const visibleEmployees = useMemo(() => {
     let list = filteredEmployees.filter((emp) => {
@@ -2152,7 +2163,7 @@ export function AttendancePage() {
       }
     }
     return list;
-  }, [filteredEmployees, selectedTlUserId, selectedManagerUserId, isSuperAdmin, isHr, isManager, user?.id]);
+  }, [filteredEmployees, selectedTlUserId, selectedManagerUserId, isSuperAdmin, isHr, isManager, user?.id, getAllSubordinateIds]);
 
   return (
     <div className="space-y-6">
@@ -3180,7 +3191,7 @@ export function AttendancePage() {
                                 </Badge>
                               </div>
                               <p className="text-muted-foreground">
-                                Requested Corrections: <strong className="text-foreground">{req.requested_check_in || '—'} → {req.requested_check_out || '—'}</strong>
+                                Requested Corrections: <strong className="text-foreground">{req.requested_check_in || '-'} → {req.requested_check_out || '-'}</strong>
                               </p>
                               <p className="text-muted-foreground">
                                 Reason: <span className="text-foreground">{req.reason}</span>
@@ -3249,7 +3260,7 @@ export function AttendancePage() {
 
                               <div className="space-y-1.5 p-3 bg-background border rounded-lg">
                                 <p className="text-muted-foreground">
-                                  Correction Request: <strong className="text-foreground">{req.requested_check_in || '—'} → {req.requested_check_out || '—'}</strong>
+                                  Correction Request: <strong className="text-foreground">{req.requested_check_in || '-'} → {req.requested_check_out || '-'}</strong>
                                 </p>
                                 <p className="text-muted-foreground">
                                   Employee Justification: <span className="text-foreground">{req.reason}</span>
@@ -3378,3 +3389,5 @@ export function AttendancePage() {
 }
 
 export default AttendancePage;
+
+

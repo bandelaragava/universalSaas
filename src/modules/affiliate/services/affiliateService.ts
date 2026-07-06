@@ -1,4 +1,4 @@
-import rolesApi from '@/services/rolesApi';
+﻿import rolesApi from '@/services/rolesApi';
 import {
   AffiliateProfile, Referral, ReferralLink, CommissionRecord,
   PayoutTransaction, PerformanceTrend, AffiliateNotification
@@ -142,7 +142,7 @@ const mockNotifications: AffiliateNotification[] = [
   {
     id: 'notif_002',
     title: 'Payout Disbursed Successfully',
-    message: 'Your commission payout of $1,450.00 has been deposited to Silicon Valley Bank.',
+    message: 'Your commission payout of ₹1,450.00 has been deposited to Silicon Valley Bank.',
     type: 'info',
     read: false,
     date: '2026-05-01T10:00:00Z'
@@ -631,4 +631,5 @@ export const affiliateService = {
     }
   }
 };
+
 

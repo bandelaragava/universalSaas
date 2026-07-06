@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { ArrowLeft, Save, FileText, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -270,3 +270,5 @@ export default function InvoiceConfigurationForm() {
     </div>
   );
 }
+
+

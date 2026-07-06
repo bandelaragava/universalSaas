@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { trackEvent, getLandingPageBySlug, captureLead } from '@/services/marketing';
 import { generateSessionId, getStoredMarketingData, getUTMParams } from './trackingUtils';
@@ -223,3 +223,5 @@ export default function LandingPage() {
     </div>
   );
 }
+
+

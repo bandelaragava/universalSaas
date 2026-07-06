@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion'
+﻿import { motion, AnimatePresence } from 'framer-motion'
 import { Settings2, RotateCcw, X } from 'lucide-react'
 import type { ReportDisplayConfig } from '@/types/reports'
 import { chartTypeOptions, visualizationLabels } from '@/config/reports-data'
@@ -59,7 +59,7 @@ export function ReportDisplaySettings({
                 <Settings2 className="h-5 w-5 text-primary" />
                 <div>
                   <h2 className="font-semibold">Chart Display Settings</h2>
-                  <p className="text-xs text-muted-foreground">Admin — configure report visualizations</p>
+                  <p className="text-xs text-muted-foreground">Admin - configure report visualizations</p>
                 </div>
               </div>
               <Button variant="ghost" size="icon" onClick={onClose}>
@@ -144,5 +144,7 @@ export function ReportDisplaySettings({
     </AnimatePresence>
   )
 }
+
+
 
 

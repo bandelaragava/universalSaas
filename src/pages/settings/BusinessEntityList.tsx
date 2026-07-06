@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import rolesApi from '@/services/rolesApi';
 import EntityListPage from '@/components/shared/EntityListPage';
@@ -149,7 +149,7 @@ export function BusinessEntityList() {
                       {e.companyName}
                     </td>
                     <td className="p-4 text-muted-foreground truncate max-w-xs" title={e.description}>
-                      {e.description || '—'}
+                      {e.description || '-'}
                     </td>
                     <td className="p-4">
                       <Badge
@@ -203,3 +203,5 @@ export function BusinessEntityList() {
 }
 
 export default BusinessEntityList;
+
+

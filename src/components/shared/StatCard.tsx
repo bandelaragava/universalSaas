@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Loader2 } from 'lucide-react';
 
 interface StatCardProps {
@@ -50,7 +50,7 @@ export default function StatCard({
           {loading ? (
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
           ) : (
-            value ?? '—'
+            value ?? '-'
           )}
         </h2>
         {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
@@ -58,5 +58,7 @@ export default function StatCard({
     </div>
   );
 }
+
+
 
 

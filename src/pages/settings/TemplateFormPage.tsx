@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+﻿/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AlertCircle, ArrowLeft, Image, Eye, Layers } from 'lucide-react';
@@ -93,7 +93,7 @@ const sampleData: Record<string, string> = {
   JOINING_DATE: '2026-01-01',
   EMPLOYMENT_TYPE: 'Full-time',
   PROBATION_PERIOD: '6 Months',
-  ANNUAL_CTC: '$100,000',
+  ANNUAL_CTC: '₹100,000',
   REPORTING_MANAGER: 'Jane Smith',
   RELIEVING_DATE: '2026-06-01',
   DOCUMENT_NO: 'DOC-2026-001',
@@ -118,10 +118,10 @@ const sampleData: Record<string, string> = {
   INVOICE_NUMBER: 'INV-2026-0001',
   CUSTOMER_NAME: 'Acme Corporation',
   CUSTOMER_ADDRESS: '456 Client Avenue, Business District',
-  INVOICE_ITEMS: '<tr><td style="padding: 10px; border-bottom: 1px solid #eee;">Consulting Services</td><td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">1</td><td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">$1000.00</td><td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">$1000.00</td></tr>',
-  SUBTOTAL: '$1000.00',
-  TAX_AMOUNT: '$100.00',
-  TOTAL_AMOUNT: '$1100.00',
+  INVOICE_ITEMS: '<tr><td style="padding: 10px; border-bottom: 1px solid #eee;">Consulting Services</td><td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">1</td><td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₹1000.00</td><td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₹1000.00</td></tr>',
+  SUBTOTAL: '₹1000.00',
+  TAX_AMOUNT: '₹100.00',
+  TOTAL_AMOUNT: '₹1100.00',
   QR_CODE: '[QR-CODE]',
   VERIFICATION_URL: 'https://verify.example.com/abc123'
 };
@@ -469,3 +469,7 @@ export default function TemplateFormPage() {
     </div>
   );
 }
+
+
+
+

@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+﻿/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Shield, Key, UserMinus, UserCheck, Edit2 } from 'lucide-react';
 import rolesApi from '@/services/rolesApi';
@@ -197,7 +197,7 @@ export default function UserList() {
                             {user.roleName}
                           </span>
                         ) : (
-                          <span className="text-muted-foreground">—</span>
+                          <span className="text-muted-foreground">-</span>
                         )}
                         {!!user.profileData?.designation && (
                           <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-medium block mt-1 uppercase tracking-wider">
@@ -220,13 +220,13 @@ export default function UserList() {
                           {user.profileData.work_mode === 'work_from_home' ? 'WFH' : 'Office'}
                         </span>
                       ) : (
-                        <span className="text-muted-foreground">—</span>
+                        <span className="text-muted-foreground">-</span>
                       )}
                     </td>
 
                     {/* Joining Date */}
                     <td className="py-3.5 px-4 text-muted-foreground text-xs font-mono">
-                      {user.profileData?.joining_date ? String(user.profileData.joining_date) : <span className="text-muted-foreground">—</span>}
+                      {user.profileData?.joining_date ? String(user.profileData.joining_date) : <span className="text-muted-foreground">-</span>}
                     </td>
 
                     {/* Status */}
@@ -244,7 +244,7 @@ export default function UserList() {
 
                     {/* Reports To */}
                     <td className="py-3.5 px-4 text-muted-foreground text-xs">
-                      {user.supervisorName || <span className="text-muted-foreground">—</span>}
+                      {user.supervisorName || <span className="text-muted-foreground">-</span>}
                     </td>
 
                     {/* Action buttons */}
@@ -349,5 +349,7 @@ export default function UserList() {
     </div>
   );
 }
+
+
 
 

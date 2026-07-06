@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Edit2, Trash2, CheckCircle, Search, Eye, FileText, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -275,8 +275,8 @@ export default function InvoiceConfigurationList() {
                         <p className="text-xs text-gray-500">Monthly billing cycle</p>
                       </td>
                       <td className="py-3 px-3 text-right">1</td>
-                      <td className="py-3 px-3 text-right">$499.00</td>
-                      <td className="py-3 px-3 text-right font-semibold">$499.00</td>
+                      <td className="py-3 px-3 text-right">₹499.00</td>
+                      <td className="py-3 px-3 text-right font-semibold">₹499.00</td>
                     </tr>
                     <tr>
                       <td className="py-3 px-3">
@@ -284,8 +284,8 @@ export default function InvoiceConfigurationList() {
                         <p className="text-xs text-gray-500">One-time fee</p>
                       </td>
                       <td className="py-3 px-3 text-right">1</td>
-                      <td className="py-3 px-3 text-right">$150.00</td>
-                      <td className="py-3 px-3 text-right font-semibold">$150.00</td>
+                      <td className="py-3 px-3 text-right">₹150.00</td>
+                      <td className="py-3 px-3 text-right font-semibold">₹150.00</td>
                     </tr>
                   </tbody>
                 </table>
@@ -300,15 +300,15 @@ export default function InvoiceConfigurationList() {
                       <tbody>
                         <tr>
                           <td className="py-2 text-gray-600 font-medium">Subtotal</td>
-                          <td className="py-2 text-right">$649.00</td>
+                          <td className="py-2 text-right">₹649.00</td>
                         </tr>
                         <tr>
                           <td className="py-2 text-gray-600 font-medium border-b border-gray-200">Tax (10%)</td>
-                          <td className="py-2 text-right border-b border-gray-200">$64.90</td>
+                          <td className="py-2 text-right border-b border-gray-200">₹64.90</td>
                         </tr>
                         <tr>
                           <td className="py-3 text-lg font-bold text-gray-900">Total Due</td>
-                          <td className="py-3 text-lg font-bold text-right" style={{ color: previewTemplate.color }}>$713.90</td>
+                          <td className="py-3 text-lg font-bold text-right" style={{ color: previewTemplate.color }}>₹713.90</td>
                         </tr>
                       </tbody>
                     </table>
@@ -349,3 +349,7 @@ export default function InvoiceConfigurationList() {
     </div>
   );
 }
+
+
+
+

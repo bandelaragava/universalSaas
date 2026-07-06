@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Bell, CheckCircle2, AlertCircle, Info, Clock, Check, Loader2 } from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
 import rolesApi from '@/services/rolesApi';
@@ -166,3 +166,5 @@ export default function NotificationsPage() {
     </div>
   );
 }
+
+

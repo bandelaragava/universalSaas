@@ -191,16 +191,16 @@ const TABS: Record<string, TabItem[]> = {
     { label: 'Permissions Registry', path: '/permissions', permissions: ['ROLE_VIEW', 'ROLE_UPDATE'] },
     { label: 'Company Profile', path: '/settings/company', permissions: ['COMPANY_PROFILE_VIEW'] },
     { label: 'Billing & Plans', path: '/settings/billing', permissions: ['SUBSCRIPTION_MANAGE'] },
-    { label: 'Business Entities', path: '/settings/entities', permissions: ['SETTINGS_MANAGE_SETTINGS'] },
-    { label: 'Departments', path: '/settings/departments', permissions: ['SETTINGS_MANAGE_SETTINGS'] },
-    { label: 'Employee Types', path: '/settings/employee-types', permissions: ['SETTINGS_MANAGE_SETTINGS'] },
-    { label: 'Designations', path: '/settings/designations', permissions: ['SETTINGS_MANAGE_SETTINGS'] },
-    { label: 'Work Modes', path: '/settings/work-modes', permissions: ['SETTINGS_MANAGE_SETTINGS'] },
-    { label: 'ID Formats', path: '/settings/id-generation', permissions: ['SETTINGS_MANAGE_ID_FORMATS'] },
-    { label: 'Doc Templates', path: '/settings/templates', permissions: ['SETTINGS_MANAGE_TEMPLATES'] },
-    { label: 'Certificates List', path: '/settings/certificates', permissions: ['SETTINGS_MANAGE_TEMPLATES'] },
+    { label: 'Business Entities', path: '/settings/entities', permissions: ['SETTINGS_MANAGE_BUSINESS_ENTITIES', 'SETTINGS_MANAGE_SETTINGS'] },
+    { label: 'Departments', path: '/settings/departments', permissions: ['SETTINGS_MANAGE_DEPARTMENTS', 'SETTINGS_MANAGE_SETTINGS'] },
+    { label: 'Employee Types', path: '/settings/employee-types', permissions: ['SETTINGS_MANAGE_EMPLOYEE_TYPES', 'SETTINGS_MANAGE_SETTINGS'] },
+    { label: 'Designations', path: '/settings/designations', permissions: ['SETTINGS_MANAGE_DESIGNATIONS', 'SETTINGS_MANAGE_SETTINGS'] },
+    { label: 'Work Modes', path: '/settings/work-modes', permissions: ['SETTINGS_MANAGE_WORK_MODES', 'SETTINGS_MANAGE_SETTINGS'] },
+    { label: 'ID Formats', path: '/settings/id-generation', permissions: ['SETTINGS_MANAGE_ID_FORMATS', 'SETTINGS_MANAGE_SETTINGS'] },
+    { label: 'Doc Templates', path: '/settings/templates', permissions: ['SETTINGS_MANAGE_TEMPLATES', 'SETTINGS_MANAGE_SETTINGS'] },
+    { label: 'Certificates List', path: '/settings/certificates', permissions: ['SETTINGS_MANAGE_CERTIFICATES', 'SETTINGS_MANAGE_TEMPLATES', 'SETTINGS_MANAGE_SETTINGS'] },
     { label: 'System Settings', path: '/settings/system', permissions: ['SETTINGS_MANAGE_SETTINGS'] },
-    { label: 'Invoice Configs', path: '/settings/invoice-configurations', permissions: ['COMPANY_PROFILE_VIEW'] },
+    { label: 'Invoice Configs', path: '/settings/invoice-configurations', permissions: ['SETTINGS_MANAGE_INVOICES', 'SETTINGS_MANAGE_SETTINGS'] },
   ],
   'hrms': [
     { label: 'Attendance', path: '/attendance', permissions: ['ATTENDANCE_VIEW_ATTENDANCE'] },
@@ -224,17 +224,20 @@ const TABS: Record<string, TabItem[]> = {
 
 function ModuleTabsHeader({ moduleName }: { moduleName: string }) {
   const { hasAnyPermission, isModuleEnabled, isPlatformAdmin } = usePermissions();
+  const location = useLocation();
 
-  // Use a heuristic: map the moduleName URL segment to the backend module key
-  // e.g. "crm" -> "CRM", "hrms" -> "HRMS" (with "access-control" -> "ADMIN", "settings" -> "SETTINGS", "vendor" -> "VENDOR")
-  const getBackendModuleName = (name: string) => {
-    if (name === 'access-control') return 'ADMIN';
-    return name.toUpperCase();
+  // Use a heuristic: map the moduleName URL segment to the backend module keys
+  // e.g. "crm" -> ["CRM", "LEADS"], "hrms" -> ["HRMS", "ATTENDANCE", "LEAVE", "PAYROLL"]
+  const getBackendModules = (name: string): string[] => {
+    if (name === 'access-control') return ['ADMIN'];
+    if (name === 'hrms') return ['HRMS', 'ATTENDANCE', 'LEAVE', 'PAYROLL'];
+    if (name === 'crm') return ['CRM', 'LEADS'];
+    return [name.toUpperCase()];
   };
 
-  const requiredModule = getBackendModuleName(moduleName);
+  const requiredModules = getBackendModules(moduleName);
 
-  if (!isModuleEnabled(requiredModule)) {
+  if (!requiredModules.some(mod => isModuleEnabled(mod))) {
     return null;
   }
 
@@ -242,7 +245,6 @@ function ModuleTabsHeader({ moduleName }: { moduleName: string }) {
     if (isPlatformAdmin && item.label === 'Billing & Plans') return false;
     return item.permissions?.length ? hasAnyPermission(item.permissions) : true;
   });
-  const location = useLocation();
 
   if (!items || items.length === 0) return null;
 

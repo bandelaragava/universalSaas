@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, CheckCircle2, XCircle } from 'lucide-react';
 import rolesApi from '@/services/rolesApi';
@@ -268,7 +268,7 @@ export default function Signup() {
             )}
           </div>
 
-          {/* Submit — disabled until passwords match */}
+          {/* Submit - disabled until passwords match */}
           <button
             type="submit"
             disabled={loading || passwordsMismatch}
@@ -290,3 +290,6 @@ export default function Signup() {
     </div>
   );
 }
+
+
+

@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
@@ -55,5 +55,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'lg' }:
     </AnimatePresence>
   );
 }
+
+
 
 

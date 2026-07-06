@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Printer, Share2, X, QrCode, CheckCircle2, AlertCircle, FileText } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
@@ -74,7 +74,7 @@ export function Receipt() {
     const fetchData = async () => {
       try {
         try {
-          const res = await rolesApi.get(`/api/vendor-invoices/${id}`);
+          const res = await rolesApi.get(`/vendor-invoices/${id}`);
           setInvoice(res.data?.data || res.data);
         } catch (err) {
           console.error('Failed to fetch invoice details from backend:', err);
@@ -425,3 +425,5 @@ export function Receipt() {
 }
 
 export default Receipt;
+
+

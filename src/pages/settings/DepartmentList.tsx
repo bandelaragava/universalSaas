@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import rolesApi from '@/services/rolesApi';
 import EntityListPage from '@/components/shared/EntityListPage';
@@ -181,11 +181,11 @@ export function DepartmentList() {
                           {entityMap[d.entityId] || `Entity #${d.entityId}`}
                         </Badge>
                       ) : (
-                        <span className="text-muted-foreground font-normal">—</span>
+                        <span className="text-muted-foreground font-normal">-</span>
                       )}
                     </td>
                     <td className="p-4 text-muted-foreground truncate max-w-xs" title={d.description}>
-                      {d.description || '—'}
+                      {d.description || '-'}
                     </td>
                     <td className="p-4">
                       <Badge
@@ -239,3 +239,5 @@ export function DepartmentList() {
 }
 
 export default DepartmentList;
+
+

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { DollarSign, TrendingUp, Users, WalletCards } from 'lucide-react';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -198,5 +198,7 @@ export function RevenuePage() {
     </div>
   );
 }
+
+
 
 

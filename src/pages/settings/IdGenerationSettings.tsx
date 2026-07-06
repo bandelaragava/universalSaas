@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+﻿/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { RefreshCw, Trash2, Edit, AlertCircle } from 'lucide-react';
 import rolesApi from '@/services/rolesApi';
@@ -340,3 +340,5 @@ export default function IdGenerationSettings() {
     </div>
   );
 }
+
+

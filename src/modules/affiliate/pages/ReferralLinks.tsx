@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Copy, Plus, Award, Mail, CheckCircle } from 'lucide-react';
 import { useAffiliate } from '../context/AffiliateContext';
 
@@ -274,5 +274,7 @@ export const ReferralLinks: React.FC = () => {
 };
 
 export default ReferralLinks;
+
+
 
 

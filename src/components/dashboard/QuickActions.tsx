@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+﻿import { motion } from 'framer-motion'
 import { quickActionDefinitions, type QuickActionId } from '@/config/quick-actions'
 import { useDashboardActions } from '@/context/DashboardActionContext'
 import { usePermissions } from '@/auth/usePermissions'
@@ -56,5 +56,7 @@ export function QuickActions() {
     </div>
   )
 }
+
+
 
 

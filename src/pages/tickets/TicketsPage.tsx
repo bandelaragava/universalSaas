@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+﻿/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useMemo } from 'react';
 import { Search, Loader2, MessageSquare, AlertCircle, RefreshCw, Trash2, CheckCircle2, ShieldAlert } from 'lucide-react';
@@ -737,5 +737,7 @@ export function TicketsPage() {
 }
 
 export default TicketsPage;
+
+
 
 

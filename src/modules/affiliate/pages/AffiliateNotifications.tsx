@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Bell, CheckCircle, AlertTriangle, Info, Check } from 'lucide-react';
 import { useAffiliate } from '../context/AffiliateContext';
 
@@ -113,5 +113,7 @@ export const AffiliateNotifications: React.FC = () => {
 };
 
 export default AffiliateNotifications;
+
+
 
 

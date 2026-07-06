@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Loader2, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
 import rolesApi from '@/services/rolesApi';
@@ -118,5 +118,7 @@ export default function PublicVerificationPage() {
     </div>
   );
 }
+
+
 
 

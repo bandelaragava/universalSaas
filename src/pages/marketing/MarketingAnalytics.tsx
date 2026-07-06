@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { getFunnelStats, getConversionRate, getCampaignStats } from '@/services/marketing';
 import { Shield, Filter, BarChart2, TrendingUp, Users, MousePointer, Percent } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -189,3 +189,5 @@ export default function MarketingAnalytics() {
     </div>
   );
 }
+
+

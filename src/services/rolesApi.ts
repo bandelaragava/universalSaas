@@ -107,8 +107,6 @@ rolesApi.interceptors.request.use(
       url.startsWith('/support') ||
       url.startsWith('/revenue') ||
       url.startsWith('/admin') ||
-      url.startsWith('/vendor') ||
-      url.startsWith('/vendors') ||
       url.startsWith('/crm') ||
       url.startsWith('/hrms');
 

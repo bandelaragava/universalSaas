@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import rolesApi from '@/services/rolesApi';
 import { usePermissions } from '@/auth/usePermissions';
 
@@ -122,7 +122,7 @@ export default function Permissions() {
                     <td className="py-3.5 px-4">
                       <strong className="text-foreground font-semibold">{perm.permissionKey}</strong>
                     </td>
-                    <td className="py-3.5 px-4 text-muted-foreground text-xs">{perm.description || '—'}</td>
+                    <td className="py-3.5 px-4 text-muted-foreground text-xs">{perm.description || '-'}</td>
                     <td className="py-3.5 px-4">
                       <span
                         className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold border ${
@@ -158,5 +158,7 @@ export default function Permissions() {
     </div>
   );
 }
+
+
 
 

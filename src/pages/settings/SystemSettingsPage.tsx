@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+﻿/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useState, useEffect } from 'react';
 import rolesApi from '@/services/rolesApi';
 import { PageHeader } from '@/components/shared/PageHeader';
@@ -28,14 +28,14 @@ const CATEGORY_META: Record<string, { label: string; icon: string; desc: string;
   leave: {
     label: 'Leave Policies',
     icon: '🌴',
-    desc: 'Affects: Apply Leave form validation, Balance Dashboard, carry-forward, Monthly Calendar, Payroll LOP — also synced with Leave Types config',
+    desc: 'Affects: Apply Leave form validation, Balance Dashboard, carry-forward, Monthly Calendar, Payroll LOP - also synced with Leave Types config',
     border: 'border-emerald-500/20',
     bg: 'bg-emerald-500/5 text-emerald-600 dark:text-emerald-400',
   },
   payroll: {
     label: 'Payroll Settings',
     icon: '💰',
-    desc: 'Affects: Payroll engine — PF/ESI/PT/TDS calculations, payslip deduction breakdown',
+    desc: 'Affects: Payroll engine - PF/ESI/PT/TDS calculations, payslip deduction breakdown',
     border: 'border-amber-500/20',
     bg: 'bg-amber-500/5 text-amber-600 dark:text-amber-400',
   },
@@ -452,3 +452,5 @@ export default function SystemSettingsPage() {
     </div>
   );
 }
+
+

@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+﻿/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import rolesApi from '@/services/rolesApi';
@@ -129,7 +129,7 @@ export default function RoleList() {
                       <div className="text-slate-500 text-xs mt-0.5">#{role.id}</div>
                     </td>
                     <td className="px-4 py-4 text-slate-400 text-sm">
-                      {role.description || '—'}
+                      {role.description || '-'}
                     </td>
                     <td className="px-4 py-4">
                       {role.permissions && role.permissions.length > 0 ? (
@@ -191,5 +191,7 @@ export default function RoleList() {
     </div>
   );
 }
+
+
 
 

@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+﻿import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { TrendingDown, TrendingUp } from 'lucide-react'
 import type { StatWidget } from '@/types'
@@ -79,5 +79,7 @@ export function StatCard({ stat, index }: StatCardProps) {
     </motion.button>
   )
 }
+
+
 
 

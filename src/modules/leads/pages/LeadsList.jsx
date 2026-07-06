@@ -227,7 +227,23 @@ export default function LeadsList() {
 
   const filteredLeads = useMemo(() => {
     const query = search.trim().toLowerCase();
+    const allowedCounselorIds = new Set(users.map(u => String(u.id)));
+
     return leads.filter((lead) => {
+      // Scoping logic: restrict leads to only those assigned to allowed counselors (or unassigned leads)
+      const assignedToId = String(
+        lead.counselor?.id || 
+        lead.assigned_to?.id || 
+        lead.counselor_id || 
+        lead.counselorId || 
+        ''
+      );
+      
+      // If there's an assigned counselor, and they are not in the allowed list, hide the lead!
+      if (assignedToId && !allowedCounselorIds.has(assignedToId)) {
+        return false;
+      }
+
       const matchesSearch = !query || [
         getLeadName(lead),
         lead.email,
@@ -235,12 +251,14 @@ export default function LeadsList() {
         getLeadCourse(lead),
         getLeadSource(lead),
       ].some((value) => String(value || '').toLowerCase().includes(query));
+      
       const matchesStatus = !status || lead.status === status;
       const matchesCourse = !course || getLeadCourse(lead) === course;
-      const matchesCounselor = !counselor || String(lead.counselor?.id || lead.counselor_id || '') === counselor;
+      const matchesCounselor = !counselor || assignedToId === counselor;
+      
       return matchesSearch && matchesStatus && matchesCourse && matchesCounselor;
     });
-  }, [course, counselor, leads, search, status]);
+  }, [course, counselor, leads, search, status, users]);
 
   const cards = useMemo(() => {
     const statusCards = statuses.map((item) => {

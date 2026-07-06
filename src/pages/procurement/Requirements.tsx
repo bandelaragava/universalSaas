@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import rolesApi from '@/services/rolesApi';
 import { motion } from 'framer-motion';
 import { FileText, Plus, Trash2, CalendarDays, Eye } from 'lucide-react';
@@ -128,7 +128,7 @@ export function Requirements() {
 
   const updateStatus = async (id: number | string, status: string) => {
     try {
-      await rolesApi.put(`/api/requirements/${id}/status?status=${status}`);
+      await rolesApi.put(`/requirements/${id}/status?status=${status}`);
       fetchRequirements();
       if (selectedReq && selectedReq.id === id) {
         setSelectedReq({ ...selectedReq, status });
@@ -422,3 +422,5 @@ export function Requirements() {
 }
 
 export default Requirements;
+
+

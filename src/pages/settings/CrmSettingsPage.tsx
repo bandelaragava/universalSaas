@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { FormInput, ListTree, ArrowRight } from 'lucide-react';
@@ -65,3 +65,5 @@ export default function CrmSettingsPage() {
     </div>
   );
 }
+
+

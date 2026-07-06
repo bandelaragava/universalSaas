@@ -66,9 +66,9 @@ const statusStyle = {
 };
 
 const mockInvoices: Invoice[] = [
-  { id: 1, invoiceNumber: 'INV-2026-004', vendorId: 1, vendorName: 'Acme Supply Solutions LLC', amount: '$12,500', amountValue: 12500, date: '2026-06-08', dueDate: '2026-07-15', poRef: 'PO-1024', status: 'Paid', notes: 'Procurement of server rack hardware & network switches.', receiptUrl: '/vendor/invoices/1/receipt' },
-  { id: 2, invoiceNumber: 'INV-2026-005', vendorId: 2, vendorName: 'Apex Globals Ltd', amount: '$8,400', amountValue: 8400, date: '2026-06-09', dueDate: '2026-07-20', poRef: 'PO-1025', status: 'Approved', notes: 'Office space leasing deposit.' },
-  { id: 3, invoiceNumber: 'INV-2026-006', vendorId: 1, vendorName: 'Acme Supply Solutions LLC', amount: '$4,200', amountValue: 4200, date: '2026-06-09', dueDate: '2026-07-25', poRef: 'PO-1026', status: 'Pending', notes: 'Consulting fees for cloud migration.' }
+  { id: 1, invoiceNumber: 'INV-2026-004', vendorId: 1, vendorName: 'Acme Supply Solutions LLC', amount: '₹12,500', amountValue: 12500, date: '2026-06-08', dueDate: '2026-07-15', poRef: 'PO-1024', status: 'Paid', notes: 'Procurement of server rack hardware & network switches.', receiptUrl: '/vendor/invoices/1/receipt' },
+  { id: 2, invoiceNumber: 'INV-2026-005', vendorId: 2, vendorName: 'Apex Globals Ltd', amount: '₹8,400', amountValue: 8400, date: '2026-06-09', dueDate: '2026-07-20', poRef: 'PO-1025', status: 'Approved', notes: 'Office space leasing deposit.' },
+  { id: 3, invoiceNumber: 'INV-2026-006', vendorId: 1, vendorName: 'Acme Supply Solutions LLC', amount: '₹4,200', amountValue: 4200, date: '2026-06-09', dueDate: '2026-07-25', poRef: 'PO-1026', status: 'Pending', notes: 'Consulting fees for cloud migration.' }
 ];
 
 const mockVendors: Vendor[] = [
@@ -140,7 +140,7 @@ export default function Invoices() {
   const handleDelete = async (id: number | string) => {
     if (window.confirm('Delete this invoice?')) {
       try {
-        await rolesApi.delete(`/api/vendor-invoices/${id}`);
+        await rolesApi.delete(`/vendor-invoices/${id}`);
         fetchInvoices();
         setIsViewOpen(false);
         setSelected(null);
@@ -194,7 +194,7 @@ export default function Invoices() {
         amountPending = 0;
       }
 
-      await rolesApi.put(`/api/vendor-invoices/${id}`, {
+      await rolesApi.put(`/vendor-invoices/${id}`, {
         ...invToUpdate,
         status: newStatus,
         amountPaid,
@@ -220,7 +220,7 @@ export default function Invoices() {
       return;
     }
     if (parsed > remaining + 0.001) {
-      setPaymentModal(p => ({ ...p, error: `Cannot exceed remaining balance of $${remaining.toFixed(2)}.` }));
+      setPaymentModal(p => ({ ...p, error: `Cannot exceed remaining balance of ₹${remaining.toFixed(2)}.` }));
       return;
     }
     setPaymentModal({ open: false, invoice: null, inputValue: '', error: '' });
@@ -238,7 +238,7 @@ export default function Invoices() {
         amount: newInvoice.amount,
         date: new Date().toISOString().split('T')[0],
         dueDate: newInvoice.dueDate || 'TBD',
-        poRef: newInvoice.poRef || '—',
+        poRef: newInvoice.poRef || '-',
         status: 'Pending',
         notes: newInvoice.notes || '',
         customerAddress: newInvoice.customerAddress,
@@ -259,7 +259,7 @@ export default function Invoices() {
       try {
         const formData = new FormData();
         formData.append('file', selectedFile);
-        await rolesApi.post(`/api/vendor-invoices/${createdId}/upload-receipt`, formData, {
+        await rolesApi.post(`/vendor-invoices/${createdId}/upload-receipt`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
       } catch (uploadErr) {
@@ -277,7 +277,7 @@ export default function Invoices() {
     e.preventDefault();
     if (!editInvoice) return;
     try {
-      await rolesApi.put(`/api/vendor-invoices/${editInvoice.id}`, editInvoice);
+      await rolesApi.put(`/vendor-invoices/${editInvoice.id}`, editInvoice);
       fetchInvoices();
       setIsEditOpen(false);
       setEditInvoice(null);
@@ -287,7 +287,7 @@ export default function Invoices() {
   const handleDownloadReceipt = async (id: number | string, e?: React.MouseEvent) => {
     if (e) e.preventDefault();
     try {
-      const response = await rolesApi.get(`/api/vendor-invoices/${id}/receipt`, {
+      const response = await rolesApi.get(`/vendor-invoices/${id}/receipt`, {
         responseType: 'blob'
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -323,7 +323,7 @@ export default function Invoices() {
   const totalPending = totalPendingStr;
   const totalApproved = invoices.filter(i => i.status === 'Approved').reduce((sum, i) => sum + (i.amountPending !== undefined ? Number(i.amountPending) : (i.amountValue || 0)), 0);
 
-  const formatCurrency = (amount: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
+  const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
 
   const linkedRequirementIds = new Set(invoices.filter(i => i.requirementId).map(i => i.requirementId?.toString() || ''));
 
@@ -431,7 +431,7 @@ export default function Invoices() {
 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div><p className="text-foreground0 text-xs mb-0.5">Amount</p><p className="text-foreground font-bold text-lg">{selected.amount}</p></div>
-                <div><p className="text-foreground0 text-xs mb-0.5">PO Reference</p><p className="text-foreground font-mono">{selected.poRef || '—'}</p></div>
+                <div><p className="text-foreground0 text-xs mb-0.5">PO Reference</p><p className="text-foreground font-mono">{selected.poRef || '-'}</p></div>
                 <div><p className="text-foreground0 text-xs mb-0.5">Invoice Date</p><p className="text-foreground">{selected.date}</p></div>
                 <div><p className="text-foreground0 text-xs mb-0.5">Due Date</p><p className="text-foreground">{selected.dueDate}</p></div>
                 <div><p className="text-foreground0 text-xs mb-0.5">Amount Paid</p><p className="text-emerald-600 dark:text-emerald-400 font-semibold">{formatCurrency(Number(selected.amountPaid) || 0)}</p></div>
@@ -529,7 +529,7 @@ export default function Invoices() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground font-medium mb-1">Amount</label>
-                <input type="text" className="input-field" placeholder="$0" value={editInvoice.amount} onChange={(e) => setEditInvoice({ ...editInvoice, amount: e.target.value })} />
+                <input type="text" className="input-field" placeholder="₹0" value={editInvoice.amount} onChange={(e) => setEditInvoice({ ...editInvoice, amount: e.target.value })} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground font-medium mb-1">PO Reference</label>
@@ -692,7 +692,7 @@ export default function Invoices() {
                   Payment Amount for This Installment
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">₹</span>
                   <input
                     type="number"
                     min="0.01"
@@ -754,3 +754,9 @@ export default function Invoices() {
     </motion.div>
   );
 }
+
+
+
+
+
+

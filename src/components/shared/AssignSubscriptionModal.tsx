@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import rolesApi from '@/services/rolesApi';
 
 interface Permission {
@@ -462,3 +462,4 @@ export const AssignSubscriptionModal: React.FC<AssignSubscriptionModalProps> = (
         </div>
     );
 };
+

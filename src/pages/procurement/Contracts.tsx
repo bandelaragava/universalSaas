@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+﻿/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useRef } from 'react';
 import rolesApi from '@/services/rolesApi';
 import { motion } from 'framer-motion';
@@ -73,7 +73,7 @@ export default function Contracts() {
   const handleDelete = async (id: number | string) => {
     if (window.confirm('Delete this contract?')) {
       try {
-        await rolesApi.delete(`/api/vendor-contracts/${id}`);
+        await rolesApi.delete(`/vendor-contracts/${id}`);
         fetchContracts();
         setIsViewOpen(false);
       } catch (e) { console.error("Error deleting contract", e); }
@@ -89,7 +89,7 @@ export default function Contracts() {
       if (res.data?.data?.id && selectedFile) {
         const formData = new FormData();
         formData.append('file', selectedFile);
-        await rolesApi.post(`/api/vendor-contracts/${res.data.data.id}/upload`, formData, {
+        await rolesApi.post(`/vendor-contracts/${res.data.data.id}/upload`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
       }
@@ -105,12 +105,12 @@ export default function Contracts() {
     e.preventDefault();
     if (!editContract) return;
     try {
-      await rolesApi.put(`/api/vendor-contracts/${editContract.id}`, editContract);
+      await rolesApi.put(`/vendor-contracts/${editContract.id}`, editContract);
 
       if (selectedFile) {
         const formData = new FormData();
         formData.append('file', selectedFile);
-        await rolesApi.post(`/api/vendor-contracts/${editContract.id}/upload`, formData, {
+        await rolesApi.post(`/vendor-contracts/${editContract.id}/upload`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
       }
@@ -189,7 +189,7 @@ export default function Contracts() {
             {expiringContract ? (
               <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-xl">
                 <h4 className="font-medium text-rose-600 dark:text-rose-400 text-sm">Expiring Soon</h4>
-                <p className="text-foreground font-medium text-sm mt-1">{expiringContract.vendorName} — {expiringContract.title}</p>
+                <p className="text-foreground font-medium text-sm mt-1">{expiringContract.vendorName} - {expiringContract.title}</p>
                 <p className="text-xs text-foreground0 mt-0.5">Expires {expiringContract.expires}</p>
                 <button
                   onClick={() => { openEdit({ ...expiringContract, status: 'Renewed' }); }}
@@ -263,7 +263,7 @@ export default function Contracts() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground font-medium mb-1">Contract Value</label>
-                <input type="text" className="input-field" placeholder="$0" value={editContract.amount} onChange={(e) => setEditContract({ ...editContract, amount: e.target.value })} />
+                <input type="text" className="input-field" placeholder="₹0" value={editContract.amount} onChange={(e) => setEditContract({ ...editContract, amount: e.target.value })} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground font-medium mb-1">Start Date</label>
@@ -322,7 +322,7 @@ export default function Contracts() {
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground font-medium mb-1">Contract Value</label>
-              <input type="text" className="input-field" placeholder="$0" value={newContract.amount} onChange={(e) => setNewContract({ ...newContract, amount: e.target.value })} />
+              <input type="text" className="input-field" placeholder="₹0" value={newContract.amount} onChange={(e) => setNewContract({ ...newContract, amount: e.target.value })} />
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground font-medium mb-1">Start Date</label>
@@ -356,3 +356,8 @@ export default function Contracts() {
     </motion.div>
   );
 }
+
+
+
+
+

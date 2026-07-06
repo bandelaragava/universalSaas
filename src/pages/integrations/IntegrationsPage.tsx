@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+﻿/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback } from 'react';
 import {
   Calendar, Video, CreditCard, Target, MessageSquare,
@@ -240,7 +240,7 @@ export function IntegrationsPage() {
     }
   }, []);
 
-  // Lazy list fetchers — called only when the relevant modal opens, never on mount.
+  // Lazy list fetchers - called only when the relevant modal opens, never on mount.
   // This avoids 404s for endpoints that may not exist yet and CORS preflight
   // errors for cross-origin requests that the browser blocks before the user
   // has even opened that section.
@@ -251,7 +251,7 @@ export function IntegrationsPage() {
       const { data } = await api.get('/integrations/zoom/meetings');
       setZoomMeetings(data?.meetings ?? (Array.isArray(data) ? data : []));
     } catch {
-      // Endpoint missing or CORS — leave list empty; user will see "No meetings yet"
+      // Endpoint missing or CORS - leave list empty; user will see "No meetings yet"
     } finally {
       setBusyKey('list_zoom', false);
     }
@@ -263,7 +263,7 @@ export function IntegrationsPage() {
       const { data } = await api.get('/integrations/cashfree/orders');
       setCashfreeTransactions(data?.orders ?? (Array.isArray(data) ? data : []));
     } catch {
-      // 404 — leave list empty
+      // 404 - leave list empty
     } finally {
       setBusyKey('list_cf', false);
     }
@@ -275,7 +275,7 @@ export function IntegrationsPage() {
       const { data } = await api.get('/integrations/whatsapp/templates');
       setWhatsappTemplates(data?.templates ?? (Array.isArray(data) ? data : []));
     } catch {
-      // 404 — leave list empty
+      // 404 - leave list empty
     } finally {
       setBusyKey('list_wa', false);
     }
@@ -305,7 +305,7 @@ export function IntegrationsPage() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchStatus();
-    // No fetchLists() here — lists are fetched lazily per modal
+    // No fetchLists() here - lists are fetched lazily per modal
   }, [fetchStatus]);
 
   // ──────────────────────────────────────────────────────────────────────────────
@@ -1233,7 +1233,7 @@ export function IntegrationsPage() {
                 <select value={newOrder.currency} onChange={e => setNewOrder({ ...newOrder, currency: e.target.value })}
                   className="border rounded h-8 text-xs p-1 bg-card text-foreground w-full">
                   <option value="INR">INR (₹)</option>
-                  <option value="USD">USD ($)</option>
+                  <option value="USD">USD (₹)</option>
                 </select>
               </div>
               <div>
@@ -1468,4 +1468,13 @@ export function IntegrationsPage() {
 }
 
 export default IntegrationsPage;
+
+
+
+
+
+
+
+
+
 
