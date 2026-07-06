@@ -200,6 +200,7 @@ import {
   useGetLeadFormsQuery,
   useGetLeadOptionsQuery,
   useGetLeadUsersQuery,
+  useUpdateLeadMutation,
 } from '@/modules/leads/services/leadsApi';
 import UniversalFieldRenderer from '@/modules/leads/renderer/UniversalFieldRenderer';
 import { Button } from '@/components/ui/button';
@@ -226,6 +227,7 @@ export default function DynamicFormRenderer({ onClose }) {
   const { data: options } = useGetLeadOptionsQuery();
   const { data: users = [] } = useGetLeadUsersQuery();
   const [createLead, { isLoading: isSaving }] = useCreateLeadMutation();
+  const [updateLead] = useUpdateLeadMutation();
 
   const form = forms.find((item) => item.is_active) || forms[0];
   const backendFields = form?.fields || [];
@@ -281,7 +283,7 @@ export default function DynamicFormRenderer({ onClose }) {
       email: getByLabel('Email Address') || null,
       phone: getByLabel('Phone Number') || null,
       status: getByLabel('Status') || 'New',
-      counselor_id: values.counselor_id ? values.counselor_id : null,
+      counselor_id: values.counselor_id ? (isNaN(Number(values.counselor_id)) ? values.counselor_id : Number(values.counselor_id)) : null,
       dynamic_fields: dynamicFields,
     };
 
@@ -289,7 +291,18 @@ export default function DynamicFormRenderer({ onClose }) {
     console.log('[Create Lead] Request Payload to backend:', payload);
 
     try {
-      await createLead(payload).unwrap();
+      const createdLead = await createLead(payload).unwrap();
+      
+      // Force assignment via the assign endpoint to guarantee it works,
+      // as the Python backend might be ignoring counselor_id on creation.
+      if (payload.counselor_id) {
+        try {
+          await updateLead({ id: createdLead.id, counselor_id: payload.counselor_id }).unwrap();
+        } catch (assignErr) {
+          console.warn('[Create Lead] Failed to assign counselor after creation:', assignErr);
+        }
+      }
+
       toast.success('Success!', 'Lead has been created and assigned.');
       if (onClose) {
         onClose();

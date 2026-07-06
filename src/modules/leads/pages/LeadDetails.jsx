@@ -14,18 +14,6 @@ import {
   useUpdateLeadMutation,
 } from '@/modules/leads/services/leadsApi';
 
-function StatusBadge({ status }) {
-  const color = 
-    status === 'Admission Confirmed' ? 'bg-emerald-100 text-emerald-800' :
-    status === 'Pending' ? 'bg-amber-100 text-amber-800' :
-    status === 'Rejected' ? 'bg-rose-100 text-rose-800' :
-    'bg-slate-100 text-slate-800';
-  return (
-    <span className={`px-2.5 py-1 text-[10px] uppercase tracking-wider font-bold rounded-full ${color}`}>
-      {status || 'Unknown'}
-    </span>
-  );
-}
 import { 
   ArrowLeft, 
   Phone, 
@@ -43,6 +31,20 @@ import {
   Edit,
   ClipboardList
 } from 'lucide-react';
+
+function StatusBadge({ status }) {
+  const color = 
+    status === 'Admission Confirmed' ? 'bg-emerald-100 text-emerald-800' :
+    status === 'Pending' ? 'bg-amber-100 text-amber-800' :
+    status === 'Rejected' ? 'bg-rose-100 text-rose-800' :
+    'bg-slate-100 text-slate-800';
+  return (
+    <span className={`px-2.5 py-1 text-[10px] uppercase tracking-wider font-bold rounded-full ${color}`}>
+      {status || 'Unknown'}
+    </span>
+  );
+}
+
 
 export default function LeadDetailsPage() {
   const { id } = useParams();
@@ -77,7 +79,7 @@ export default function LeadDetailsPage() {
     return updateLeadApi(payload).unwrap();
   };
   const assignLead = async (leadId, counselorId) => {
-    return assignLeadApi({ leadId, counselorId }).unwrap();
+    return updateLeadApi({ id: leadId, counselor_id: counselorId }).unwrap();
   };
 
   const contactMethodOptions = (leadOptions?.contact_methods || []).filter((item) => item.value || item.label);
@@ -208,7 +210,8 @@ export default function LeadDetailsPage() {
 
   const handleAssignCounselor = async () => {
     if (!selectedCounselorId) return;
-    await assignLead(lead.id, selectedCounselorId);
+    const counselorIdToAssign = isNaN(Number(selectedCounselorId)) ? selectedCounselorId : Number(selectedCounselorId);
+    await assignLead(lead.id, counselorIdToAssign);
     setSelectedCounselorId('');
   };
 

@@ -29,9 +29,9 @@ export const getLeadNotes = (lead) =>
   lead?.internal_notes || getFieldValue(lead, ['Internal Notes', 'Notes']) || '';
 
 export const getLeadCounselor = (lead) =>
+  lead?.assigned_to?.name ||
   lead?.counselor?.full_name ||
   lead?.counselor?.email ||
-  lead?.assigned_to?.name ||
   'Unassigned';
 
 export const formatShortDate = (date) =>

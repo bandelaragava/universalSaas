@@ -9,29 +9,41 @@ const getDynamicValue = (lead, acceptedLabels) => {
 };
 
 export const normalizeLead = (lead, leadUsers = []) => {
-  let assigned_to = lead.assigned_to;
-  
+  // Always try to resolve the counselor using the Spring Boot users list first
+  const cId = String(
+    lead.counselor_id || 
+    lead.counselorId || 
+    (lead.assigned_to && lead.assigned_to.id) || 
+    (lead.counselor && lead.counselor.id) || 
+    ''
+  );
+
+  let assigned_to = null;
+
+  if (cId && leadUsers && leadUsers.length > 0) {
+    const user = leadUsers.find((u) => String(u.id) === cId);
+    if (user) {
+      assigned_to = {
+        id: user.id,
+        name: user.full_name || user.email,
+      };
+    }
+  }
+
+  // Fallback to whatever the backend provided if we couldn't find the user
   if (!assigned_to) {
-    if (lead.counselor) {
+    if (lead.assigned_to) {
+      assigned_to = lead.assigned_to;
+    } else if (lead.counselor) {
       assigned_to = {
         id: lead.counselor.id,
         name: lead.counselor.full_name || lead.counselor.email,
       };
-    } else if (lead.counselor_id || lead.counselorId) {
-      const cId = String(lead.counselor_id || lead.counselorId);
-      const user = leadUsers.find((u) => String(u.id) === cId);
-      if (user) {
-        assigned_to = {
-          id: user.id,
-          name: user.full_name || user.email,
-        };
-      } else {
-        assigned_to = { id: cId, name: 'Unknown Counselor' };
-      }
-    } else {
-      assigned_to = null;
+    } else if (cId) {
+      assigned_to = { id: cId, name: 'Unknown Counselor' };
     }
   }
+
 
   return {
     ...lead,
