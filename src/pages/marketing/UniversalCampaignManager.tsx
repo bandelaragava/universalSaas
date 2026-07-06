@@ -1,6 +1,6 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Megaphone, Plus, RefreshCw, Search } from 'lucide-react';
-import { getEmailCampaigns, createEmailCampaign } from '@/services/marketing';
+import { getEmailCampaigns, createEmailCampaign, scheduleCampaign } from '@/services/marketing';
 import CampaignBuilder from './CampaignBuilder';
 import { usePermissions } from '@/auth/usePermissions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -56,7 +56,21 @@ export default function UniversalCampaignManager() {
     recipients: string[];
   }) => {
     try {
-      await createEmailCampaign(payload);
+      const res = await createEmailCampaign(payload);
+      
+      // If "Send Now" (ACTIVE) was selected, immediately trigger the schedule/send endpoint
+      if (payload.status === 'ACTIVE') {
+        const campaignId = res?.id || res?.campaignId;
+        if (campaignId) {
+          try {
+            await scheduleCampaign(campaignId);
+          } catch (scheduleErr) {
+            console.error('Campaign saved but failed to trigger sending:', scheduleErr);
+            alert('Campaign was saved, but failed to start sending. You may need to trigger it manually.');
+          }
+        }
+      }
+
       setView('LIST');
       loadData();
     } catch (e) {
