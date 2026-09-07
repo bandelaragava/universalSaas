@@ -256,7 +256,7 @@ export default function SocialLinkGenerator() {
               <select
                 className="input-field w-full text-sm bg-background border-border text-foreground px-3 py-2 rounded-md"
                 value={config.landingSlug}
-                onChange={(e) => handleConfigChange('landingSlug', e.target.value)}
+                onChange={(e) => {}}
               >
                 {landingPages.map(p => <option key={p.slug} value={p.slug}>{p.title} (/{p.slug})</option>)}
               </select>

@@ -17,12 +17,21 @@ import { PayrollPage } from "@/pages/hrms/PayrollPage";
 import { SettingsPage } from "@/pages/settings/SettingsPage";
 import { RevenuePage } from "@/pages/revenue/RevenuePage";
 import {
-  AccessControlLayout,
   SettingsLayout,
   HrmsLayout,
   CrmLayout,
   VendorLayout,
+  RecruitmentLayout,
 } from "@/components/layout/ModuleTabsLayout";
+
+// Recruitment module pages
+import { RecruitmentDashboardPage } from "@/modules/recruitment/pages/RecruitmentDashboardPage";
+import { JobsListPage } from "@/modules/recruitment/pages/JobsListPage";
+import { RecruitmentPipelinePage } from "@/modules/recruitment/pages/RecruitmentPipelinePage";
+import { ApplicationsListPage } from "@/modules/recruitment/pages/ApplicationsListPage";
+import { CandidateJobsPage } from "@/modules/recruitment/pages/candidate/CandidateJobsPage";
+import { CandidateMyApplicationsPage } from "@/modules/recruitment/pages/candidate/CandidateMyApplicationsPage";
+
 
 // Vendor / Procurement pages
 import { useAuth } from "@/auth/AuthContext";
@@ -30,6 +39,7 @@ import { usePermissions } from "@/auth/usePermissions";
 import Vendors from "@/pages/vendor/Vendors";
 import VendorPortal from "@/pages/vendor/VendorPortal";
 import VendorAnalyticsDashboard from "@/pages/vendor/VendorAnalyticsDashboard";
+import ReceivedProducts from "@/pages/vendor/ReceivedProducts";
 import Procurement from "@/pages/procurement/Procurement";
 import Contracts from "@/pages/procurement/Contracts";
 import Invoices from "@/pages/procurement/Invoices";
@@ -100,9 +110,10 @@ import {
   DesignationList, DesignationForm,
   WorkModeList, WorkModeForm
 } from "@/pages/settings/LookupPages";
-import InvoiceConfigurationList from "@/pages/settings/InvoiceConfigurationList";
 import InvoiceConfigurationForm from "@/pages/settings/InvoiceConfigurationForm";
 
+import AffiliateShell from "@/modules/affiliate/AffiliateShell";
+import TaskShell from "@/modules/tasks/TaskShell";
 
 function VendorProtectedRoute({ element }: { element: React.ReactElement }) {
   const auth = useAuth();
@@ -126,9 +137,6 @@ function VendorProtectedRoute({ element }: { element: React.ReactElement }) {
 
   return element;
 }
-
-import AffiliateShell from "@/modules/affiliate/AffiliateShell";
-import TaskShell from "@/modules/tasks/TaskShell";
 
 export function AppRoutes() {
   return (
@@ -192,18 +200,18 @@ export function AppRoutes() {
           <Route path="settings/work-modes/create" element={<ProtectedRoute element={<WorkModeForm />} permission="ROLE_CREATE" />} />
           <Route path="settings/work-modes/edit/:id" element={<ProtectedRoute element={<WorkModeForm />} permission="ROLE_UPDATE" />} />
           <Route path="settings/id-generation" element={<ProtectedRoute element={<IdGenerationSettings />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_ID_FORMATS"]} />} />
-          <Route path="settings/templates" element={<ProtectedRoute element={<TemplatesPage />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_TEMPLATES"]} />} />
+          <Route path="settings/templates" element={<ProtectedRoute element={<TemplatesPage />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_TEMPLATES", "SETTINGS_MANAGE_INVOICES"]} />} />
           <Route path="settings/templates/create" element={<ProtectedRoute element={<TemplateFormPage />} permission="ROLE_CREATE" />} />
           <Route path="settings/templates/edit/:id" element={<ProtectedRoute element={<TemplateFormPage />} permission="ROLE_UPDATE" />} />
           <Route path="settings/certificates" element={<ProtectedRoute element={<CertificatesList />} permissions={["SETTINGS_MANAGE_CERTIFICATES", "SETTINGS_MANAGE_TEMPLATES", "SETTINGS_MANAGE_SETTINGS"]} />} />
           <Route path="settings/onboarding-rules" element={<ProtectedRoute element={<OnboardingRulesPage />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_SETTINGS"]} />} />
           <Route path="settings/dynamic-role-fields" element={<ProtectedRoute element={<DynamicRoleFieldsPage />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_SETTINGS"]} />} />
           <Route path="settings/system" element={<ProtectedRoute element={<SystemSettingsPage />} permissions={["COMPANY_PROFILE_VIEW", "SETTINGS_MANAGE_SETTINGS"]} />} />
-          <Route path="settings/invoice-configurations" element={<ProtectedRoute element={<InvoiceConfigurationList />} permissions={["SETTINGS_MANAGE_INVOICES", "SETTINGS_MANAGE_SETTINGS"]} />} />
+          <Route path="settings/invoice-configurations" element={<Navigate to="/settings/templates?tab=invoices" replace />} />
           <Route path="settings/invoice-configurations/create" element={<ProtectedRoute element={<InvoiceConfigurationForm />} permissions={["SETTINGS_MANAGE_INVOICES", "SETTINGS_MANAGE_SETTINGS"]} />} />
           <Route path="settings/invoice-configurations/edit/:id" element={<ProtectedRoute element={<InvoiceConfigurationForm />} permissions={["SETTINGS_MANAGE_INVOICES", "SETTINGS_MANAGE_SETTINGS"]} />} />
-          <Route path="leads/form-builder" element={<ProtectedRoute element={<FormBuilder />} module="crm" permissions={["LEADS_MANAGE_LEAD_FORMS", "LEADS_MANAGE_LEAD_FORMS", "LEADS_MANAGE_LEAD_FORMS"]} />} />
-          <Route path="leads/options" element={<ProtectedRoute element={<LeadOptions />} module="crm" permissions={["LEADS_MANAGE_LEAD_FORMS", "LEADS_MANAGE_LEAD_FORMS", "LEADS_MANAGE_LEAD_FORMS"]} />} />
+          <Route path="leads/form-builder" element={<ProtectedRoute element={<FormBuilder />} module="crm" permissions={["LEADS_MANAGE_LEAD_FORMS"]} />} />
+          <Route path="leads/options" element={<ProtectedRoute element={<LeadOptions />} module="crm" permissions={["LEADS_MANAGE_LEAD_FORMS"]} />} />
           <Route path="crm/stages" element={<ProtectedRoute element={<LeadStageList />} module="crm" permissions={["LEADS_VIEW_LEADS", "LEADS_MANAGE_LEAD_FORMS"]} />} />
           <Route path="crm/stages/create" element={<ProtectedRoute element={<LeadStageForm />} module="crm" permission="LEADS_MANAGE_LEAD_FORMS" />} />
           <Route path="crm/stages/edit/:id" element={<ProtectedRoute element={<LeadStageForm />} module="crm" permission="LEADS_MANAGE_LEAD_FORMS" />} />
@@ -234,6 +242,7 @@ export function AppRoutes() {
           <Route path="vendor/vendors" element={<ProtectedRoute element={<Vendors />} module="VENDOR" permission="VENDOR_VIEW" />} />
           <Route path="vendor/analytics" element={<ProtectedRoute element={<VendorAnalyticsDashboard />} module="VENDOR" permissions={["VENDOR_VIEW", "VENDOR_MANAGE"]} />} />
           <Route path="vendor/assets" element={<ProtectedRoute element={<Procurement />} module="VENDOR" permission="VENDOR_VIEW" />} />
+          <Route path="vendor/received-products" element={<ProtectedRoute element={<ReceivedProducts />} module="VENDOR" permission="VENDOR_VIEW" />} />
           <Route path="vendor/contracts" element={<ProtectedRoute element={<Contracts />} module="VENDOR" permission="VENDOR_VIEW" />} />
           <Route path="vendor/invoices" element={<ProtectedRoute element={<Invoices />} module="VENDOR" permission="VENDOR_VIEW" />} />
           <Route path="vendor/requirements" element={<ProtectedRoute element={<Requirements />} module="VENDOR" permission="VENDOR_VIEW" />} />
@@ -241,6 +250,17 @@ export function AppRoutes() {
           <Route path="vendor/risk-compliance" element={<ProtectedRoute element={<RiskCompliance />} module="VENDOR" permissions={["VENDOR_VIEW", "VENDOR_MANAGE"]} />} />
           <Route path="vendor" element={<Navigate to="/vendor/analytics" replace />} />
           <Route path="vendor-dashboard" element={<Navigate to="/vendor/analytics" replace />} />
+        </Route>
+
+        {/* Recruitment Module Routes */}
+        <Route element={<RecruitmentLayout />}>
+          <Route path="recruitment" element={<ProtectedRoute element={<RecruitmentDashboardPage />} module="RECRUITMENT" permissions={["JOB_VIEW", "APPLICATION_VIEW"]} />} />
+          <Route path="recruitment/dashboard" element={<Navigate to="/recruitment" replace />} />
+          <Route path="recruitment/jobs" element={<ProtectedRoute element={<JobsListPage />} module="RECRUITMENT" permissions={["JOB_VIEW", "JOB_CREATE"]} />} />
+          <Route path="recruitment/pipeline" element={<ProtectedRoute element={<RecruitmentPipelinePage />} module="RECRUITMENT" permissions={["JOB_VIEW", "APPLICATION_VIEW"]} />} />
+          <Route path="recruitment/applications" element={<ProtectedRoute element={<ApplicationsListPage />} module="RECRUITMENT" permissions={["APPLICATION_VIEW"]} />} />
+          <Route path="recruitment/careers" element={<ProtectedRoute element={<CandidateJobsPage />} />} />
+          <Route path="recruitment/my-applications" element={<ProtectedRoute element={<CandidateMyApplicationsPage />} />} />
         </Route>
 
         {/* Other routes */}
@@ -297,5 +317,3 @@ export function AppRoutes() {
     </Routes>
   );
 }
-
-

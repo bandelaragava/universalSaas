@@ -52,6 +52,12 @@ interface JavaUser {
   employeeId?: string;
   emp_code?: string;
   profileData?: Record<string, unknown> | null;
+  joiningDate?: string | null;
+  designationName?: string | null;
+  workModeName?: string | null;
+  employeeTypeName?: string | null;
+  departmentNames?: string[] | null;
+  departmentIds?: (number | string)[] | null;
 }
 
 const asArray = <T>(payload: T[] | { data?: T[]; content?: T[]; results?: T[] } | unknown): T[] => {
@@ -169,14 +175,14 @@ const javaUserToEmployee = (user: JavaUser): EmployeeOption => {
     email: user.email || '',
     role,
     base_role: baseRoleFromJavaRole(role),
-    employee_type: String(profile.employee_type || profile.employeeType || 'regular'),
-    department: profile.department_id ? Number(profile.department_id) : null,
-    department_name: profile.department_name ? String(profile.department_name) : null,
-    designation: profile.designation ? String(profile.designation) : null,
-    work_mode: profile.work_mode ? String(profile.work_mode) : null,
+    employee_type: String(user.employeeTypeName || profile.employee_type || profile.employeeType || 'regular'),
+    department: user.departmentIds && user.departmentIds.length > 0 ? Number(user.departmentIds[0]) : (profile.department_id ? Number(profile.department_id) : null),
+    department_name: user.departmentNames && user.departmentNames.length > 0 ? String(user.departmentNames[0]) : (profile.department_name ? String(profile.department_name) : null),
+    designation: user.designationName || (profile.designation ? String(profile.designation) : null),
+    work_mode: user.workModeName || (profile.work_mode ? String(profile.work_mode) : null),
     manager: Number(javaSupervisorId(user)) || null,
     manager_name: user.supervisorName || user.managerName || String(profile.reporting_supervisor_name || profile.reportingSupervisorName || '') || null,
-    joining_date: String(profile.joining_date || profile.joiningDate || ''),
+    joining_date: user.joiningDate || String(profile.joining_date || profile.joiningDate || ''),
   };
 };
 
@@ -190,9 +196,11 @@ const mergeEmployees = (lapEmployees: EmployeeOption[], javaUsers: JavaUser[]) =
     const employee = javaUserToEmployee(user);
     const key = employee.email ? `email:${employee.email.toLowerCase()}` : `java:${javaId(user)}`;
     const existing = merged.get(key);
+    // @ts-ignore
     merged.set(key, {
-      ...(existing || {}),
-      ...employee,
+      ...(existing || {}) as any,
+      ...employee as any,
+      user_id: employee.user_id || existing?.user_id || '',
       attendance_id: employee.attendance_id || existing?.attendance_id,
       manager: employee.manager ?? existing?.manager,
       manager_name: employee.manager_name || existing?.manager_name,
@@ -236,14 +244,14 @@ export const employeeService = {
     const activeUsers = mergedAll.filter(emp => emp.user_id && (emp as any).active !== false);
     
     let scopedEmployees = activeUsers;
-    if (!isSuperAdminSession(me) && !isHrSession(me)) {
+    if (!isSuperAdminSession(me)) {
       const visible = new Set<string>();
       let frontier = Array.from(currentUserIds(me));
 
       while (frontier.length) {
         const next: string[] = [];
         activeUsers.forEach((emp) => {
-          const id = normalizeId(emp.user_id);
+          const id = normalizeId(emp.user_id || '');
           const supervisorId = normalizeId(emp.manager);
           if (supervisorId && frontier.includes(supervisorId) && !visible.has(id)) {
             visible.add(id);
@@ -254,7 +262,7 @@ export const employeeService = {
       }
 
       scopedEmployees = activeUsers.filter((emp) => {
-        if (!visible.has(normalizeId(emp.user_id))) return false;
+        if (!visible.has(normalizeId(emp.user_id || ''))) return false;
         const roleGroup = baseRoleFromJavaRole(emp.role);
         return roleGroup !== 'superadmin' && roleGroup !== 'admin' && roleGroup !== 'hr';
       });

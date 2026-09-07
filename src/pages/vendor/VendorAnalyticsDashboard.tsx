@@ -1,4 +1,4 @@
-﻿import { motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import rolesApi from '@/services/rolesApi';
 import {
   Users,
@@ -144,7 +144,7 @@ export default function VendorAnalyticsDashboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.5 }}
-          className="bg-card border border-border shadow-sm rounded-xl p-4 sm:p-6 lg:col-span-2"
+          className="bg-card border border-border shadow-sm rounded-xl p-4 sm:p-6 lg:col-span-2 min-w-0"
         >
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <h3 className="text-lg font-semibold text-foreground">Procurement Spend Analytics</h3>
@@ -175,7 +175,7 @@ export default function VendorAnalyticsDashboard() {
               )}
             </div>
           </div>
-          <div className="h-72 w-full">
+          <div className="w-full min-w-0 h-[300px]">
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <AreaChart data={data.spendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
@@ -202,10 +202,10 @@ export default function VendorAnalyticsDashboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.6 }}
-          className="bg-card border border-border shadow-sm rounded-xl p-4 sm:p-6"
+          className="bg-card border border-border shadow-sm rounded-xl p-4 sm:p-6 min-w-0"
         >
           <h3 className="text-lg font-semibold text-foreground mb-6">Vendors by Category</h3>
-          <div className="h-64 w-full">
+          <div className="w-full min-w-0 h-[280px]">
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <BarChart data={data.vendorData} layout="vertical" margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" horizontal={false} />

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import rolesApi from '@/services/rolesApi';
 import { motion } from 'framer-motion';
 import { FileText, Plus, Trash2, CalendarDays, Eye } from 'lucide-react';
@@ -34,10 +34,99 @@ export function Requirements() {
   const { searchQuery } = useAppStore();
   const [requirements, setRequirements] = useState<Requirement[]>([]);
   const [vendors, setVendors] = useState<Vendor[]>([]);
+
   const [isAddReqOpen, setIsAddReqOpen] = useState(false);
   const [isViewReqOpen, setIsViewReqOpen] = useState(false);
   const [selectedReq, setSelectedReq] = useState<Requirement | null>(null);
+  const [receivedProducts, setReceivedProducts] = useState<any[]>([]);
+  const [isAssignOpen, setIsAssignOpen] = useState(false);
+  const [assignData, setAssignData] = useState({ receivedProductId: 0, quantity: 1, userId: '', itemName: '', available: 0 });
+  const [isReceiveOpen, setIsReceiveOpen] = useState(false);
+  const [receiveData, setReceiveData] = useState({
+    requirementItemId: 0,
+    itemName: '',
+    brand: '',
+    requiredQty: 0,
+    receivedQty: 0,
+    quantityToReceive: 1
+  });
+  const [users, setUsers] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleOpenReceive = (item: any, rp: any) => {
+    const remaining = Math.max(1, item.quantity - (rp?.receivedQuantity || 0));
+    setReceiveData({
+      requirementItemId: item.id,
+      itemName: item.itemName,
+      brand: item.brand || '',
+      requiredQty: item.quantity,
+      receivedQty: rp?.receivedQuantity || 0,
+      quantityToReceive: remaining
+    });
+    setIsReceiveOpen(true);
+  };
+
+  const handleReceive = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      await rolesApi.post(`/vendors/received-products/receive/${receiveData.requirementItemId}?quantity=${receiveData.quantityToReceive}`);
+      setIsReceiveOpen(false);
+      if (selectedReq) {
+        await fetchReceivedProducts(selectedReq.id);
+        await fetchRequirements();
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to receive item");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  
+  const fetchUsers = async () => {
+    try {
+      const res = await rolesApi.get('/users?size=100');
+      setUsers(res.data.data || []);
+    } catch (e) {
+      console.error("Error fetching users", e);
+    }
+  };
+
+  const fetchReceivedProducts = async (reqId: string | number) => {
+    try {
+      const res = await rolesApi.get(`/vendors/received-products/requirement/${reqId}`);
+      setReceivedProducts(res.data.data || []);
+    } catch (e) {
+      console.error("Error fetching received products", e);
+    }
+  };
+
+  useEffect(() => {
+    if (isViewReqOpen && selectedReq) {
+      fetchReceivedProducts(selectedReq.id);
+    }
+  }, [isViewReqOpen, selectedReq]);
+
+  const handleAssign = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setIsSubmitting(true);
+      await rolesApi.post(`/vendors/received-products/${assignData.receivedProductId}/assign`, {
+        userId: parseInt(assignData.userId),
+        quantity: assignData.quantity
+      });
+      setIsAssignOpen(false);
+      if (selectedReq) fetchReceivedProducts(selectedReq.id);
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to assign product");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+
 
   const [newReq, setNewReq] = useState<{
     description: string;
@@ -80,6 +169,7 @@ export function Requirements() {
     const timer = setTimeout(() => {
       fetchRequirements();
       fetchVendors();
+      fetchUsers();
     }, 0);
     return () => clearTimeout(timer);
   }, []);
@@ -221,7 +311,7 @@ export function Requirements() {
       </div>
 
       {/* Add Requirement Modal */}
-      <Modal isOpen={isAddReqOpen} onClose={() => setIsAddReqOpen(false)} title="New Requirement">
+      <Modal isOpen={isAddReqOpen} onClose={() => setIsAddReqOpen(false)} title="New Requirement" size="4xl">
         <form className="space-y-4 text-xs sm:text-sm" onSubmit={handleAddRequirement}>
           <div>
             <label className="block text-xs font-medium text-slate-350 mb-1">Assign Vendor *</label>
@@ -316,75 +406,117 @@ export function Requirements() {
       </Modal>
 
       {/* View Requirement Modal */}
-      <Modal isOpen={isViewReqOpen} onClose={() => setIsViewReqOpen(false)} title="Requirement Details">
+      <Modal isOpen={isViewReqOpen} onClose={() => setIsViewReqOpen(false)} title="Requirement Details" size="5xl">
         {selectedReq && (
-          <div className="space-y-5">
-            <div className="flex items-start justify-between border-b border-slate-700/50 pb-4">
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-700/50 pb-4">
               <div>
-                <h3 className="text-xl font-bold text-slate-50">REQ-{selectedReq.id}</h3>
-                <p className="text-sm text-cyan-400 mt-0.5">Assigned to: {selectedReq.vendor?.vendorName || selectedReq.vendor?.companyName}</p>
+                <div className="flex items-center gap-3">
+                  <h3 className="text-2xl font-bold text-slate-50 font-mono">REQ-{selectedReq.id}</h3>
+                  <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${getStatusBadge(selectedReq.status)}`}>
+                    {selectedReq.status.replace(/_/g, ' ')}
+                  </span>
+                </div>
+                <p className="text-sm text-cyan-400 mt-1">Assigned to: <span className="font-semibold text-slate-200">{selectedReq.vendor?.vendorName || selectedReq.vendor?.companyName}</span></p>
               </div>
-              <span className={`text-xs font-semibold px-3 py-1.5 rounded-full border ${getStatusBadge(selectedReq.status)}`}>
-                {selectedReq.status.replace(/_/g, ' ')}
-              </span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs sm:text-sm">
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-slate-800 rounded-lg shrink-0"><CalendarDays size={14} className="text-amber-400" /></div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="flex items-center gap-3 bg-slate-800/40 p-3 rounded-xl border border-slate-700/30">
+                <div className="p-2.5 bg-amber-500/10 text-amber-400 rounded-lg shrink-0"><CalendarDays size={18} /></div>
                 <div>
-                  <p className="text-slate-500 text-xs mb-0.5">Required Date</p>
-                  <p className="text-slate-200 font-medium">{selectedReq.requiredDate || 'TBD'}</p>
+                  <p className="text-slate-400 text-xs">Required Date</p>
+                  <p className="text-slate-100 font-semibold text-sm">{selectedReq.requiredDate || 'TBD'}</p>
                 </div>
               </div>
               {selectedReq.returnDate && (
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-slate-800 rounded-lg shrink-0"><CalendarDays size={14} className="text-rose-400" /></div>
+                <div className="flex items-center gap-3 bg-slate-800/40 p-3 rounded-xl border border-slate-700/30">
+                  <div className="p-2.5 bg-rose-500/10 text-rose-400 rounded-lg shrink-0"><CalendarDays size={18} /></div>
                   <div>
-                    <p className="text-slate-500 text-xs mb-0.5">Return Date</p>
-                    <p className="text-slate-200 font-medium">{selectedReq.returnDate}</p>
+                    <p className="text-slate-400 text-xs">Return Date</p>
+                    <p className="text-slate-100 font-semibold text-sm">{selectedReq.returnDate}</p>
                   </div>
                 </div>
               )}
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-slate-800 rounded-lg shrink-0"><FileText size={14} className="text-cyan-400" /></div>
+              <div className="flex items-center gap-3 bg-slate-800/40 p-3 rounded-xl border border-slate-700/30">
+                <div className="p-2.5 bg-cyan-500/10 text-cyan-400 rounded-lg shrink-0"><FileText size={18} /></div>
                 <div>
-                  <p className="text-slate-500 text-xs mb-0.5">Type</p>
-                  <p className="text-slate-200 font-medium capitalize">{selectedReq.requirementType?.replace('_', ' ') || 'Buy'}</p>
+                  <p className="text-slate-400 text-xs">Procurement Type</p>
+                  <p className="text-slate-100 font-semibold text-sm capitalize">{selectedReq.requirementType?.replace('_', ' ') || 'Buy'}</p>
                 </div>
               </div>
             </div>
 
             {selectedReq.description && (
-              <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-                <p className="text-xs text-slate-505 mb-1">Notes</p>
-                <p className="text-xs sm:text-sm text-slate-300">{selectedReq.description}</p>
+              <div className="bg-slate-800/40 rounded-xl p-4 border border-slate-700/30">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Notes & Specifications</p>
+                <p className="text-sm text-slate-200">{selectedReq.description}</p>
               </div>
             )}
 
             <div>
-              <p className="text-xs sm:text-sm font-semibold text-slate-300 mb-3">Requested Items</p>
-              <div className="overflow-x-auto border border-slate-700/50 rounded-lg">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-800/50 border-b border-slate-700/50 text-slate-400">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-bold text-slate-100 tracking-wide uppercase">Requested Items</h4>
+                <span className="text-xs text-slate-400">{selectedReq.items?.length || 0} items listed</span>
+              </div>
+              <div className="overflow-x-auto border border-slate-700/50 rounded-xl bg-slate-900/30">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-800/80 border-b border-slate-700/50 text-slate-300 text-xs uppercase tracking-wider">
                     <tr>
-                      <th className="px-4 py-2 font-medium">Item Name</th>
-                      <th className="px-4 py-2 font-medium">Brand</th>
-                      <th className="px-4 py-2 font-medium">Quantity</th>
-                      <th className="px-4 py-2 font-medium">Unit</th>
+                      <th className="px-4 py-3 font-semibold">Item Name</th>
+                      <th className="px-4 py-3 font-semibold text-center">Required</th>
+                      <th className="px-4 py-3 font-semibold text-center">Received</th>
+                      <th className="px-4 py-3 font-semibold text-center">Assigned</th>
+                      <th className="px-4 py-3 font-semibold text-center">Available</th>
+                      <th className="px-4 py-3 font-semibold text-center">Status</th>
+                      <th className="px-4 py-3 font-semibold text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-700/50">
-                    {selectedReq.items && selectedReq.items.length > 0 ? selectedReq.items.map((item, idx) => (
-                      <tr key={idx} className="bg-slate-900/30">
-                        <td className="px-4 py-2 text-slate-250 font-medium">{item.itemName}</td>
-                        <td className="px-4 py-2 text-slate-350">{item.brand || '-'}</td>
-                        <td className="px-4 py-2 text-slate-250">{item.quantity}</td>
-                        <td className="px-4 py-2 text-slate-400">{item.unit || '-'}</td>
-                      </tr>
-                    )) : (
+                  <tbody className="divide-y divide-slate-800/50">
+                    {selectedReq.items && selectedReq.items.length > 0 ? selectedReq.items.map((item: any, idx) => {
+                      const rp = receivedProducts.find(r => r.productName === item.itemName || r.requirementItemId === item.id) || {
+                        receivedQuantity: 0, assignedQuantity: 0, availableQuantity: 0, status: 'NOT_RECEIVED', id: 0
+                      };
+                      return (
+                        <tr key={idx} className="hover:bg-slate-800/30 transition-colors">
+                          <td className="px-4 py-3 text-slate-100 font-medium">{item.itemName} {item.brand ? <span className="text-slate-400 text-xs">({item.brand})</span> : ''}</td>
+                          <td className="px-4 py-3 text-slate-200 text-center font-mono">{item.quantity}</td>
+                          <td className="px-4 py-3 text-slate-200 text-center font-mono font-semibold">{rp.receivedQuantity}</td>
+                          <td className="px-4 py-3 text-slate-200 text-center font-mono">{rp.assignedQuantity}</td>
+                          <td className="px-4 py-3 text-emerald-400 text-center font-mono font-bold">{rp.availableQuantity}</td>
+                          <td className="px-4 py-3 text-center">
+                            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${rp.status.includes('PARTIAL') ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' : rp.status.includes('NOT') ? 'bg-slate-500/10 text-slate-400 border-slate-500/30' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'}`}>
+                              {rp.status.replace(/_/g, ' ')}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              {rp.receivedQuantity < item.quantity && (
+                                <button
+                                  onClick={() => handleOpenReceive(item, rp)}
+                                  className="text-xs bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/40 px-3 py-1.5 rounded-lg transition-colors font-medium cursor-pointer"
+                                >
+                                  Receive
+                                </button>
+                              )}
+                              {rp.availableQuantity > 0 && (
+                                <button
+                                  onClick={() => {
+                                    setAssignData({ receivedProductId: rp.id, quantity: 1, userId: '', itemName: item.itemName, available: rp.availableQuantity });
+                                    setIsAssignOpen(true);
+                                  }}
+                                  className="text-xs bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/40 px-3 py-1.5 rounded-lg transition-colors font-medium cursor-pointer"
+                                >
+                                  Assign
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    }) : (
                       <tr>
-                        <td colSpan={4} className="px-4 py-3 text-center text-slate-500">No items specified.</td>
+                        <td colSpan={7} className="px-4 py-6 text-center text-slate-400">No items specified.</td>
                       </tr>
                     )}
                   </tbody>
@@ -417,10 +549,69 @@ export function Requirements() {
           </div>
         )}
       </Modal>
+
+      {/* Receive Product Quantity Modal */}
+      <Modal isOpen={isReceiveOpen} onClose={() => setIsReceiveOpen(false)} title="Receive Product Stock" size="md">
+        <form onSubmit={handleReceive} className="space-y-4">
+          <div className="bg-slate-800/40 p-3.5 rounded-xl border border-slate-700/30">
+            <h4 className="text-sm font-bold text-slate-100">{receiveData.itemName} {receiveData.brand ? `(${receiveData.brand})` : ''}</h4>
+            <div className="flex justify-between mt-2 text-xs">
+              <span className="text-slate-400">Required: <strong className="text-slate-200">{receiveData.requiredQty}</strong></span>
+              <span className="text-slate-400">Received: <strong className="text-emerald-400">{receiveData.receivedQty}</strong></span>
+              <span className="text-slate-400">Pending: <strong className="text-amber-400">{Math.max(0, receiveData.requiredQty - receiveData.receivedQty)}</strong></span>
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Quantity to Receive *</label>
+            <input
+              type="number"
+              required
+              min="1"
+              max={Math.max(1, receiveData.requiredQty - receiveData.receivedQty)}
+              value={receiveData.quantityToReceive}
+              onChange={e => setReceiveData({ ...receiveData, quantityToReceive: parseInt(e.target.value) || 1 })}
+              className="input-field py-2 text-sm text-foreground bg-background border-border w-full"
+            />
+          </div>
+          <div className="pt-3 flex justify-end gap-3 border-t border-slate-700/50">
+            <button type="button" onClick={() => setIsReceiveOpen(false)} className="btn-secondary cursor-pointer" disabled={isSubmitting}>Cancel</button>
+            <button type="submit" disabled={isSubmitting} className="btn-primary cursor-pointer bg-emerald-600 hover:bg-emerald-500">
+              {isSubmitting ? 'Receiving...' : 'Confirm Receive'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal isOpen={isAssignOpen} onClose={() => setIsAssignOpen(false)} title="Assign Product to User">
+        <form onSubmit={handleAssign} className="space-y-4">
+          <div className="bg-slate-800/40 p-3 rounded-xl border border-slate-700/30 text-xs text-slate-300">
+            Item: <strong className="text-slate-100">{assignData.itemName}</strong> | Available in Stock: <strong className="text-emerald-400">{assignData.available}</strong>
+          </div>
+          <div>
+            <label className="block text-sm text-slate-300 mb-1">Select User</label>
+            <select required value={assignData.userId} onChange={e => setAssignData({...assignData, userId: e.target.value})} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200">
+              <option value="">Select a user...</option>
+              {users.map(u => (
+                <option key={u.id} value={u.id}>{u.firstName} {u.lastName}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm text-slate-300 mb-1">Quantity to Assign</label>
+            <input type="number" required min="1" max={assignData.available} value={assignData.quantity} onChange={e => setAssignData({...assignData, quantity: parseInt(e.target.value) || 1})} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200" />
+          </div>
+          <div className="pt-3 flex justify-end gap-3 border-t border-slate-700/50">
+            <button type="button" onClick={() => setIsAssignOpen(false)} className="btn-secondary cursor-pointer" disabled={isSubmitting}>Cancel</button>
+            <button type="submit" disabled={isSubmitting} className="btn-primary cursor-pointer">{isSubmitting ? 'Assigning...' : 'Assign'}</button>
+          </div>
+        </form>
+      </Modal>
+
     </motion.div>
   );
 }
 
 export default Requirements;
+
 
 

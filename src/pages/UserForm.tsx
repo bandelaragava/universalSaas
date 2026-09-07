@@ -1,4 +1,4 @@
-﻿// /* eslint-disable react-hooks/set-state-in-effect */
+// /* eslint-disable react-hooks/set-state-in-effect */
 // import React, { useState, useEffect, useCallback } from 'react';
 // import { useNavigate, useParams } from 'react-router-dom';
 // import { Shield, Users, Sparkles, UserPlus } from 'lucide-react';
@@ -1321,6 +1321,7 @@ export default function UserForm({ userId, onClose }: UserFormProps = {}) {
     const [availableEmployeeTypes, setAvailableEmployeeTypes] = useState<LookupEntity[]>([]);
     const [availableDesignations, setAvailableDesignations] = useState<LookupEntity[]>([]);
     const [availableWorkModes, setAvailableWorkModes] = useState<LookupEntity[]>([]);
+    const [idFormats, setIdFormats] = useState<{ id: number; entityType: string; prefix: string; nextSequence: number; paddingLength: number; includeYear: boolean; active?: boolean }[]>([]);
 
     // Permissions and structural assignments
     const [availablePermissions, setAvailablePermissions] = useState<Permission[]>([]);
@@ -1408,14 +1409,16 @@ export default function UserForm({ userId, onClose }: UserFormProps = {}) {
 
                 // Fetch other lookups
                 try {
-                    const [empRes, desRes, wmRes] = await Promise.all([
+                    const [empRes, desRes, wmRes, idfRes] = await Promise.all([
                         rolesApi.get<LookupEntity[]>('/employee-types/active', { signal: ctrl.signal }).catch(() => ({ data: [] })),
                         rolesApi.get<LookupEntity[]>('/designations/active', { signal: ctrl.signal }).catch(() => ({ data: [] })),
-                        rolesApi.get<LookupEntity[]>('/work-modes/active', { signal: ctrl.signal }).catch(() => ({ data: [] }))
+                        rolesApi.get<LookupEntity[]>('/work-modes/active', { signal: ctrl.signal }).catch(() => ({ data: [] })),
+                        rolesApi.get<{ id: number; entityType: string; prefix: string; nextSequence: number; paddingLength: number; includeYear: boolean; active?: boolean }[]>('/id-formats', { signal: ctrl.signal, ignore403: true }).catch(() => ({ data: [] }))
                     ]);
                     setAvailableEmployeeTypes((empRes.data || []).filter(x => x.showInUserForm !== false));
                     setAvailableDesignations((desRes.data || []).filter(x => x.showInUserForm !== false));
                     setAvailableWorkModes((wmRes.data || []).filter(x => x.showInUserForm !== false));
+                    setIdFormats(idfRes.data || []);
                 } catch (e) {
                     console.warn('Failed to fetch lookups', e);
                 }
@@ -1505,6 +1508,30 @@ export default function UserForm({ userId, onClose }: UserFormProps = {}) {
         return () => controller.abort();
     }, [activeId, dbUsers, roles, selectedRoleId, supervisorUserId]);
 
+    const activeRole = roles.find((r) => String(r.id) === String(selectedRoleId));
+    const activeFormat = idFormats.find((f) => {
+        if (f.active === false) return false;
+        const targetType = (f.entityType || '').toUpperCase();
+        if (activeRole) {
+            const rName = (activeRole.name || '').toUpperCase();
+            const rBase = (activeRole.base_role || '').toUpperCase();
+            if (targetType === rName || targetType === rBase) return true;
+        }
+        return targetType === 'EMPLOYEE' || targetType === 'USER';
+    });
+
+    const previewId = React.useMemo(() => {
+        if (employeeId && employeeId.trim()) return employeeId.trim();
+        if (activeFormat) {
+            const pad = activeFormat.paddingLength || 4;
+            const seq = String(activeFormat.nextSequence || 1).padStart(pad, '0');
+            const year = activeFormat.includeYear ? `${new Date().getFullYear()}` : '';
+            const prefix = activeFormat.prefix || 'EMP';
+            return `${prefix}${year}${seq}`;
+        }
+        return `EMP-${String(dbUsers.length + 1).padStart(4, '0')}`;
+    }, [employeeId, activeFormat, dbUsers.length]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -1515,7 +1542,7 @@ export default function UserForm({ userId, onClose }: UserFormProps = {}) {
 
         setLoading(true);
 
-        const generatedEmployeeId = employeeId || `USR-${Date.now().toString().slice(-6)}`;
+        const generatedEmployeeId = employeeId.trim() ? employeeId.trim() : (isEdit ? employeeId : previewId);
         const selectedEmployeeType = availableEmployeeTypes.find((item) => String(item.id) === employeeTypeId)?.name || '';
         const selectedDesignation = availableDesignations.find((item) => String(item.id) === designationId)?.name || '';
         const selectedWorkMode = availableWorkModes.find((item) => String(item.id) === workModeId)?.name || '';
@@ -1761,20 +1788,26 @@ export default function UserForm({ userId, onClose }: UserFormProps = {}) {
                             <Users className="w-4 h-4" /> Employee Profile Details
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {isEdit && employeeId && (
-                                <div>
-                                    <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                                        Employee ID
+                            <div className="md:col-span-2">
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                        User ID / Employee ID
                                     </label>
-                                    <input
-                                        type="text"
-                                        readOnly
-                                        className="w-full bg-muted/50 border border-border text-foreground text-sm rounded-lg px-3 py-2.5 focus:outline-none cursor-not-allowed"
-                                        value={employeeId}
-                                    />
-                                    <p className="text-[10px] text-muted-foreground mt-1">Generated by backend</p>
+                                    <span className="text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                                        ID Format: {previewId}
+                                    </span>
                                 </div>
-                            )}
+                                <input
+                                    type="text"
+                                    placeholder={`Auto-format: ${previewId}`}
+                                    className="w-full bg-background border border-border text-foreground text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                                    value={employeeId}
+                                    onChange={(e) => setEmployeeId(e.target.value)}
+                                />
+                                <p className="text-[10px] text-muted-foreground mt-1">
+                                    Leave blank to automatically generate <strong className="text-foreground">{previewId}</strong> using configured ID format rules.
+                                </p>
+                            </div>
 
                             <div>
                                 <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">

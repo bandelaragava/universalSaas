@@ -1,6 +1,6 @@
-﻿/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Shield, Key, UserMinus, UserCheck, Edit2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Shield, Key, UserMinus, UserCheck, Edit2, Hash } from 'lucide-react';
 import rolesApi from '@/services/rolesApi';
 import { usePermissions } from '@/auth/usePermissions';
 import EntityListPage from '@/components/shared/EntityListPage';
@@ -127,6 +127,15 @@ export default function UserList() {
           setEditingUserId(null);
           setIsFormOpen(true);
         }}
+        headerActions={
+          <Link
+            to="/settings/id-generation"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl border border-border bg-card text-foreground hover:bg-muted transition-colors shadow-sm"
+          >
+            <Hash className="w-3.5 h-3.5 text-primary" />
+            ID Formats
+          </Link>
+        }
         searchValue={search}
         onSearchChange={setSearch}
         loading={loading}
@@ -137,6 +146,7 @@ export default function UserList() {
           <table className="w-full text-left text-sm border-collapse">
             <thead>
               <tr className="border-b border-border bg-muted/50 text-muted-foreground">
+                <th className="py-3 px-4 font-semibold text-xs uppercase tracking-wider">User ID</th>
                 <th className="py-3 px-4 font-semibold text-xs uppercase tracking-wider">Name</th>
                 <th className="py-3 px-4 font-semibold text-xs uppercase tracking-wider">Email</th>
                 <th className="py-3 px-4 font-semibold text-xs uppercase tracking-wider">Role & Designation</th>
@@ -150,7 +160,7 @@ export default function UserList() {
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-8 text-muted-foreground">
+                  <td colSpan={9} className="text-center py-8 text-muted-foreground">
                     {search ? `No users matching "${search}"` : 'No users found.'}
                   </td>
                 </tr>
@@ -162,6 +172,13 @@ export default function UserList() {
                       !user.active ? 'opacity-50' : ''
                     }`}
                   >
+                    {/* User ID */}
+                    <td className="py-3.5 px-4 font-mono">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                        {user.employeeId || user.leadId || (user.id ? `EMP-${String(user.id).padStart(4, '0')}` : `#USR-${user.id}`)}
+                      </span>
+                    </td>
+
                     {/* Avatar & Name */}
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
@@ -178,9 +195,6 @@ export default function UserList() {
                           <div className="font-semibold text-foreground block leading-tight">
                             {user.firstName} {user.lastName}
                           </div>
-                          <span className="text-[10px] text-muted-foreground block mt-0.5 font-mono">
-                            {user.leadId || user.employeeId || `#USR-${user.id}`}
-                          </span>
                         </div>
                       </div>
                     </td>

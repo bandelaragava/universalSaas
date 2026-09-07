@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
 import { PageHeader } from '@/components/shared/PageHeader';
@@ -62,11 +62,11 @@ const settingsCards = [
   {
     id: 'templates',
     label: 'Document Templates',
-    description: 'Design HTML structures and layouts for joining packages, contracts, and letters.',
+    description: 'Design HTML structures, layouts for joining packages, contracts, letters, and invoice configurations.',
     path: '/settings/templates',
     icon: FileText,
     color: 'text-primary border-primary/20 bg-primary/5',
-    permissions: ['SETTINGS_MANAGE_TEMPLATES', 'SETTINGS_MANAGE_SETTINGS']
+    permissions: ['SETTINGS_MANAGE_TEMPLATES', 'SETTINGS_MANAGE_INVOICES', 'SETTINGS_MANAGE_SETTINGS']
   },
   {
     id: 'certificates',
@@ -94,15 +94,6 @@ const settingsCards = [
     icon: Blocks,
     color: 'text-primary border-primary/20 bg-primary/5',
     permissions: ['SETTINGS_MANAGE_SETTINGS']
-  },
-  {
-    id: 'invoice-configurations',
-    label: 'Invoice Configurations',
-    description: 'Create and manage custom invoice templates and billing formats.',
-    path: '/settings/invoice-configurations',
-    icon: FileText,
-    color: 'text-primary border-primary/20 bg-primary/5',
-    permissions: ['SETTINGS_MANAGE_INVOICES', 'SETTINGS_MANAGE_SETTINGS']
   },
 ];
 

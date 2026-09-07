@@ -13,11 +13,11 @@ export default defineConfig({
   server: {
     host: true,
     proxy: {
-      '/api/leads': {
-        target: 'http://100.121.237.45:8000',
+      '/lap-api': {
+        target: 'http://localhost:8082',
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path.replace(/^\/api/, ''),
+        rewrite: (path) => path.replace(/^\/lap-api/, ''),
         configure: (proxy) => {
           proxy.on('proxyRes', (_proxyRes, _req, res) => {
             res.setHeader('Access-Control-Allow-Origin', '*');
@@ -25,20 +25,10 @@ export default defineConfig({
         },
       },
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8082',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, ''),
-        configure: (proxy) => {
-          proxy.on('proxyRes', (_proxyRes, _req, res) => {
-            res.setHeader('Access-Control-Allow-Origin', '*');
-          });
-        },
-      },
-      '/lap-api': {
-        target: 'http://100.121.237.45:8000',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/lap-api/, '/api'),
         configure: (proxy) => {
           proxy.on('proxyRes', (_proxyRes, _req, res) => {
             res.setHeader('Access-Control-Allow-Origin', '*');

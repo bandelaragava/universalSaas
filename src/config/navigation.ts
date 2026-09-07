@@ -13,6 +13,7 @@ import {
     Shield,
     Building,
     Blocks,
+    Briefcase,
 } from 'lucide-react'
 
 export interface MenuItem {
@@ -96,6 +97,19 @@ export const menuConfig: MenuSection[] = [
                     'PAYROLL_VIEW_SALARY',
                 ],
                 requiredModules: ['HRMS', 'ATTENDANCE', 'LEAVE', 'PAYROLL'],
+            },
+            {
+                id: 'recruitment',
+                label: 'Recruitment',
+                path: '/recruitment',
+                icon: Briefcase,
+                permissions: [
+                    'JOB_VIEW',
+                    'JOB_CREATE',
+                    'APPLICATION_VIEW',
+                    'INTERVIEW_VIEW',
+                ],
+                requiredModules: ['RECRUITMENT', 'HRMS'],
             },
             {
                 id: 'tickets',
